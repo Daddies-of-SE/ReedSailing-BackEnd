@@ -1,6 +1,5 @@
-/.idea/
-/__pycache__/
-/venv/
+.idea/
+__pycache__/
+venv/
 .DS_Store
-/backend/.idea/
-/backen/BUAA/migrations/
+/backend/BUAA/migrations/
