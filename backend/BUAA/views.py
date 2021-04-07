@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.core.mail import send_mail, send_mass_mail
 from django.http import HttpResponseRedirect,HttpResponse
 from django.core.cache import caches
-from models import *
+from BUAA.models import *
 import json
 import uuid
 import hashlib
