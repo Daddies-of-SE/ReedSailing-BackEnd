@@ -26,8 +26,8 @@ SECRET_KEY = ')n&%s@g3!jpkyz@tdj*)jst3mbzhhp$7v(trttcrl5x!7il--_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+#ALLOWED_HOSTS = ['*']
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -45,13 +45,17 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
+
+PROJECT_APPS = [
+    'BUAA'
+]
 
 TEMPLATES = [
     {
@@ -81,7 +85,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME':'buaa',
         'USER': 'root',
-        'PASSWORD': '',
+        'PASSWORD': '', # FILL THIS 
         'HOST': '127.0.0.1', # HOST
         'POST': 3306, # 端口
 
@@ -132,15 +136,17 @@ USE_TZ = False
 
 
 # 邮件配置
-EMAIL_USE_SSL = True
+EMAIL_USE_SSL = False
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_USE_TLS = True
 
-EMAIL_HOST = 'smtp.buaa.edu.cn'  # 如果是 163 改成 smtp.163.com
+EMAIL_HOST = 'smtp.qq.com'  # 如果是 163 改成 smtp.163.com
 
-EMAIL_PORT = 465
+EMAIL_PORT = 587
 
-EMAIL_HOST_USER = 'official@buaa.edu.cn' # 帐号
+EMAIL_HOST_USER = '@qq.com' # 帐号
 
-EMAIL_HOST_PASSWORD = 'password'  # 授权码（****）
+EMAIL_HOST_PASSWORD = ''  # 授权码（****）
 # 默认邮件
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
