@@ -15,7 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from BUAA import views as views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('sendVerify/', views.send_email),
+    path('verify/', views.verify_email)
 ]

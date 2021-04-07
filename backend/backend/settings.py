@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'BUAA.apps.BuaaConfig',
+    'BUAA',
 ]
 
 MIDDLEWARE = [
@@ -77,10 +79,16 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME':'buaa',
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST': '127.0.0.1', # HOST
+        'POST': 3306, # 端口
+
     }
 }
+
 
 
 # Password validation
@@ -101,19 +109,41 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+CACHES = {
+    'default' : {
+        'BACKEND' : 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION' : 'my_cache_table',
+    }
+}
+
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh-hans'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
+
+
+# 邮件配置
+EMAIL_USE_SSL = True
+
+EMAIL_HOST = 'smtp.buaa.edu.cn'  # 如果是 163 改成 smtp.163.com
+
+EMAIL_PORT = 465
+
+EMAIL_HOST_USER = 'official@buaa.edu.cn' # 帐号
+
+EMAIL_HOST_PASSWORD = 'password'  # 授权码（****）
+# 默认邮件
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
 # Static files (CSS, JavaScript, Images)
@@ -153,3 +183,6 @@ CORS_ALLOW_HEADERS = (
     'x-requested-with',
     'Pragma',
 )
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'medias').replace('\\', '/')

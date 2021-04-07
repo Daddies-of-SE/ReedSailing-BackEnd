@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 
 # 用户
 class WXUser(models.Model):
-    openid = models.CharField(unique=True, verbose_name="微信id", primary_key=True)
+    openid = models.CharField(unique=True, verbose_name="微信id", primary_key=True,max_length=500)
     name = models.CharField(max_length=30, verbose_name="昵称")
     avatar = models.CharField(max_length=500, null=True, blank=True, verbose_name="头像")
     email = models.EmailField(max_length=100, null=True, verbose_name="邮箱")
@@ -31,24 +31,27 @@ class Activity(models.Model):
     location = models.ForeignKey('Address', on_delete=models.CASCADE, verbose_name="活动地点")
     # block = models.ForeignKey('Block', on_delete=models.CASCADE, verbose_name="所属版块")  # 组织需要与组织模块保证一致
 
-    person = models.ManyToManyField('WXUser', verbose_name="报名人员")
+    #person = models.ManyToManyField('WXUser', verbose_name="报名人员")
 
+class JoinAct(models.Model):
+    act = models.ForeignKey('Activity',on_delete=models.CASCADE,verbose_name='活动')
+    person = models.ForeignKey('WXUser', verbose_name="报名人员",on_delete=models.CASCADE)
 
 # 分类
 class Category(models.Model):
-    name = models.CharField(max_length=50, xunique=True, verbose_name="分类名称")
+    name = models.CharField(max_length=50, unique=True, verbose_name="分类名称")
 
 
 # 地址
 class Address(models.Model):
     name = models.CharField(max_length=50, unique=True, verbose_name="地址名称")
-    longitude = models.DecimalField(verbose_name="经度")
-    latitude = models.DecimalField(verbose_name="纬度")
+    longitude = models.DecimalField(max_digits=10,decimal_places=6,verbose_name="经度")
+    latitude = models.DecimalField(max_digits=10,decimal_places=6,verbose_name="纬度")
 
 
 # 组织
 class Organization(models.Model):
-    name = models.CharField(max_length=50, xunique=True, verbose_name="组织名称")
+    name = models.CharField(max_length=50, unique=True, verbose_name="组织名称")
     description = models.CharField(max_length=500, null=True, blank=True, verbose_name="组织描述")
     create_time = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     avatar = models.CharField(max_length=500, null=True, blank=True, verbose_name="头像")
@@ -56,9 +59,16 @@ class Organization(models.Model):
 
     owner = models.ForeignKey('WXUser', on_delete=models.CASCADE, verbose_name="负责人")
 
-    manager = models.ManyToManyField('WXUser', verbose_name="组织管理员")
-    follower = models.ManyToManyField('WXUser', verbose_name="关注者")
+    #manager = models.ManyToManyField('WXUser', verbose_name="组织管理员")
+    #follower = models.ManyToManyField('WXUser', verbose_name="关注者")
 
+class ManageOrg(models.Model):
+    org = models.ForeignKey('Organization',verbose_name='组织',on_delete=models.CASCADE)
+    person = models.ForeignKey('WXUser', verbose_name="组织管理员",on_delete=models.CASCADE)
+
+class FollowOrg(models.Model):
+    org = models.ForeignKey('Organization',verbose_name='组织', on_delete=models.CASCADE)
+    person = models.ForeignKey('WXUser', verbose_name="组织管理员", on_delete=models.CASCADE)
 
 # 评价
 class Comment(models.Model):
@@ -72,7 +82,7 @@ class Comment(models.Model):
 
 # 版块
 class Block(models.Model):
-    name = models.CharField(max_length=50, xunique=True, verbose_name="版块名称")
+    name = models.CharField(max_length=50, unique=True, verbose_name="版块名称")
 
 
 # 超级管理员
@@ -104,7 +114,7 @@ class UserFeedback(models.Model):
 
 # 组织申请
 class OrgApply(models.Model):
-    name = models.CharField(max_length=50, xunique=True, verbose_name="组织名称")
+    name = models.CharField(max_length=50, unique=True, verbose_name="组织名称")
     description = models.CharField(max_length=500, verbose_name="申请描述")
     pub_time = models.DateTimeField(auto_now_add=True, verbose_name="申请时间")
 
@@ -116,3 +126,4 @@ class OrgApply(models.Model):
 class JoinActApply(models.Model):
     act = models.ForeignKey('Activity', on_delete=models.CASCADE, verbose_name="申请活动")
     user = models.ForeignKey('WXUser', on_delete=models.CASCADE, verbose_name="申请人")
+
