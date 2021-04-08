@@ -16,9 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from BUAA import views as views
+from django.conf.urls import url
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('sendVerify/', views.send_email),
-    path('verify/', views.verify_email)
+    path('verify/', views.verify_email),
+    path('login/', views.code2Session),
 ]

@@ -16,7 +16,6 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
@@ -26,7 +25,7 @@ SECRET_KEY = ')n&%s@g3!jpkyz@tdj*)jst3mbzhhp$7v(trttcrl5x!7il--_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS = ['*']
 ALLOWED_HOSTS = []
 
 # Application definition
@@ -38,14 +37,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'BUAA.apps.BuaaConfig'
+    'BUAA.apps.BuaaConfig',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    #'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -76,23 +76,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME':'buaa',
+        'NAME': 'buaa',
         'USER': 'root',
-        'PASSWORD': '12345678', # FILL THIS 
-        'HOST': '127.0.0.1', # HOST
-        'POST': 3306, # 端口
+        'PASSWORD': '12345678',  # FILL THIS
+        'HOST': '127.0.0.1',  # HOST
+        'POST': 3306,  # 端口
 
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -113,13 +110,21 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 CACHES = {
-    'default' : {
-        'BACKEND' : 'django.core.cache.backends.db.DatabaseCache',
-        'LOCATION' : 'my_cache_table',
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'my_cache_table',
+    },
+    "session": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
     }
 }
 
-
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "session"
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
@@ -134,7 +139,6 @@ USE_L10N = True
 
 USE_TZ = False
 
-
 # 邮件配置
 EMAIL_USE_SSL = False
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -144,25 +148,23 @@ EMAIL_HOST = 'smtp.qq.com'  # 如果是 163 改成 smtp.163.com
 
 EMAIL_PORT = 587
 
-EMAIL_HOST_USER = '@qq.com' # 帐号
+EMAIL_HOST_USER = '@qq.com'  # 帐号
 
 EMAIL_HOST_PASSWORD = ''  # 授权码（****）
 # 默认邮件
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
 
-#允许跨域
+# 允许跨域
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = (
     '*'
 )
-
 
 CORS_ALLOW_METHODS = (
     'DELETE',
@@ -173,7 +175,6 @@ CORS_ALLOW_METHODS = (
     'PUT',
     'VIEW',
 )
-
 
 CORS_ALLOW_HEADERS = (
     'XMLHttpRequest',
@@ -191,3 +192,15 @@ CORS_ALLOW_HEADERS = (
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'medias').replace('\\', '/')
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'BUAA.authentication.UserAuthentication',  # 用自定义的认证类
+    ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+    ),
+}
