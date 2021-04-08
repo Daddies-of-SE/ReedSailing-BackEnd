@@ -69,6 +69,9 @@ def code2Session(request):
     appid = 'wx6e4e33e0b6db916e'
     secret = 'fc9689a2497195707d9f85e48628b351'
     js_code = request.data['code']
+
+    print(js_code)
+
     url = 'https://api.weixin.qq.com/sns/jscode2session' + '?appid=' + appid + '&secret=' + secret + '&js_code=' + js_code + '&grant_type=authorization_code'
     response = json.loads(requests.get(url).content)  # 将json数据包转成字典
     if 'errcode' in response:
@@ -78,7 +81,10 @@ def code2Session(request):
     openid = response['openid']
     session_key = response['session_key']
     # 保存openid, 需要先判断数据库中有没有这个openid
-    user, created = User.objects.get_or_create(openid=openid)
+    user, created = WXUser.objects.get_or_create(openid=openid)
+
+    print(user)
+
     user_str = str(UserLoginSerializer(user).data)
     # 生成自定义登录态，返回给前端
     sha = hashlib.sha1()
