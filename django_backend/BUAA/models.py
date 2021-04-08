@@ -31,11 +31,13 @@ class Activity(models.Model):
     location = models.ForeignKey('Address', on_delete=models.CASCADE, verbose_name="活动地点")
     # block = models.ForeignKey('Block', on_delete=models.CASCADE, verbose_name="所属版块")  # 组织需要与组织模块保证一致
 
-    #person = models.ManyToManyField('WXUser', verbose_name="报名人员")
+    # person = models.ManyToManyField('WXUser', verbose_name="报名人员")
+
 
 class JoinAct(models.Model):
     act = models.ForeignKey('Activity',on_delete=models.CASCADE,verbose_name='活动')
     person = models.ForeignKey('WXUser', verbose_name="报名人员",on_delete=models.CASCADE)
+
 
 # 分类
 class Category(models.Model):
@@ -59,16 +61,19 @@ class Organization(models.Model):
 
     owner = models.ForeignKey('WXUser', on_delete=models.CASCADE, verbose_name="负责人")
 
-    #manager = models.ManyToManyField('WXUser', verbose_name="组织管理员")
-    #follower = models.ManyToManyField('WXUser', verbose_name="关注者")
+    # manager = models.ManyToManyField('WXUser', verbose_name="组织管理员")
+    # follower = models.ManyToManyField('WXUser', verbose_name="关注者")
+
 
 class ManageOrg(models.Model):
     org = models.ForeignKey('Organization',verbose_name='组织',on_delete=models.CASCADE)
     person = models.ForeignKey('WXUser', verbose_name="组织管理员",on_delete=models.CASCADE)
 
+
 class FollowOrg(models.Model):
     org = models.ForeignKey('Organization',verbose_name='组织', on_delete=models.CASCADE)
     person = models.ForeignKey('WXUser', verbose_name="组织管理员", on_delete=models.CASCADE)
+
 
 # 评价
 class Comment(models.Model):
