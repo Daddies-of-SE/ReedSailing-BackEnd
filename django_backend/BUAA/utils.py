@@ -2,11 +2,11 @@ from smtplib import SMTP, SMTPException
 from email.mime.text import MIMEText
 from email.header import Header
 
-# FILL THIS
-mail_host="smtp.qq.com"  #设置SMTP服务器，如smtp.qq.com
-mail_user="847791804@qq.com"    #发送邮箱的用户名，如xxxxxx@qq.com
-mail_pass= ""  #发送邮箱的密码（注：QQ邮箱需要开启SMTP服务后在此填写授权码）
-sender = '847791804@qq.com' #发件邮箱，如xxxxxx@qq.com
+
+mail_host="smtp.126.com"  #设置SMTP服务器，如smtp.qq.com
+mail_user="reedsailing@126.com"    #发送邮箱的用户名，如xxxxxx@qq.com
+mail_pass= "SJHDAZYRQSGNXCTH"  #发送邮箱的密码（注：QQ邮箱需要开启SMTP服务后在此填写授权码）
+sender = mail_user #发件邮箱，如xxxxxx@qq.com
 
 
 class MailSender:
@@ -20,8 +20,8 @@ class MailSender:
                 if receiver is None:
                         receiver = self.mail_user
                 message = MIMEText(content, 'plain', 'utf-8')
-                message['From'] = Header(self.sender, 'utf-8')  #发件人
-                message['To'] = Header(receiver, 'utf-8')  #收件人
+                message['From'] = self.sender  #发件人
+                message['To'] = receiver  #收件人
                 subject = title  #主题
                 message['Subject'] = Header(subject, 'utf-8')
                 try:
@@ -32,3 +32,4 @@ class MailSender:
                         print("邮件发送成功")
                 except SMTPException:
                         print("ERROR：无法发送邮件")
+                        

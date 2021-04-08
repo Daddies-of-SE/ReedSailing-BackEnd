@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.core.mail import send_mail, send_mass_mail
-from django.http import HttpResponseRedirect,HttpResponse
+from django.http import HttpResponseRedirect,HttpResponse, JsonResponse
 from django.core.cache import caches
 from BUAA.models import *
 from BUAA import utils
@@ -22,23 +22,19 @@ def send_email(request):
     sender=utils.MailSender()
     
     print("request is", request.POST)
-
     email_address = request.POST.get('email')
-
-    #data = json.loads(request.body)
-    #email_address = data.get('email')
     random_str = get_random_str()[:6]
-    sender.send_mail('BUAA Certification', 'Your verify code is {}, valid in 2 minutes'.format(random_str), email_address)
+    sender.send_mail('BUAA Certification', 'Your verify code is {}, valid in 5 minutes'.format(random_str), email_address)
 
-    # TODO: a bug says 'table buaa.my_cache_table does not exist'
-    cache.set(random_str, email_address, 120)
+    cache.set(random_str, email_address, 300)
 
     res = {
         'success': "true",
         'mess': 'Email send'
     }
     print("successfully send email to", email_address)
-    return HttpResponse(json.dumps(res), content_type='application/json')
+    print(res)
+    return HttpResponse(json.dumps(res), content_type="application/json", charset='utf-8',status='200',reason='success')
 
 def verify_email(request):
     code = request.POST.get('code')
@@ -53,7 +49,7 @@ def verify_email(request):
             'success': "false",
             'mess':'Invalid Code'
         }
-    return HttpResponse(json.dumps(res), content_type='application/json')
+    return HttpResponse(json.dumps(res), content_type="application/json", charset='utf-8',status='200',reason='success')
 
 
 
