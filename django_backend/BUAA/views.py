@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from django.core.mail import send_mail, send_mass_mail
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-from django.core.cache import caches
 from BUAA.models import *
 from BUAA import utils
 import json
@@ -10,13 +9,15 @@ import hashlib
 import backend.settings as settings
 from django.core.cache import cache
 import requests
-from rest_framework import status
+# from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.response import Response
-from django_redis import get_redis_connection
+# from django_redis import get_redis_connection
 from .serializers import *
+from rest_framework.viewsets import ModelViewSet
 
 
+# 生成随机验证码
 def get_random_str():
     uuid_val = uuid.uuid4()
     uuid_str = str(uuid_val).encode("utf-8")
@@ -25,17 +26,19 @@ def get_random_str():
     return md5.hexdigest()
 
 
+# 发送认证邮件
 def send_email(request):
+    # 发送验证码
     sender = utils.MailSender()
-
-    print("request is", request.POST)
     email_address = request.POST.get('email')
-    random_str = get_random_str()[:6]
+    random_str = get_random_str()[:6]  # 生成验证码
     sender.send_mail('BUAA Certification', 'Your verify code is {}, valid in 5 minutes'.format(random_str),
-                     email_address)
+                     email_address)  # 发送邮件
 
+    # 缓存验证信息
     cache.set(random_str, email_address, 300)
 
+    # 返回响应
     res = {
         'success': "true",
         'mess': 'Email send'
@@ -46,10 +49,16 @@ def send_email(request):
                         reason='success')
 
 
+# 邮件验证码确认
 def verify_email(request):
     code = request.POST.get('code')
-    valid = cache.get(code)
-    if valid:
+    config_email = request.POST.get('email')
+
+    # token = request.COOKIES.get('token')
+    # openid = utils.decode_openid(token)
+    email = cache.get(code)
+
+    if config_email.equal(email):
         res = {
             'success': "true",
             'mess': 'Valid Code'
@@ -57,41 +66,318 @@ def verify_email(request):
     else:
         res = {
             'success': "false",
-            'mess': 'Invalid Code'
+            'mess': 'Invalid code'
         }
     return HttpResponse(json.dumps(res), content_type="application/json", charset='utf-8', status='200',
                         reason='success')
 
 
 @api_view(['POST'])
-@authentication_classes([])  # 添加
+@authentication_classes([])  # 用户认证
 def code2Session(request):
-    appid = 'wx6e4e33e0b6db916e'
-    secret = 'fc9689a2497195707d9f85e48628b351'
+    # 从用户端获取code
     js_code = request.data['code']
 
-    print(js_code)
-
-    url = 'https://api.weixin.qq.com/sns/jscode2session' + '?appid=' + appid + '&secret=' + secret + '&js_code=' + js_code + '&grant_type=authorization_code'
+    # 通过微信接口服务获取openid
+    appid = settings.APPID
+    secret = settings.SECRET
+    url = 'https://api.weixin.qq.com/sns/jscode2session' + '?appid=' + appid + '&secret=' + secret + '&js_code=' + \
+          js_code + '&grant_type=authorization_code'
     response = json.loads(requests.get(url).content)  # 将json数据包转成字典
     if 'errcode' in response:
         # 有错误码
         return Response(data={'code': response['errcode'], 'msg': response['errmsg']})
+
     # 登录成功
     openid = response['openid']
     session_key = response['session_key']
+
     # 保存openid, 需要先判断数据库中有没有这个openid
-    user, created = WXUser.objects.get_or_create(openid=openid)
+    WXUser.objects.get_or_create(openid=openid)
 
-    print(user)
+    # 生成token,有效期1h
+    token = utils.encode_openid(openid, 60 * 60)
+    print('token is ', token)
 
-    user_str = str(UserLoginSerializer(user).data)
-    # 生成自定义登录态，返回给前端
-    sha = hashlib.sha1()
-    sha.update(openid.encode())
-    sha.update(session_key.encode())
-    digest = sha.hexdigest()
-    # 将自定义登录态保存到缓存中, 两个小时过期
-    conn = get_redis_connection('session')
-    conn.set(digest, user_str, ex=2 * 60 * 60)
-    return Response(data={'code': 200, 'msg': 'ok', 'data': {'skey': digest}})
+    # cache.set(token, [openid, session_key], 60 * 60) 利用token可以直接decode得到openid，不知道有没有缓存的必要
+
+    # 返回响应
+    res = Response(data={'code': 200, 'msg': 'ok'})
+    res.set_cookie("token", token)
+    return res
+
+
+# 管理端接口
+class OrganizationModelViewSet(ModelViewSet):
+    """
+    list:
+    返回所有组织信息
+
+    create:
+    新建组织
+
+    read:
+    获取组织详情
+
+    update:
+    修改组织详情
+
+    delete:
+    删除组织
+    """
+
+    queryset = Organization.objects.all()
+    serializer_class = OrganizationSerializer
+
+
+class WXUserViewSet(ModelViewSet):
+    """
+    list:
+    返回所有用户信息
+
+    create:
+    新建用户（目前没用）
+
+    read:
+    获取用户信息
+
+    update:
+    修改用户信息
+
+    delete:
+    删除用户
+    """
+
+    queryset = WXUser.objects.all()
+    serializer_class = WXUserSerializer
+
+
+class CategoryViewSet(ModelViewSet):
+    """
+    list:
+    返回所有分类
+
+    create:
+    新建分类
+
+    read:
+    获取分类
+
+    update:
+    修改分类
+
+    delete:
+    删除分类
+    """
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
+class AddressViewSet(ModelViewSet):
+    """
+    list:
+    返回所有地址
+
+    create:
+    新建地址
+
+    read:
+    获取地址
+
+    update:
+    修改地址
+
+    delete:
+    删除地址
+    """
+    queryset = Address.objects.all()
+    serializer_class = AddressSerializer
+
+
+class CommentViewSet(ModelViewSet):
+    """
+    list:
+    返回所有评论
+
+    create:
+    新建评论
+
+    read:
+    获取评论
+
+    update:
+    修改评论
+
+    delete:
+    删除评论
+    """
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+
+
+class BlockViewSet(ModelViewSet):
+    """
+    list:
+    返回所有版块
+
+    create:
+    新建版块
+
+    read:
+    获取版块
+
+    update:
+    修改版块
+
+    delete:
+    删除版块
+    """
+    queryset = Block.objects.all()
+    serializer_class = BlockSerializer
+
+
+class UserFeedbackViewSet(ModelViewSet):
+    """
+    list:
+    返回所有用户反馈
+
+    create:
+    新建用户反馈
+
+    read:
+    获取用户反馈
+
+    update:
+    修改用户反馈
+
+    delete:
+    删除用户反馈
+    """
+    queryset = UserFeedback.objects.all()
+    serializer_class = UserFeedbackSerializer
+
+
+class OrgApplicationViewSet(ModelViewSet):
+    """
+    list:
+    返回所有组织申请
+
+    create:
+    新建组织申请
+
+    read:
+    获取组织申请
+
+    update:
+    修改组织申请
+
+    delete:
+    删除组织申请
+    """
+    queryset = OrgApplication.objects.all()
+    serializer_class = OrgApplySerializer
+
+
+class ActivityViewSet(ModelViewSet):
+    """
+    list:
+    返回所有活动
+
+    create:
+    新建活动
+
+    read:
+    获取活动
+
+    update:
+    修改活动
+
+    delete:
+    删除活动
+    """
+    queryset = Activity.objects.all()
+    serializer_class = ActivitySerializer
+
+
+class OrgMangerViewSet(ModelViewSet):
+    """
+    list:
+    返回所有组织管理员
+
+    create:
+    新建组织管理员
+
+    read:
+    获取组织管理员
+
+    update:
+    修改组织管理员
+
+    delete:
+    删除组织管理员
+    """
+    queryset = OrgManager.objects.all()
+    serializer_class = OrgManagerSerializer
+
+
+class FollowedOrgViewSet(ModelViewSet):
+    """
+    list:
+    返回所有关注组织
+
+    create:
+    新建关注组织
+
+    read:
+    获取关注组织
+
+    update:
+    修改关注组织
+
+    delete:
+    删除关注组织
+    """
+    queryset = FollowedOrg.objects.all()
+    serializer_class = FollowedOrgSerializer
+
+
+class JoinActApplicationViewSet(ModelViewSet):
+    """
+    list:
+    返回所有加入活动申请
+
+    create:
+    新建加入活动申请
+
+    read:
+    获取加入活动申请
+
+    update:
+    修改加入活动申请
+
+    delete:
+    删除加入活动申请
+    """
+    queryset = JoinActApplication.objects.all()
+    serializer_class = JoinActApplicationSerializer
+
+
+class JoinedActViewSet(ModelViewSet):
+    """
+    list:
+    返回所有活动参与人员
+
+    create:
+    新建活动参与人员
+
+    read:
+    获取活动参与人员
+
+    update:
+    修改活动参与人员
+
+    delete:
+    删除活动参与人员
+    """
+    queryset = JoinedAct.objects.all()
+    serializer_class = JoinedActSerializer

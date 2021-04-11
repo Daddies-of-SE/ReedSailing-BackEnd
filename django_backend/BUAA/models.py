@@ -7,17 +7,17 @@ from django.contrib.auth.models import User
 
 # 用户
 class WXUser(models.Model):
-    openid = models.CharField(unique=True, verbose_name="微信id", primary_key=True,max_length=500)
-    name = models.CharField(max_length=30, verbose_name="昵称")
-    avatar = models.CharField(max_length=500, null=True, blank=True, verbose_name="头像")
-    email = models.EmailField(max_length=100, null=True, verbose_name="邮箱")
-    sign = models.CharField(max_length=200, null=True, blank=True, verbose_name="个性签名")
+    openid = models.CharField(unique=True, verbose_name="微信openid", primary_key=True, max_length=500, help_text="微信openid --string")
+    name = models.CharField(max_length=30, verbose_name="昵称", help_text="昵称 --string")
+    avatar = models.CharField(max_length=500, null=True, blank=True, verbose_name="头像", help_text="头像 --string")
+    email = models.EmailField(max_length=100, null=True, verbose_name="邮箱", help_text="邮箱 --string")
+    sign = models.CharField(max_length=200, null=True, blank=True, verbose_name="个性签名", help_text="个性签名 --string")
 
 
 # 活动
 class Activity(models.Model):
-    name = models.CharField(max_length=100, unique=True, verbose_name="活动名称")
-    begin_time = models.DateTimeField(verbose_name="开始时间")
+    name = models.CharField(max_length=100, unique=True, verbose_name="活动名称", help_text="活动名称 --string")
+    begin_time = models.DateTimeField(verbose_name="开始时间", help_text="开始时间")
     end_time = models.DateTimeField(verbose_name="结束时间")
     pub_time = models.DateTimeField(auto_now_add=True, verbose_name="发布时间")
     contain = models.IntegerField(verbose_name="人数限制", default=0)
@@ -34,7 +34,7 @@ class Activity(models.Model):
     # person = models.ManyToManyField('WXUser', verbose_name="报名人员")
 
 
-class JoinAct(models.Model):
+class JoinedAct(models.Model):
     act = models.ForeignKey('Activity',on_delete=models.CASCADE,verbose_name='活动')
     person = models.ForeignKey('WXUser', verbose_name="报名人员",on_delete=models.CASCADE)
 
@@ -65,19 +65,19 @@ class Organization(models.Model):
     # follower = models.ManyToManyField('WXUser', verbose_name="关注者")
 
 
-class ManageOrg(models.Model):
+class OrgManager(models.Model):
     org = models.ForeignKey('Organization',verbose_name='组织',on_delete=models.CASCADE)
     person = models.ForeignKey('WXUser', verbose_name="组织管理员",on_delete=models.CASCADE)
 
 
-class FollowOrg(models.Model):
+class FollowedOrg(models.Model):
     org = models.ForeignKey('Organization',verbose_name='组织', on_delete=models.CASCADE)
     person = models.ForeignKey('WXUser', verbose_name="组织管理员", on_delete=models.CASCADE)
 
 
 # 评价
 class Comment(models.Model):
-    content = models.CharField(max_length=500, verbose_name="内容")
+    content = models.CharField(max_length=500, null=True, verbose_name="内容")
     pub_time = models.DateTimeField(auto_now_add=True, verbose_name="发布时间")
     score = models.IntegerField(verbose_name="评分")
 
@@ -96,7 +96,7 @@ class SuperAdmin(User):
 
 
 # 组织管理员申请
-class ManagerApply(models.Model):
+class ManagerApplication(models.Model):
     org = models.ForeignKey('Organization', on_delete=models.CASCADE, verbose_name="组织")
     user = models.ForeignKey('WXUser', on_delete=models.CASCADE, verbose_name="申请用户")
     content = models.CharField(max_length=500, null=True, blank=True, verbose_name="理由")
@@ -118,7 +118,7 @@ class UserFeedback(models.Model):
 
 
 # 组织申请
-class OrgApply(models.Model):
+class OrgApplication(models.Model):
     name = models.CharField(max_length=50, unique=True, verbose_name="组织名称")
     description = models.CharField(max_length=500, verbose_name="申请描述")
     pub_time = models.DateTimeField(auto_now_add=True, verbose_name="申请时间")
@@ -128,7 +128,7 @@ class OrgApply(models.Model):
 
 
 # 加入活动申请
-class JoinActApply(models.Model):
+class JoinActApplication(models.Model):
     act = models.ForeignKey('Activity', on_delete=models.CASCADE, verbose_name="申请活动")
     user = models.ForeignKey('WXUser', on_delete=models.CASCADE, verbose_name="申请人")
 
