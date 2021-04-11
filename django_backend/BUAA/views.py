@@ -44,39 +44,47 @@ def send_email(request):
     cache.set(random_str, email_address, 300)
     
     res = {
-        'success': "true",
-        'mess': 'Email send'
+        'success': True,
+        'msg': 'Email send'
     }
     print("successfully send email to", email_address)
     return my_response(res)
 
-
+@api_view(['POST'])
+@authentication_classes([])  # 添加
 def verify_email(request):
     # TODO
-    code = request.data['email']
-    valid = cache.get(code)
-    if valid:
+    verifyCode = request.data['verifyCode']
+    config_email = request.data['email']
+
+    # token = request.COOKIES.get('token')
+    # openid = utils.decode_openid(token)
+    email = cache.get(verifyCode)
+
+    if config_email == email:
         res = {
-            'success': "true",
-            'mess': 'Valid Code'
+            'success': True,
+            'msg': 'Valid Code'
         }
     else:
         res = {
-            'success': "false",
-            'mess': 'Invalid Code'
+            'success': False,
+            'msg': 'Invalid Code',
+            'errCode': 1 # TODO:分配一波errCode编码
         }
     return my_response(res)
 
 
 @api_view(['POST'])
-@authentication_classes([])  # 添加
+@authentication_classes([])  # 用户认证
 def code2Session(request):
     print("code to session called")
-    appid = 'wx6e4e33e0b6db916e'
-    secret = 'fc9689a2497195707d9f85e48628b351'
     js_code = request.data['code']
     
-    print(js_code)
+    appid = settings.APPID
+    secret = settings.SECRET
+    
+#    print(js_code)
     
     # TODO: save request.data['userInfo'] in database
     
@@ -84,30 +92,26 @@ def code2Session(request):
     response = json.loads(requests.get(url).content)  # 将json数据包转成字典
     if 'errcode' in response:
         # 有错误码
-        return my_response({'code': response['errcode'], 'msg': response['errmsg']})
+        return my_response({'errCode': response['errcode'], 'msg': response['errmsg']})
+    
     
     # 登录成功
     openid = response['openid']
     session_key = response['session_key']
     # 保存openid, 需要先判断数据库中有没有这个openid
-    user, created = WXUser.objects.get_or_create(openid=openid)
+    WXUser.objects.get_or_create(openid=openid)
     
-    print(user)
+    # 生成token,有效期1h
+    token = utils.encode_openid(openid, 60 * 60)
+    print('token is ', token)
     
-#    user_str = str(UserLoginSerializer(user).data)
-#    # 生成自定义登录态，返回给前端
-#    sha = hashlib.sha1()
-#    sha.update(openid.encode())
-#    sha.update(session_key.encode())
-#    digest = sha.hexdigest()
-#    # 将自定义登录态保存到缓存中, 两个小时过期
-#    conn = get_redis_connection('session')
-#    conn.set(digest, user_str, ex=2 * 60 * 60)
+#    print(user)
     
+    # TODO: change this, refer to 后端接口说明.md
     res = {
-        "code" : "blablabla",
-        "token" : "this is a token"
-        # TODO: change this, refer to https://gitee.com/wojiaocbj/cbjtest_small_app/blob/master/utils/Readme_backendAPI.md
+        "code" : "blablabla", 
+        "token" : token,
+        "email" : ""
     }
     
     return my_response(res)
