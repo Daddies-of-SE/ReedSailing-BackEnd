@@ -16,8 +16,12 @@ from rest_framework.response import Response
 from .serializers import *
 from rest_framework.viewsets import ModelViewSet
 
+def my_response(js_obj):
+    print("RETURN RESPONSE: " + str(js_obj))
+    return HttpResponse(json.dumps(js_obj), content_type="application/json", charset='utf-8', status='200',
+                        reason='success')
+                        
 
-# 生成随机验证码
 def get_random_str():
     uuid_val = uuid.uuid4()
     uuid_str = str(uuid_val).encode("utf-8")
@@ -26,39 +30,32 @@ def get_random_str():
     return md5.hexdigest()
 
 
-# 发送认证邮件
+@api_view(['POST'])
+@authentication_classes([])  # 添加
 def send_email(request):
-    # 发送验证码
     sender = utils.MailSender()
-    email_address = request.POST.get('email')
-    random_str = get_random_str()[:6]  # 生成验证码
+#
+#    print("request is", request.POST)
+    email_address = request.data['email']
+    random_str = get_random_str()[:6]
     sender.send_mail('BUAA Certification', 'Your verify code is {}, valid in 5 minutes'.format(random_str),
-                     email_address)  # 发送邮件
-
-    # 缓存验证信息
+                     email_address)
+    
     cache.set(random_str, email_address, 300)
-
-    # 返回响应
+    
     res = {
         'success': "true",
         'mess': 'Email send'
     }
     print("successfully send email to", email_address)
-    print(res)
-    return HttpResponse(json.dumps(res), content_type="application/json", charset='utf-8', status='200',
-                        reason='success')
+    return my_response(res)
 
 
-# 邮件验证码确认
 def verify_email(request):
-    code = request.POST.get('code')
-    config_email = request.POST.get('email')
-
-    # token = request.COOKIES.get('token')
-    # openid = utils.decode_openid(token)
-    email = cache.get(code)
-
-    if config_email.equal(email):
+    # TODO
+    code = request.data['email']
+    valid = cache.get(code)
+    if valid:
         res = {
             'success': "true",
             'mess': 'Valid Code'
@@ -66,46 +63,54 @@ def verify_email(request):
     else:
         res = {
             'success': "false",
-            'mess': 'Invalid code'
+            'mess': 'Invalid Code'
         }
-    return HttpResponse(json.dumps(res), content_type="application/json", charset='utf-8', status='200',
-                        reason='success')
+    return my_response(res)
 
 
 @api_view(['POST'])
-@authentication_classes([])  # 用户认证
+@authentication_classes([])  # 添加
 def code2Session(request):
-    # 从用户端获取code
+    print("code to session called")
+    appid = 'wx6e4e33e0b6db916e'
+    secret = 'fc9689a2497195707d9f85e48628b351'
     js_code = request.data['code']
-
-    # 通过微信接口服务获取openid
-    appid = settings.APPID
-    secret = settings.SECRET
-    url = 'https://api.weixin.qq.com/sns/jscode2session' + '?appid=' + appid + '&secret=' + secret + '&js_code=' + \
-          js_code + '&grant_type=authorization_code'
+    
+    print(js_code)
+    
+    # TODO: save request.data['userInfo'] in database
+    
+    url = 'https://api.weixin.qq.com/sns/jscode2session' + '?appid=' + appid + '&secret=' + secret + '&js_code=' + js_code + '&grant_type=authorization_code'
     response = json.loads(requests.get(url).content)  # 将json数据包转成字典
     if 'errcode' in response:
         # 有错误码
-        return Response(data={'code': response['errcode'], 'msg': response['errmsg']})
-
+        return my_response({'code': response['errcode'], 'msg': response['errmsg']})
+    
     # 登录成功
     openid = response['openid']
     session_key = response['session_key']
-
     # 保存openid, 需要先判断数据库中有没有这个openid
-    WXUser.objects.get_or_create(openid=openid)
-
-    # 生成token,有效期1h
-    token = utils.encode_openid(openid, 60 * 60)
-    print('token is ', token)
-
-    # cache.set(token, [openid, session_key], 60 * 60) 利用token可以直接decode得到openid，不知道有没有缓存的必要
-
-    # 返回响应
-    res = Response(data={'code': 200, 'msg': 'ok'})
-    res.set_cookie("token", token)
-    return res
-
+    user, created = WXUser.objects.get_or_create(openid=openid)
+    
+    print(user)
+    
+#    user_str = str(UserLoginSerializer(user).data)
+#    # 生成自定义登录态，返回给前端
+#    sha = hashlib.sha1()
+#    sha.update(openid.encode())
+#    sha.update(session_key.encode())
+#    digest = sha.hexdigest()
+#    # 将自定义登录态保存到缓存中, 两个小时过期
+#    conn = get_redis_connection('session')
+#    conn.set(digest, user_str, ex=2 * 60 * 60)
+    
+    res = {
+        "code" : "blablabla",
+        "token" : "this is a token"
+        # TODO: change this, refer to https://gitee.com/wojiaocbj/cbjtest_small_app/blob/master/utils/Readme_backendAPI.md
+    }
+    
+    return my_response(res)
 
 # 管理端接口
 class OrganizationModelViewSet(ModelViewSet):
@@ -381,3 +386,4 @@ class JoinedActViewSet(ModelViewSet):
     """
     queryset = JoinedAct.objects.all()
     serializer_class = JoinedActSerializer
+    
