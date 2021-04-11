@@ -15,33 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from BUAA.views import *
+from BUAA import views as views
 from django.conf.urls import url
-from rest_framework.documentation import include_docs_urls
-from rest_framework.routers import SimpleRouter
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('sendVerify/', send_email),
-    path('verify/', verify_email),
-    path('login/', code2Session),
-    url(r'^docs/', include_docs_urls(title='一苇以航API接口')),
+    path('sendVerify/', views.send_email),
+    path('verify/', views.verify_email),
+    path('login/', views.code2Session),
 ]
-
-router = SimpleRouter()
-router.register('organizations', OrganizationModelViewSet)
-router.register('users', WXUserViewSet)
-router.register('categories', CategoryViewSet)
-router.register('addresses', AddressViewSet)
-router.register('comments', CommentViewSet)
-router.register('blocks', BlockViewSet)
-router.register('feedbacks', UserFeedbackViewSet)
-router.register('organizations/applications', OrgApplicationViewSet)
-router.register('activities', ActivityViewSet)
-router.register('organizations/managers', OrgMangerViewSet)
-router.register('organizations/followers', FollowedOrgViewSet)
-router.register('activities/join_applications', JoinActApplicationViewSet)
-router.register('activities/participants', JoinedActViewSet)
-urlpatterns += router.urls
-
-

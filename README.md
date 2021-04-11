@@ -31,17 +31,3 @@
   * 此时后端console上显示”发送邮件成功“，邮箱里会收到验证码邮件
   * 小程序的`utils/interact.js`里的`getAPIUrl`指定了服务器为`http://127.0.0.1:8000`，后续部署到云端并设置域名时需要修改
 
-
-
-## API接口
-
-①安装coreapi
-
-```
-pip install coreapi
-```
-
-②运行后端
-
-在`http://127.0.0.1:8000/docs`可以查看API接口
-
