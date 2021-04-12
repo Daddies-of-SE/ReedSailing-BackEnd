@@ -45,34 +45,41 @@ def send_email(request):
     cache.set(random_str, email_address, 300)
     
     res = {
-        'success': "true",
-        'mess': 'Email send'
+        'success': True,
+        'msg': 'Email send'
     }
     print("successfully send email to", email_address)
     return Response(data=res, status=200)
     # return my_response(res)
 
-
+@api_view(['POST'])
+@authentication_classes([])  # 添加
 def verify_email(request):
     # TODO
-    code = request.data['email']
-    valid = cache.get(code)
-    if valid:
+    verifyCode = request.data['verifyCode']
+    config_email = request.data['email']
+
+    # token = request.COOKIES.get('token')
+    # openid = utils.decode_openid(token)
+    email = cache.get(verifyCode)
+
+    if config_email == email:
         res = {
-            'success': "true",
-            'mess': 'Valid Code'
+            'success': True,
+            'msg': 'Valid Code'
         }
     else:
         res = {
-            'success': "false",
-            'mess': 'Invalid Code'
+            'success': False,
+            'msg': 'Invalid Code',
+            'errCode': 1 # TODO:分配一波errCode编码
         }
     return Response(res,200)
     # return my_response(res)
 
 
 @api_view(['POST'])
-@authentication_classes([])  # 添加
+@authentication_classes([])  # 用户认证
 def code2Session(request):
     # 取出数据
     js_code = request.data['code']
