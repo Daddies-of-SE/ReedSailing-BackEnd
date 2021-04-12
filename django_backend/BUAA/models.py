@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 
 # 用户
 class WXUser(models.Model):
-    openid = models.CharField(unique=True, verbose_name="微信openid", primary_key=True, max_length=500, help_text="微信openid --string")
+    openid = models.CharField(unique=True, verbose_name="微信openid", max_length=500, help_text="微信openid --string")
     name = models.CharField(max_length=30, verbose_name="昵称", help_text="昵称 --string")
     avatar = models.CharField(max_length=500, null=True, blank=True, verbose_name="头像", help_text="头像 --string")
     email = models.EmailField(max_length=100, null=True, verbose_name="邮箱", help_text="邮箱 --string")

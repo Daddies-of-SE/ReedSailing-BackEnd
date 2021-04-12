@@ -16,6 +16,7 @@ from rest_framework.response import Response
 from .serializers import *
 from rest_framework.viewsets import ModelViewSet
 
+
 def my_response(js_obj):
     print("RETURN RESPONSE: " + str(js_obj))
     return HttpResponse(json.dumps(js_obj), content_type="application/json", charset='utf-8', status='200',
@@ -48,7 +49,8 @@ def send_email(request):
         'mess': 'Email send'
     }
     print("successfully send email to", email_address)
-    return my_response(res)
+    return Response(data=res, status=200)
+    # return my_response(res)
 
 
 def verify_email(request):
@@ -65,52 +67,46 @@ def verify_email(request):
             'success': "false",
             'mess': 'Invalid Code'
         }
-    return my_response(res)
+    return Response(res,200)
+    # return my_response(res)
 
 
 @api_view(['POST'])
 @authentication_classes([])  # 添加
 def code2Session(request):
-    print("code to session called")
-    appid = 'wx6e4e33e0b6db916e'
-    secret = 'fc9689a2497195707d9f85e48628b351'
+    # 取出数据
     js_code = request.data['code']
-    
-    print(js_code)
-    
-    # TODO: save request.data['userInfo'] in database
-    
+    user_info = request.data['userInfo']
+
+    # 获取openid和session_key
+    appid = settings.APPID
+    secret = settings.SECRET
     url = 'https://api.weixin.qq.com/sns/jscode2session' + '?appid=' + appid + '&secret=' + secret + '&js_code=' + js_code + '&grant_type=authorization_code'
     response = json.loads(requests.get(url).content)  # 将json数据包转成字典
     if 'errcode' in response:
         # 有错误码
-        return my_response({'code': response['errcode'], 'msg': response['errmsg']})
-    
+        return Response(data={'code': response['errcode'], 'msg': response['errmsg']}, status=400)
     # 登录成功
     openid = response['openid']
     session_key = response['session_key']
-    # 保存openid, 需要先判断数据库中有没有这个openid
-    user, created = WXUser.objects.get_or_create(openid=openid)
+
+    # 保存openid, name, avatar
+    user, create = WXUser.objects.get_or_create(openid=openid)
+    WXUser.objects.filter(openid=openid).update(name=user_info.get("nickName"), avatar=user_info.get("avatarUrl"))
     
-    print(user)
-    
-#    user_str = str(UserLoginSerializer(user).data)
-#    # 生成自定义登录态，返回给前端
-#    sha = hashlib.sha1()
-#    sha.update(openid.encode())
-#    sha.update(session_key.encode())
-#    digest = sha.hexdigest()
-#    # 将自定义登录态保存到缓存中, 两个小时过期
-#    conn = get_redis_connection('session')
-#    conn.set(digest, user_str, ex=2 * 60 * 60)
-    
+    print(WXUser.objects.get_or_create(openid=openid))
+
+    token = utils.encode_openid(openid, 24*60*60)
+    cache.set(token, openid)
+
     res = {
-        "code" : "blablabla",
-        "token" : "this is a token"
-        # TODO: change this, refer to https://gitee.com/wojiaocbj/cbjtest_small_app/blob/master/utils/Readme_backendAPI.md
+        "user_Exist": 0 if create else 1,
+        "token": token,
+        "email": user.email,
+        "id": user.id,
     }
-    
-    return my_response(res)
+    return Response(data=res, status=200)
+
 
 # 管理端接口
 class OrganizationModelViewSet(ModelViewSet):
