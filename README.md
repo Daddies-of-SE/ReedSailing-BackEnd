@@ -22,7 +22,7 @@
 
 ### 3、运行框架
 
-* 运行`pyhton manage.py createcachetable`
+* 运行`python manage.py createcachetable`
 * 运行`python manage.py runserver`
   * 运行时不要在本地开vpn代理，会导致报错退出
   * 会在默认的`http://127.0.0.1:8000`部署服务器
