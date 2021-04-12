@@ -52,12 +52,13 @@ def send_email(request):
     return Response(data=res, status=200)
     # return my_response(res)
 
+
 @api_view(['POST'])
 @authentication_classes([])  # 添加
 def verify_email(request):
-    # TODO
     verifyCode = request.data['verifyCode']
     config_email = request.data['email']
+    id = request.data['id']
 
     # token = request.COOKIES.get('token')
     # openid = utils.decode_openid(token)
@@ -68,6 +69,7 @@ def verify_email(request):
             'success': True,
             'msg': 'Valid Code'
         }
+        WXUser.objects.filter(id=id).update(email=email)
     else:
         res = {
             'success': False,
