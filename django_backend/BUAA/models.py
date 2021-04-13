@@ -60,7 +60,7 @@ class Organization(models.Model):
     # avatar = models.FileField(upload_to='avatar')  文件形式传到服务器，char则是一个地址路径，不确定
 
     owner = models.ForeignKey('WXUser', on_delete=models.CASCADE, verbose_name="负责人")
-
+    block = models.ForeignKey('Block', on_delete=models.CASCADE, verbose_name="所属版块",default=None)
     # manager = models.ManyToManyField('WXUser', verbose_name="组织管理员")
     # follower = models.ManyToManyField('WXUser', verbose_name="关注者")
 

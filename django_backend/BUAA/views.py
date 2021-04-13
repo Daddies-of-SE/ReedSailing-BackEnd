@@ -15,7 +15,8 @@ from rest_framework.response import Response
 # from django_redis import get_redis_connection
 from .serializers import *
 from rest_framework.viewsets import ModelViewSet
-
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 def my_response(js_obj):
     print("RETURN RESPONSE: " + str(js_obj))
@@ -118,7 +119,7 @@ def code2Session(request):
 
 
 # 管理端接口
-class OrganizationModelViewSet(ModelViewSet):
+class OrganizationModelViewSet(APIView):
     """
     list:
     返回所有组织信息
@@ -135,31 +136,66 @@ class OrganizationModelViewSet(ModelViewSet):
     delete:
     删除组织
     """
+    def get(self, request, *args, **kwargs):
+        # 查询所有
+        if not request.query_params.get('org'):
+            all_orgs = Organization.objects.all()
+            data = OrganizationSerializer(all_orgs, many=True).data
+        else:
+            org_name = request.query_params.get('org')
+            try:
+                org = Organization.objects.get(name=org_name)
+                data = OrganizationSerializer(org).data
+            except:
+                return Response({
+                    'status': 1,
+                    'msg': 'invalid org name'
+                })
+        return Response({
+            'status': 0,
+            'msg': 'ok',
+            'results': data
+        })
 
-    queryset = Organization.objects.all()
-    serializer_class = OrganizationSerializer
+class WXUserViewSet(APIView):
+    def get(self, request, *args, **kwargs):
+        id = request.query_params.get('id')
+        try:
+            user = WXUser.objects.get(id=id)
+        except:
+            return Response({
+                'status': 1,
+                'msg': 'invalid userID'
+            })
+        data = WXUserSerializer(user).data
+        return Response({
+            'status': 0,
+            'msg': 'ok',
+            'results': data
+        })
 
-
-class WXUserViewSet(ModelViewSet):
-    """
-    list:
-    返回所有用户信息
-
-    create:
-    新建用户（目前没用）
-
-    read:
-    获取用户信息
-
-    update:
-    修改用户信息
-
-    delete:
-    删除用户
-    """
-
-    queryset = WXUser.objects.all()
-    serializer_class = WXUserSerializer
+    def patch(self, request, *args, **kwargs):
+        request_data = dict(request.data)
+        request_query = request.query_params
+        try:
+            user_id = request_query.get('id')
+            usr = WXUser.objects.get(id=user_id)
+        except:
+            return Response({
+                'status': 1,
+                'msg': 'invalid userID'
+            })
+        request_data["openid"] = usr.openid
+        if not request_data.get("name"):
+            request_data['name'] = usr.name
+        ser = WXUserSerializer(instance=usr, data=request_data)
+        ser.is_valid(raise_exception=True) # 校验不通过自动抛异常
+        objs = ser.save()
+        return Response({
+            'status': 0,
+            'msg': 'ok',
+            'results':WXUserSerializer(objs).data
+        })
 
 
 class CategoryViewSet(ModelViewSet):
@@ -246,6 +282,19 @@ class BlockViewSet(ModelViewSet):
     serializer_class = BlockSerializer
 
 
+class BlockOrgsViewSet(APIView):
+    #查看block下的所有组织
+    def get(self, request, *args, **kwargs):
+        block_id = request.query_params.get('block')
+        block = Block.objects.get(id=block_id)
+        query = Organization.objects.filter(block=block)
+        data = OrganizationSerializer(query, many=True).data
+        return Response({
+            'status': 0,
+            'msg': 'ok',
+            'results': data
+        })
+
 class UserFeedbackViewSet(ModelViewSet):
     """
     list:
@@ -309,25 +358,55 @@ class ActivityViewSet(ModelViewSet):
     serializer_class = ActivitySerializer
 
 
-class OrgMangerViewSet(ModelViewSet):
-    """
-    list:
-    返回所有组织管理员
+class OrgMangerViewSet(APIView):
 
-    create:
-    新建组织管理员
+    #查看组织所有管理员
+    def get(self, request, *args, **kwargs):
+        def get_managers(request):
+        # 查看某组织的所有管理员
+            org_name = request.query_params.get('org')
+            # 群查
+            if not org_name:
+                all_orgs = OrgManager.objects.all()
+                data = OrgManagerSerializer(all_orgs, many=True).data
+            else:
+                try:
+                    org = Organization.objects.get(name=org_name)
+                    query = OrgManager.objects.filter(org=org)
+                    data = OrgManagerSerializer(query, many=True).data
+                except:
+                    return Response({
+                        'status': 1,
+                        'msg': 'invalid org name'
+                    })
+            return Response({
+                'status': 0,
+                'msg': 'ok',
+                'results': data
+            })
 
-    read:
-    获取组织管理员
+        #查看当前用户管理的所有组织
+        def get_orgs(request):
+            id = request.query_params.get('id')
+            try:
+                user = WXUser.objects.get(id=id)
+            except:
+                return Response({
+                    'status': 1,
+                    'msg': 'invalid userID'
+                })
+            query = OrgManager.objects.filter(person=user)
+            data = OrgManagerSerializer(query, many=True).data
+            return Response({
+                'status': 0,
+                'msg': 'ok',
+                'results': data
+            })
 
-    update:
-    修改组织管理员
+        if request.query_params.get('user_view', False):
+            return get_orgs(request)
+        return get_managers(request)
 
-    delete:
-    删除组织管理员
-    """
-    queryset = OrgManager.objects.all()
-    serializer_class = OrgManagerSerializer
 
 
 class FollowedOrgViewSet(ModelViewSet):

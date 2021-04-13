@@ -26,11 +26,21 @@ urlpatterns = [
     path('verify/', verify_email),
     path('login/', code2Session),
     url(r'^docs/', include_docs_urls(title='一苇以航API接口')),
+    url(r'^blocks/orgs/$', BlockOrgsViewSet.as_view()),
+    url(r'^blocks/orgs/(?P<pk>.*)/$', BlockOrgsViewSet.as_view()),
+    url(r'^organizations/$', OrganizationModelViewSet.as_view()),
+    url(r'^organizations/(\?org\=.*)$', OrganizationModelViewSet.as_view()),
+    url(r'^organizations/managers/$', OrgMangerViewSet.as_view()),
+    url(r'^organizations/managers/(?P<pk>.*)$', OrgMangerViewSet.as_view()),
+    url(r'^users/$', WXUserViewSet.as_view()),
+    url(r'^users/(\?id\=.*)$', WXUserViewSet.as_view()),
+    url(r'^users/organizations/$',OrgMangerViewSet.as_view()),
+    url(r'^users/organizations/(?P<pk>.*)$',OrgMangerViewSet.as_view())
 ]
 
 router = SimpleRouter()
-router.register('organizations', OrganizationModelViewSet)
-router.register('users', WXUserViewSet)
+# router.register('organizations', OrganizationModelViewSet)
+# router.register('users', WXUserViewSet)
 router.register('categories', CategoryViewSet)
 router.register('addresses', AddressViewSet)
 router.register('comments', CommentViewSet)
@@ -38,7 +48,7 @@ router.register('blocks', BlockViewSet)
 router.register('feedbacks', UserFeedbackViewSet)
 router.register('organizations/applications', OrgApplicationViewSet)
 router.register('activities', ActivityViewSet)
-router.register('organizations/managers', OrgMangerViewSet)
+# router.register('organizations/managers', OrgMangerViewSet)
 router.register('organizations/followers', FollowedOrgViewSet)
 router.register('activities/join_applications', JoinActApplicationViewSet)
 router.register('activities/participants', JoinedActViewSet)
