@@ -17,11 +17,6 @@ from .serializers import *
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
-def my_response(js_obj):
-    print("RETURN RESPONSE: " + str(js_obj))
-    return HttpResponse(json.dumps(js_obj), content_type="application/json", charset='utf-8', status='200',
-                        reason='success')
                         
 
 def get_random_str():
@@ -46,7 +41,7 @@ def send_email(request):
     cache.set(random_str, email_address, 300)
     
     res = {
-        'success': True,
+        'status': 0,
         'msg': 'Email send'
     }
     print("successfully send email to", email_address)
@@ -67,15 +62,14 @@ def verify_email(request):
 
     if config_email == email:
         res = {
-            'success': True,
+            'status': 0,
             'msg': 'Valid Code'
         }
         WXUser.objects.filter(id=id).update(email=email)
     else:
         res = {
-            'success': False,
-            'msg': 'Invalid Code',
-            'errCode': 1 # TODO:分配一波errCode编码
+            'status': 1,
+            'msg': 'Invalid Code'
         }
     return Response(res,200)
     # return my_response(res)
@@ -95,7 +89,11 @@ def code2Session(request):
     response = json.loads(requests.get(url).content)  # 将json数据包转成字典
     if 'errcode' in response:
         # 有错误码
-        return Response(data={'code': response['errcode'], 'msg': response['errmsg']}, status=400)
+        return Response(data={
+            'status': 1, 
+            'code': response['errcode'], 
+            'msg': response['errmsg']
+        }, status=400)
     # 登录成功
     openid = response['openid']
     session_key = response['session_key']
@@ -110,6 +108,7 @@ def code2Session(request):
     cache.set(token, openid)
 
     res = {
+        "status" : 0,
         "user_Exist": 0 if create else 1,
         "token": token,
         "email": user.email,
