@@ -94,11 +94,20 @@ class UserFeedbackSerializer(ModelSerializer):
 
 class OrgApplySerializer(ModelSerializer):
     """组织申请序列化器"""
-    user = WXUserSerializer()
-    block = BlockSerializer()
+    # user = WXUserSerializer()
+    # block = BlockSerializer()
+    # 组织申请的时候肯定有组织有用户的
+
     class Meta:
         model = OrgApplication
-        fields = ('name','description','pub_time','user','block')
+        fields = "__all__"
+
+
+class OrgAppDetialSerializer(ModelSerializer):
+    class Meta:
+        model = OrgApplication
+        fields = "__all__"
+        depth = 2
 
 
 class ActivitySerializer(ModelSerializer):

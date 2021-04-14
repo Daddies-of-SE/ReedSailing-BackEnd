@@ -35,7 +35,7 @@ urlpatterns = [
     url(r'^users/$', WXUserViewSet.as_view()),
     url(r'^users/(\?id\=.*)$', WXUserViewSet.as_view()),
     url(r'^users/organizations/$',OrgMangerViewSet.as_view()),
-    url(r'^users/organizations/(?P<pk>.*)$',OrgMangerViewSet.as_view())
+    url(r'^users/organizations/(?P<pk>.*)$',OrgMangerViewSet.as_view()),
 ]
 
 router = SimpleRouter()

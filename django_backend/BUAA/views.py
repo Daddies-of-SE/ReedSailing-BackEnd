@@ -11,12 +11,11 @@ from django.core.cache import cache
 import requests
 # from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes
-from rest_framework.response import Response
 # from django_redis import get_redis_connection
 from .serializers import *
-from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.viewsets import *
                         
 
 def get_random_str():
@@ -38,7 +37,7 @@ def send_email(request):
     sender.send_mail('BUAA Certification', 'Your verify code is {}, valid in 5 minutes'.format(random_str),
                      email_address)
     
-    cache.set(random_str, email_address, 300)
+    cache.set(random_str, email_address, 300)  # 验证码时效5分钟
     
     res = {
         'status': 0,
@@ -66,12 +65,14 @@ def verify_email(request):
             'msg': 'Valid Code'
         }
         WXUser.objects.filter(id=id).update(email=email)
+        status = 200
     else:
         res = {
             'status': 1,
             'msg': 'Invalid Code'
         }
-    return Response(res,200)
+        status = 400
+    return Response(res, status)
     # return my_response(res)
 
 
@@ -339,6 +340,12 @@ class OrgApplicationViewSet(ModelViewSet):
     serializer_class = OrgApplySerializer
 
 
+class OrgAppReadOnlyModelViewSet(ReadOnlyModelViewSet):
+    queryset = OrgApplication
+    serializer_class = OrgAppDetialSerializer
+
+
+
 class ActivityViewSet(ModelViewSet):
     """
     list:
@@ -472,4 +479,5 @@ class JoinedActViewSet(ModelViewSet):
     """
     queryset = JoinedAct.objects.all()
     serializer_class = JoinedActSerializer
-    
+
+
