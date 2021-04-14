@@ -176,7 +176,7 @@ class WXUserViewSet(APIView):
             'results': data
         })
 
-    def patch(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         request_data = dict(request.data)
         request_query = request.query_params
         try:
