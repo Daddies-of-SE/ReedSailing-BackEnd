@@ -114,6 +114,9 @@ def code2Session(request):
         "token": token,
         "email": user.email,
         "id": user.id,
+        "avatar": user.avatar,
+        "sign": user.sign,
+        "name": user.name,
     }
     return Response(data=res, status=200)
 
