@@ -19,18 +19,6 @@ class UserVerifySerializer(ModelSerializer):
         fields = ['openid', 'email']
 
 
-class CategorySerializer(ModelSerializer):
-    """分类序列化器"""
-    class Meta:
-        model = Category
-        fields = "__all__"
-    def validate(self, attrs):
-        name = attrs.get('name')
-        if Category.objects.filter(name=name):
-            raise ValidationError({'category': '名字重复'})
-        return attrs
-
-
 class AddressSerializer(ModelSerializer):
     """地址序列化器"""
     class Meta:
@@ -198,6 +186,11 @@ class SuperUserSerializer(ModelSerializer):
         model = SuperAdmin
         fields = ['username']
 
+# 分类
+class CategorySerializer(ModelSerializer):
+    class Meta:
+        model = Category
+        fields = "__all__"
 
 
 
