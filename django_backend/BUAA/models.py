@@ -94,7 +94,7 @@ class Block(models.Model):
 
 # 超级管理员
 class SuperAdmin(User):
-    name = models.CharField(max_length=100, unique=True)
+    avatar = models.CharField(max_length=500, null=True, blank=True, verbose_name="头像")
 
 
 # 组织管理员申请

@@ -16,16 +16,19 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from BUAA.views import *
+from BUAA.superUser import *
 from django.conf.urls import url
 from rest_framework.documentation import include_docs_urls
 from rest_framework.routers import SimpleRouter
 
 urlpatterns = [
-    # path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),
     # 用户端
     path('sendVerify/', send_email),
     path('verify/', verify_email),
     path('login/', code2Session),
+    path('adminLogIn/', login),
+    path('register/', register),
 
     # 自动生成接口文档
     url(r'^docs/', include_docs_urls(title='一苇以航API接口')),
@@ -59,13 +62,19 @@ urlpatterns = [
     url(r'^organizations/managers/(?P<pk>\d+)/$', OrgManageViewSet.as_view({"get": "get_all_managers"})),
     url(r'^users/managed_organizations/(?P<pk>\d+)/$', OrgManageViewSet.as_view({"get": "get_managed_org"})),
 
+    # 分类
+    url(r'^categories/$', CategoryViewSet.as_view({"get": "list", "post": "create"})),
+    url(r'^categories/(?P<pk>\d+)/$', CategoryViewSet.as_view({"put": "update", "delete": "destroy"})),
+
+
+
 
     # 测试使用
     url(r'^test/users/$', WXUserViewSet.as_view({"post": "create"})),
 ]
 
 router = SimpleRouter()
-router.register('categories', CategoryViewSet)
+# router.register('categories', CategoryViewSet)
 router.register('addresses', AddressViewSet)
 router.register('comments', CommentViewSet)
 router.register('feedbacks', UserFeedbackViewSet)
@@ -73,5 +82,6 @@ router.register('activities', ActivityViewSet)
 router.register('activities/join_applications', JoinActApplicationViewSet)
 router.register('activities/participants', JoinedActViewSet)
 urlpatterns += router.urls
+
 
 

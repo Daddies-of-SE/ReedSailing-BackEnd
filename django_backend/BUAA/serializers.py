@@ -193,6 +193,10 @@ class OrgAllManagersSerializer(ModelSerializer):
         fields = ['person']
         depth = 2
 
+class SuperUserSerializer(ModelSerializer):
+    class Meta:
+        model = SuperAdmin
+        fields = ['username']
 
 
 
