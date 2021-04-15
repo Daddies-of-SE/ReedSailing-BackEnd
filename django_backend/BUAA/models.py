@@ -120,11 +120,11 @@ class UserFeedback(models.Model):
 # 组织申请
 class OrgApplication(models.Model):
     STATUS = (
-        (0, '未审批'),
+        (0, '待审批'),
         (1, '审批通过'),
         (2, '审批未通过')
     )
-    name = models.CharField(max_length=50, unique=True, verbose_name="组织名称")
+    name = models.CharField(max_length=50, verbose_name="组织名称")
     description = models.CharField(max_length=500, verbose_name="申请描述")
     pub_time = models.DateTimeField(auto_now_add=True, verbose_name="申请时间")
     status = models.SmallIntegerField(choices=STATUS, default=0, verbose_name="审批状态")

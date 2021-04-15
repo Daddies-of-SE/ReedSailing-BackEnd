@@ -160,45 +160,59 @@ class OrganizationModelViewSet(APIView):
             'results': data
         })
 
-class WXUserViewSet(APIView):
-    def get(self, request, *args, **kwargs):
-        id = request.query_params.get('id')
-        try:
-            user = WXUser.objects.get(id=id)
-        except:
-            return Response({
-                'status': 1,
-                'msg': 'invalid userID'
-            })
-        data = WXUserSerializer(user).data
-        return Response({
-            'status': 0,
-            'msg': 'ok',
-            'results': data
-        })
 
-    def put(self, request, *args, **kwargs):
-        request_data = dict(request.data)
-        request_query = request.query_params
-        try:
-            user_id = request_query.get('id')
-            usr = WXUser.objects.get(id=user_id)
-        except:
-            return Response({
-                'status': 1,
-                'msg': 'invalid userID'
-            })
-        request_data["openid"] = usr.openid
-        if not request_data.get("name"):
-            request_data['name'] = usr.name
-        ser = WXUserSerializer(instance=usr, data=request_data)
-        ser.is_valid(raise_exception=True) # 校验不通过自动抛异常
-        objs = ser.save()
-        return Response({
-            'status': 0,
-            'msg': 'ok',
-            'results':WXUserSerializer(objs).data
-        })
+class WXUserViewSet(ModelViewSet):
+    queryset = WXUser.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return TestUserSerializer
+        return WXUserSerializer
+
+    # def get(self, request, *args, **kwargs):
+    #     id = request.query_params.get('id')
+    #     try:
+    #         user = WXUser.objects.get(id=id)
+    #     except:
+    #         return Response({
+    #             'status': 1,
+    #             'msg': 'invalid userID'
+    #         })
+    #     data = WXUserSerializer(user).data
+    #     return Response({
+    #         'status': 0,
+    #         'msg': 'ok',
+    #         'results': data
+    #     })
+    #
+    # def put(self, request, *args, **kwargs):
+    #     request_data = dict(request.data)
+    #     request_query = request.query_params
+    #     try:
+    #         user_id = request_query.get('id')
+    #         usr = WXUser.objects.get(id=user_id)
+    #     except:
+    #         return Response({
+    #             'status': 1,
+    #             'msg': 'invalid userID'
+    #         })
+    #     request_data["openid"] = usr.openid
+    #     if not request_data.get("name"):
+    #         request_data['name'] = usr.name
+    #     ser = WXUserSerializer(instance=usr, data=request_data)
+    #     ser.is_valid(raise_exception=True) # 校验不通过自动抛异常
+    #     objs = ser.save()
+    #     return Response({
+    #         'status': 0,
+    #         'msg': 'ok',
+    #         'results':WXUserSerializer(objs).data
+    #     })
+
+
+# class WXUserReadViewSet(ReadOnlyModelViewSet):
+#     queryset = WXUser.objects.all()
+#     serializer_class = WXUserReadSerializer
+
 
 
 class CategoryViewSet(ModelViewSet):
@@ -319,30 +333,31 @@ class UserFeedbackViewSet(ModelViewSet):
     serializer_class = UserFeedbackSerializer
 
 
+# 组织申请
 class OrgApplicationViewSet(ModelViewSet):
-    """
-    list:
-    返回所有组织申请
-
-    create:
-    新建组织申请
-
-    read:
-    获取组织申请
-
-    update:
-    修改组织申请
-
-    delete:
-    删除组织申请
-    """
     queryset = OrgApplication.objects.all()
-    serializer_class = OrgApplySerializer
 
+    def get_serializer_class(self):
+        if self.action == "create":
+            return OrgAppCreateSerializer
+        if self.action == "verify":
+            return OrgAppVerifySerializer
+        return OrgApplySerializer
 
-class OrgAppReadOnlyModelViewSet(ReadOnlyModelViewSet):
-    queryset = OrgApplication
-    serializer_class = OrgAppDetialSerializer
+    def user_get_all(self, request, user_id):
+        applications = OrgApplication.objects.filter(user=user_id)
+        serializer = self.get_serializer(instance=applications, many=True)
+        return Response(serializer.data)
+
+    def verify(self, request, pk):
+        application = self.get_object()
+        old_status = application.status
+        if old_status != 0:
+            return Response(data={"detail": ["该组织申请已审批。"]}, status=400)
+        serializer = self.get_serializer(instance=application, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=201)
 
 
 

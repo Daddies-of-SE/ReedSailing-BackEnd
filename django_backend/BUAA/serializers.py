@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from rest_framework.exceptions import ValidationError
 from BUAA.models import *
+from rest_framework import exceptions
 
 
 class UserLoginSerializer(ModelSerializer):
@@ -17,20 +18,30 @@ class UserVerifySerializer(ModelSerializer):
         model = WXUser
         fields = ['openid', 'email']
 
+
 class WXUserSerializer(ModelSerializer):
     """用户序列化器"""
     class Meta:
         model = WXUser
-        fields = "__all__"
+        exclude = ['openid']
+        read_only_fields = ['email']
 
-    def update(self, instance, validated_data):
-        """更新，instance为要更新的对象实例"""
-        instance.openid = instance.openid
-        instance.name = validated_data.get('name', instance.name)
-        instance.avatar = validated_data.get('avatar', instance.avatar)
-        instance.sign = validated_data.get('sign',instance.sign)
-        instance.save()
-        return instance
+    # def update(self, instance, validated_data):
+    #     """更新，instance为要更新的对象实例"""
+    #     instance.openid = instance.openid
+    #     instance.name = validated_data.get('name', instance.name)
+    #     instance.avatar = validated_data.get('avatar', instance.avatar)
+    #     instance.sign = validated_data.get('sign',instance.sign)
+    #     instance.save()
+    #     return instance
+
+class WXUserUpdateSerializer(ModelSerializer):
+    class Meta:
+        model = WXUser
+        fields = ['name', 'sign']
+
+
+
 
 class BlockSerializer(ModelSerializer):
     """版块序列化器"""
@@ -101,6 +112,35 @@ class OrgApplySerializer(ModelSerializer):
     class Meta:
         model = OrgApplication
         fields = "__all__"
+        depth = 2
+
+
+class OrgAppCreateSerializer(ModelSerializer):
+    class Meta:
+        model = OrgApplication
+        fields = "__all__"
+        read_only_fields = ['status']
+
+    def validate_name(self, value):
+        org_name = self.initial_data.get('name')
+        exists = Organization.objects.filter(name=org_name).exists()
+        if exists:
+            raise ValidationError('已经存在该名称的组织。')
+        exists = OrgApplication.objects.filter(name=org_name, status=0).exists()
+        if exists:
+            raise ValidationError('已经存在该名称组织的申请。')
+        return value
+
+
+class OrgAppVerifySerializer(ModelSerializer):
+    class Meta:
+        model = OrgApplication
+        fields = ['status']
+
+    def validated_status(self, value):
+        status = self.initial_data.get('value')
+        if not status in [1, 2]:
+            raise ValidationError('审批状态有误。')
 
 
 class OrgAppDetialSerializer(ModelSerializer):
@@ -133,11 +173,15 @@ class OrgManagerSerializer(ModelSerializer):
 
 class FollowedOrgSerializer(ModelSerializer):
     """关注组织序列化器"""
-    org = OrganizationSerializer()
-    person = WXUserSerializer()
+    # org = OrganizationSerializer()
+    # person = WXUserSerializer()
+    #
     class Meta:
         model = FollowedOrg
-        fields = ('org', 'person')
+        fields = "__all__"
+
+
+
 
 class CommentSerializer(ModelSerializer):
     """评论序列化器"""
@@ -171,3 +215,11 @@ class ManagerApplicationSerializer(ModelSerializer):
     class Meta:
         model = ManagerApplication
         fields = ('org', 'user', 'content', 'pub_time')
+
+
+
+# test
+class TestUserSerializer(ModelSerializer):
+    class Meta:
+        model = WXUser
+        fields = "__all__"
