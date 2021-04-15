@@ -202,7 +202,7 @@ class OrgApplicationViewSet(ModelViewSet):
         serializer = self.get_serializer(instance=application, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data, 201)
+        return Response(serializer.data, 200)
 
 
 # 组织
@@ -212,11 +212,20 @@ class OrganizationModelViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == "create":
             return OrganizationSerializer
+        if self.action == "change_org_owner":
+            return OrgOwnerSerializer
         return OrgDetailSerializer
 
     def get_org_by_block(self, request, block_id):
         organizations = Organization.objects.filter(block=block_id)
         serializer = self.get_serializer(instance=organizations, many=True)
+        return Response(serializer.data, 200)
+
+    def change_org_owner(self, request, pk):
+        organization = self.get_object()
+        serializer = self.get_serializer(instance=organization, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data, 200)
 
 

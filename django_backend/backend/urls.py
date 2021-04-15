@@ -48,6 +48,7 @@ urlpatterns = [
     url(r'^organizations/$', OrganizationModelViewSet.as_view({"post": "create"})),
     url(r'^organizations/(?P<pk>\d+)/$', OrganizationModelViewSet.as_view({"get": "retrieve", "put": "update", "delete": "destroy"})),
     url(r'^blocks/organizations/(?P<block_id>\d+)/$', OrganizationModelViewSet.as_view({"get": "get_org_by_block"})),
+    url(r'^organizations/owner/(?P<pk>\d+)/$', OrganizationModelViewSet.as_view({"post": "change_org_owner"})),
 
     # 关注组织
     url(r'^users/followed_organizations/$', FollowedOrgViewSet.as_view({"post": "create", "delete": "destroy"})),

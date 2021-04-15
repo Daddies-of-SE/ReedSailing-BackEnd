@@ -136,6 +136,12 @@ class OrgDetailSerializer(ModelSerializer):
         depth = 2
 
 
+class OrgOwnerSerializer(ModelSerializer):
+    class Meta:
+        model = Organization
+        fields = ['owner']
+
+
 # 关注组织
 class FollowedOrgSerializer(ModelSerializer):
     class Meta:
@@ -186,8 +192,6 @@ class OrgAllManagersSerializer(ModelSerializer):
         model = OrgManager
         fields = ['person']
         depth = 2
-
-
 
 
 
