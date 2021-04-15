@@ -65,6 +65,7 @@ class Organization(models.Model):
     # follower = models.ManyToManyField('WXUser', verbose_name="关注者")
 
 
+# 组织管理员
 class OrgManager(models.Model):
     org = models.ForeignKey('Organization', verbose_name='组织', on_delete=models.CASCADE)
     person = models.ForeignKey('WXUser', verbose_name="组织管理员", on_delete=models.CASCADE)

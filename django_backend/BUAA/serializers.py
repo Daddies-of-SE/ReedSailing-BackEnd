@@ -154,7 +154,37 @@ class FollowedOrgSerializer(ModelSerializer):
 class UserFollowedOrgSerializer(ModelSerializer):
     class Meta:
         model = FollowedOrg
-        exclude = ['person']
+        fields = ['org']
+        depth = 2
+
+
+# 组织管理
+class OrgManagerSerializer(ModelSerializer):
+    """组织管理员序列化器"""
+    class Meta:
+        model = OrgManager
+        fields = "__all__"
+
+    def validate(self, value):
+        org = self.initial_data.get('org')
+        user = self.initial_data.get('person')
+        exists = OrgManager.objects.filter(org=org, person=user).exists()
+        if exists:
+            raise ValidationError('该用户已是此组织管理员。')
+        return value
+
+
+class UserManagedOrgSerializer(ModelSerializer):
+    class Meta:
+        model = OrgManager
+        fields = ['org']
+        depth = 2
+
+
+class OrgAllManagersSerializer(ModelSerializer):
+    class Meta:
+        model = OrgManager
+        fields = ['person']
         depth = 2
 
 
@@ -174,15 +204,8 @@ class UserFollowedOrgSerializer(ModelSerializer):
 
 
 
-
-
 """--------------------------未完成------------------------------"""
-# 组织管理员
-class OrgManagerSerializer(ModelSerializer):
-    """组织管理员序列化器"""
-    class Meta:
-        model = OrgManager
-        fields = "__all__"
+
 
 
 class UserFeedbackSerializer(ModelSerializer):

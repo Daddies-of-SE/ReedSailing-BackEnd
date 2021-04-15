@@ -26,15 +26,9 @@ urlpatterns = [
     path('sendVerify/', send_email),
     path('verify/', verify_email),
     path('login/', code2Session),
+
+    # 自动生成接口文档
     url(r'^docs/', include_docs_urls(title='一苇以航API接口')),
-
-    url(r'^blocks/orgs/(?P<pk>.*)/$', BlockOrgsViewSet.as_view()),
-
-    url(r'^organizations/managers/$', OrgMangerViewSet.as_view()),
-    url(r'^organizations/managers/(?P<pk>.*)$', OrgMangerViewSet.as_view()),
-    # url(r'^users/$', WXUserViewSet.as_view()),
-    # url(r'^users/(\?id\=.*)$', WXUserViewSet.as_view()),
-    url(r'^users/organizations/$',OrgMangerViewSet.as_view()),
 
     # 版块
     url(r'^blocks/$', BlockViewSet.as_view({"get": "list", "post": "create"})),
@@ -57,24 +51,26 @@ urlpatterns = [
 
     # 关注组织
     url(r'^users/followed_organizations/$', FollowedOrgViewSet.as_view({"post": "create", "delete": "destroy"})),
-    url(r'^users/followed_organizations/(?P<pk>\d+)/$', FollowedOrgViewSet.as_view({"get": "get_followed_org_by_user"})),
+    url(r'^users/followed_organizations/(?P<pk>\d+)/$', FollowedOrgViewSet.as_view({"get": "get_followed_org"})),
+
+    # 组织管理
+    url(r'^organizations/managers/$', OrgManageViewSet.as_view({"post": "create", "delete": "destroy", })),
+    url(r'^organizations/managers/(?P<pk>\d+)/$', OrgManageViewSet.as_view({"get": "get_all_managers"})),
+    url(r'^users/managed_organizations/(?P<pk>\d+)/$', OrgManageViewSet.as_view({"get": "get_managed_org"})),
+
+
     # 测试使用
     url(r'^test/users/$', WXUserViewSet.as_view({"post": "create"})),
 ]
 
 router = SimpleRouter()
-# router.register('organizations', OrganizationModelViewSet)
-
 router.register('categories', CategoryViewSet)
 router.register('addresses', AddressViewSet)
 router.register('comments', CommentViewSet)
 router.register('feedbacks', UserFeedbackViewSet)
 router.register('activities', ActivityViewSet)
-# router.register('organizations/managers', OrgMangerViewSet)
-router.register('organizations/followers', FollowedOrgViewSet)
 router.register('activities/join_applications', JoinActApplicationViewSet)
 router.register('activities/participants', JoinedActViewSet)
-
 urlpatterns += router.urls
 
 

@@ -123,10 +123,6 @@ def code2Session(request):
 
 
 
-
-
-
-
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -142,82 +138,14 @@ class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
 
 
-
-
-
-class BlockOrgsViewSet(APIView):
-    #查看block下的所有组织
-    def get(self, request, *args, **kwargs):
-        block_id = request.query_params.get('block')
-        block = Block.objects.get(id=block_id)
-        query = Organization.objects.filter(block=block)
-        data = OrganizationSerializer(query, many=True).data
-        return Response({
-            'status': 0,
-            'msg': 'ok',
-            'results': data
-        })
-
 class UserFeedbackViewSet(ModelViewSet):
     queryset = UserFeedback.objects.all()
     serializer_class = UserFeedbackSerializer
 
 
-
-
 class ActivityViewSet(ModelViewSet):
     queryset = Activity.objects.all()
     serializer_class = ActivitySerializer
-
-
-class OrgMangerViewSet(APIView):
-
-    #查看组织所有管理员
-    def get(self, request, *args, **kwargs):
-        def get_managers(request):
-        # 查看某组织的所有管理员
-            org_name = request.query_params.get('org')
-            # 群查
-            if not org_name:
-                all_orgs = OrgManager.objects.all()
-                data = OrgManagerSerializer(all_orgs, many=True).data
-            else:
-                try:
-                    org = Organization.objects.get(name=org_name)
-                    query = OrgManager.objects.filter(org=org)
-                    data = OrgManagerSerializer(query, many=True).data
-                except:
-                    return Response({
-                        'status': 1,
-                        'msg': 'invalid org name'
-                    })
-            return Response({
-                'status': 0,
-                'msg': 'ok',
-                'results': data
-            })
-
-        #查看当前用户管理的所有组织
-        def get_orgs(request):
-            id = request.query_params.get('id')
-            try:
-                user = WXUser.objects.get(id=id)
-            except:
-                return Response({
-                    'status': 1,
-                    'msg': 'invalid userID'
-                })
-            query = OrgManager.objects.filter(person=user)
-            data = OrgManagerSerializer(query, many=True).data
-            return Response({
-                'status': 0,
-                'msg': 'ok',
-                'results': data
-            })
-
-        if request.query_params.get('user_view', False):
-            return get_orgs(request)
-        return get_managers(request)
 
 
 class JoinActApplicationViewSet(ModelViewSet):
@@ -297,7 +225,7 @@ class FollowedOrgViewSet(ModelViewSet):
     queryset = FollowedOrg.objects.all()
 
     def get_serializer_class(self):
-        if self.action == "get_followed_org_by_user":
+        if self.action == "get_followed_org":
             return UserFollowedOrgSerializer
         return FollowedOrgSerializer
 
@@ -307,10 +235,37 @@ class FollowedOrgViewSet(ModelViewSet):
         FollowedOrg.objects.filter(org=org_id, person=user_id).delete()
         return Response(status=204)
 
-    def get_followed_org_by_user(self, request, pk):
+    def get_followed_org(self, request, pk):
         followed = FollowedOrg.objects.filter(person=pk)
         serializer = self.get_serializer(instance=followed, many=True)
         return Response(serializer.data, 200)
 
+
+# 组织管理
+class OrgManageViewSet(ModelViewSet):
+    queryset = OrgManager.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "get_managed_org":
+            return UserManagedOrgSerializer
+        if self.action == "get_all_managers":
+            return OrgAllManagersSerializer
+        return OrgManagerSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        user_id = request.query_params.get('user')
+        org_id = request.query_params.get('org')
+        OrgManager.objects.filter(org=org_id, person=user_id).delete()
+        return Response(status=204)
+
+    def get_managed_org(self, request, pk):
+        managed = OrgManager.objects.filter(person=pk)
+        serializer = self.get_serializer(instance=managed, many=True)
+        return Response(serializer.data, 200)
+
+    def get_all_managers(self, request, pk):
+        managers = FollowedOrg.objects.filter(org=pk)
+        serializer = self.get_serializer(instance=managers, many=True)
+        return Response(serializer.data, 200)
 
 
