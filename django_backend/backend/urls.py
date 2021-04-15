@@ -59,13 +59,19 @@ urlpatterns = [
     url(r'^organizations/managers/(?P<pk>\d+)/$', OrgManageViewSet.as_view({"get": "get_all_managers"})),
     url(r'^users/managed_organizations/(?P<pk>\d+)/$', OrgManageViewSet.as_view({"get": "get_managed_org"})),
 
+    # 分类
+    url(r'^categories/$', CategoryViewSet.as_view({"get": "list", "post": "create"})),
+    url(r'^categories/(?P<pk>\d+)/$', CategoryViewSet.as_view({"put": "update", "delete": "destroy"})),
+
+
+
 
     # 测试使用
     url(r'^test/users/$', WXUserViewSet.as_view({"post": "create"})),
 ]
 
 router = SimpleRouter()
-router.register('categories', CategoryViewSet)
+# router.register('categories', CategoryViewSet)
 router.register('addresses', AddressViewSet)
 router.register('comments', CommentViewSet)
 router.register('feedbacks', UserFeedbackViewSet)

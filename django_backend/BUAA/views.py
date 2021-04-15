@@ -123,9 +123,7 @@ def code2Session(request):
 
 
 
-class CategoryViewSet(ModelViewSet):
-    queryset = Category.objects.all()
-    serializer_class = CategorySerializer
+
 
 
 class AddressViewSet(ModelViewSet):
@@ -276,5 +274,11 @@ class OrgManageViewSet(ModelViewSet):
         managers = FollowedOrg.objects.filter(org=pk)
         serializer = self.get_serializer(instance=managers, many=True)
         return Response(serializer.data, 200)
+
+
+# 分类
+class CategoryViewSet(ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 
