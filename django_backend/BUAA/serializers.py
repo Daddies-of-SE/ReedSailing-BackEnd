@@ -19,50 +19,6 @@ class UserVerifySerializer(ModelSerializer):
         fields = ['openid', 'email']
 
 
-class WXUserSerializer(ModelSerializer):
-    """用户序列化器"""
-    class Meta:
-        model = WXUser
-        exclude = ['openid']
-        read_only_fields = ['email']
-
-    # def update(self, instance, validated_data):
-    #     """更新，instance为要更新的对象实例"""
-    #     instance.openid = instance.openid
-    #     instance.name = validated_data.get('name', instance.name)
-    #     instance.avatar = validated_data.get('avatar', instance.avatar)
-    #     instance.sign = validated_data.get('sign',instance.sign)
-    #     instance.save()
-    #     return instance
-
-class WXUserUpdateSerializer(ModelSerializer):
-    class Meta:
-        model = WXUser
-        fields = ['name', 'sign']
-
-
-
-
-class BlockSerializer(ModelSerializer):
-    """版块序列化器"""
-    class Meta:
-        model = Block
-        fields = "__all__"
-
-    def validate(self, attrs):
-        name = attrs.get('name')
-        if Block.objects.filter(name=name):
-            raise ValidationError({'block': '板块名称重复'})
-        return attrs
-
-class OrganizationSerializer(ModelSerializer):
-    """组织序列化器"""
-    owner = WXUserSerializer()
-    block = BlockSerializer()
-    class Meta:
-        model = Organization
-        fields = ('name', 'description', 'create_time', 'avatar', 'owner', 'block')
-
 class CategorySerializer(ModelSerializer):
     """分类序列化器"""
     class Meta:
@@ -94,21 +50,44 @@ class AddressSerializer(ModelSerializer):
 
 
 
-class UserFeedbackSerializer(ModelSerializer):
-    """用户反馈序列化器"""
-    user = WXUserSerializer()
 
+
+
+
+
+
+"""------------------------完成--------------------------"""
+# 用户
+class WXUserSerializer(ModelSerializer):
+    """用户序列化器"""
     class Meta:
-        model = UserFeedback
-        fields = ('content','pub_time','user')
+        model = WXUser
+        exclude = ['openid']
+        read_only_fields = ['email']
 
 
+class WXUserUpdateSerializer(ModelSerializer):
+    class Meta:
+        model = WXUser
+        fields = ['name', 'sign']
+
+
+# 版块
+class BlockSerializer(ModelSerializer):
+    """版块序列化器"""
+    class Meta:
+        model = Block
+        fields = "__all__"
+
+    def validate(self, attrs):
+        name = attrs.get('name')
+        if Block.objects.filter(name=name):
+            raise ValidationError({'block': '板块名称重复'})
+        return attrs
+
+
+# 组织申请
 class OrgApplySerializer(ModelSerializer):
-    """组织申请序列化器"""
-    # user = WXUserSerializer()
-    # block = BlockSerializer()
-    # 组织申请的时候肯定有组织有用户的
-
     class Meta:
         model = OrgApplication
         fields = "__all__"
@@ -139,15 +118,80 @@ class OrgAppVerifySerializer(ModelSerializer):
 
     def validated_status(self, value):
         status = self.initial_data.get('value')
-        if not status in [1, 2]:
+        if not (status in [1, 2]):
             raise ValidationError('审批状态有误。')
 
 
-class OrgAppDetialSerializer(ModelSerializer):
+# 组织
+class OrganizationSerializer(ModelSerializer):
     class Meta:
-        model = OrgApplication
+        model = Organization
+        fields = "__all__"
+
+
+class OrgDetailSerializer(ModelSerializer):
+    class Meta:
+        model = Organization
         fields = "__all__"
         depth = 2
+
+
+# 关注组织
+class FollowedOrgSerializer(ModelSerializer):
+    class Meta:
+        model = FollowedOrg
+        fields = "__all__"
+
+    def validate(self, value):
+        org = self.initial_data.get('org')
+        user = self.initial_data.get('person')
+        exists = FollowedOrg.objects.filter(org=org, person=user).exists()
+        if exists:
+            raise ValidationError('已关注该组织。')
+        return value
+
+
+class UserFollowedOrgSerializer(ModelSerializer):
+    class Meta:
+        model = FollowedOrg
+        exclude = ['person']
+        depth = 2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"""--------------------------未完成------------------------------"""
+# 组织管理员
+class OrgManagerSerializer(ModelSerializer):
+    """组织管理员序列化器"""
+    class Meta:
+        model = OrgManager
+        fields = "__all__"
+
+
+class UserFeedbackSerializer(ModelSerializer):
+    """用户反馈序列化器"""
+    user = WXUserSerializer()
+
+    class Meta:
+        model = UserFeedback
+        fields = ('content','pub_time','user')
 
 
 class ActivitySerializer(ModelSerializer):
@@ -162,23 +206,7 @@ class ActivitySerializer(ModelSerializer):
                   'description','review','owner','type','org','location')
 
 
-class OrgManagerSerializer(ModelSerializer):
-    """组织管理员序列化器"""
-    org = OrganizationSerializer()
-    person = WXUserSerializer()
-    class Meta:
-        model = OrgManager
-        fields = ('org','person')
 
-
-class FollowedOrgSerializer(ModelSerializer):
-    """关注组织序列化器"""
-    # org = OrganizationSerializer()
-    # person = WXUserSerializer()
-    #
-    class Meta:
-        model = FollowedOrg
-        fields = "__all__"
 
 
 
@@ -208,6 +236,7 @@ class JoinedActSerializer(ModelSerializer):
     class Meta:
         model = JoinedAct
         fields = ('act', 'person')
+
 
 class ManagerApplicationSerializer(ModelSerializer):
     org = OrgManagerSerializer()
