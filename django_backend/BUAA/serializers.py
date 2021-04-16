@@ -19,21 +19,7 @@ class UserVerifySerializer(ModelSerializer):
         fields = ['openid', 'email']
 
 
-class AddressSerializer(ModelSerializer):
-    """地址序列化器"""
-    class Meta:
-        model = Address
-        fields = "__all__"
 
-    def validate(self, attrs):
-        name = attrs.get('name')
-        longitude = attrs.get('longitude')
-        latitude = attrs.get('latitude')
-        if Address.objects.filter(name=name):
-            raise ValidationError({'address': '地点名称重复'})
-        if Address.objects.filter(longitude=longitude,latitude=latitude):
-            raise ValidationError({'address': '地点重复'})
-        return attrs
 
 
 
@@ -181,18 +167,33 @@ class OrgAllManagersSerializer(ModelSerializer):
         fields = ['person']
         depth = 2
 
+
+# 超级管理员
 class SuperUserSerializer(ModelSerializer):
     class Meta:
         model = SuperAdmin
         fields = ['username']
 
-# 分类
+
+# 活动分类
 class CategorySerializer(ModelSerializer):
     class Meta:
         model = Category
         fields = "__all__"
 
 
+# 活动地址
+class AddressSerializer(ModelSerializer):
+    class Meta:
+        model = Address
+        fields = "__all__"
+
+    def validate(self, attrs):
+        longitude = attrs.get('longitude')
+        latitude = attrs.get('latitude')
+        if Address.objects.filter(longitude=longitude, latitude=latitude):
+            raise ValidationError({'address': '地点重复。'})
+        return attrs
 
 
 

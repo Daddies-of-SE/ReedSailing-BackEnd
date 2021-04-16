@@ -126,9 +126,7 @@ def code2Session(request):
 
 
 
-class AddressViewSet(ModelViewSet):
-    queryset = Address.objects.all()
-    serializer_class = AddressSerializer
+
 
 
 class CommentViewSet(ModelViewSet):
@@ -276,9 +274,14 @@ class OrgManageViewSet(ModelViewSet):
         return Response(serializer.data, 200)
 
 
-# 分类
+# 活动分类
 class CategoryViewSet(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
+
+# 活动地址
+class AddressViewSet(ModelViewSet):
+    queryset = Address.objects.all()
+    serializer_class = AddressSerializer
 
