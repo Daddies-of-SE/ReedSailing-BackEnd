@@ -70,6 +70,10 @@ urlpatterns = [
     url(r'^activities/addresses/$', AddressViewSet.as_view({"get": "list", "post": "create"})),
     url(r'^activities/addresses/(?P<pk>\d+)/$', AddressViewSet.as_view({"delete": "destroy"})),
 
+    # 用户反馈
+    url(r'^feedbacks/$', UserFeedbackViewSet.as_view({"get": "list", "post": "create"})),
+    url(r'^feedbacks/(?P<pk>\d+)/$', UserFeedbackViewSet.as_view({"delete": "destroy"})),
+
     # 测试使用
     url(r'^test/users/$', WXUserViewSet.as_view({"post": "create"})),
 ]
@@ -78,7 +82,7 @@ router = SimpleRouter()
 # router.register('categories', CategoryViewSet)
 # router.register('addresses', AddressViewSet)
 router.register('comments', CommentViewSet)
-router.register('feedbacks', UserFeedbackViewSet)
+# router.register('feedbacks', UserFeedbackViewSet)
 router.register('activities', ActivityViewSet)
 router.register('activities/join_applications', JoinActApplicationViewSet)
 router.register('activities/participants', JoinedActViewSet)

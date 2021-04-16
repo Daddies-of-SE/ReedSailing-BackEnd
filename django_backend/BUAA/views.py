@@ -134,11 +134,6 @@ class CommentViewSet(ModelViewSet):
     serializer_class = CommentSerializer
 
 
-class UserFeedbackViewSet(ModelViewSet):
-    queryset = UserFeedback.objects.all()
-    serializer_class = UserFeedbackSerializer
-
-
 class ActivityViewSet(ModelViewSet):
     queryset = Activity.objects.all()
     serializer_class = ActivitySerializer
@@ -284,4 +279,10 @@ class CategoryViewSet(ModelViewSet):
 class AddressViewSet(ModelViewSet):
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
+
+
+# 用户反馈
+class UserFeedbackViewSet(ModelViewSet):
+    queryset = UserFeedback.objects.all()
+    serializer_class = UserFeedbackSerializer
 

@@ -196,6 +196,11 @@ class AddressSerializer(ModelSerializer):
         return attrs
 
 
+# 用户反馈
+class UserFeedbackSerializer(ModelSerializer):
+    class Meta:
+        model = UserFeedback
+        fields = "__all__"
 
 
 
@@ -207,16 +212,6 @@ class AddressSerializer(ModelSerializer):
 
 
 """--------------------------未完成------------------------------"""
-
-
-
-class UserFeedbackSerializer(ModelSerializer):
-    """用户反馈序列化器"""
-    user = WXUserSerializer()
-
-    class Meta:
-        model = UserFeedback
-        fields = ('content','pub_time','user')
 
 
 class ActivitySerializer(ModelSerializer):
