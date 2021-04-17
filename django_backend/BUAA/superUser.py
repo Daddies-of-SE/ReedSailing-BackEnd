@@ -5,14 +5,16 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.viewsets import *
 import json
-from django.http import HttpResponseRedirect,HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import auth
 from .models import *
 
+
 class SuperUserViewSet(ModelViewSet):
     queryset = SuperAdmin.objects.all()
     serializers_class = SuperUserSerializer
+
 
 def register(request):
     data = json.loads(request.body)
@@ -35,7 +37,8 @@ def register(request):
             }
             return HttpResponse(json.dumps(res), content_type='application/json')
         else:
-            SuperAdmin.objects.create_user(username=name, email=email, password=passwd1)
+            SuperAdmin.objects.create_user(
+                username=name, email=email, password=passwd1)
             res = {
                 'success': "true",
             }

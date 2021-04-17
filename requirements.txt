@@ -3,3 +3,4 @@ pymysql
 djangorestframework
 coreapi 
 pyyaml
+django-cors-headers
