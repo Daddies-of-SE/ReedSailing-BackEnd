@@ -15,8 +15,8 @@
 
 ### 2、django配置
 
-* 使用pip安装django、pymysql
 * 克隆本仓库
+* 在仓库根目录下运行`pip install -r requirements.txt`
 * 进入`django_backend`目录，运行`python manage.py makemigrations BUAA`
 * 运行`python manage.py migrate`
 
@@ -35,13 +35,21 @@
 
 ## API接口
 
-①安装coreapi
-
-```
-pip install coreapi
-```
-
-②运行后端
+运行后端
 
 在`http://127.0.0.1:8000/docs`可以查看API接口
 
+## 附录
+
+### 修改MySQL密码
+
+在mysql命令行中依次输入以下内容（mysql命令对大小写不敏感）
+
+```mysql
+use mysql;
+ALTER USER 'root'@'localhost' IDENTIFIEED WITH mysql_native_password BY "12345678";
+FLUSH privileges;
+quit;
+```
+
+然后用新密码重新登录。
