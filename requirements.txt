@@ -1,0 +1,7 @@
+django
+pymysql
+djangorestframework
+coreapi 
+pyyaml
+django-cors-headers
+django-extensions
