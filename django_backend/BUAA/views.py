@@ -109,7 +109,7 @@ def code2Session(request):
     cache.set(token, openid)
 
     res = {
-        "status" : 0,
+        "status": 0,
         "user_Exist": 0 if create else 1,
         "token": token,
         "email": user.email,
@@ -123,30 +123,17 @@ def code2Session(request):
 
 
 
-
-
-
-
-
-
 class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
 
-class ActivityViewSet(ModelViewSet):
-    queryset = Activity.objects.all()
-    serializer_class = ActivitySerializer
+
 
 
 class JoinActApplicationViewSet(ModelViewSet):
     queryset = JoinActApplication.objects.all()
     serializer_class = JoinActApplicationSerializer
-
-
-class JoinedActViewSet(ModelViewSet):
-    queryset = JoinedAct.objects.all()
-    serializer_class = JoinedActSerializer
 
 
 
@@ -285,4 +272,66 @@ class AddressViewSet(ModelViewSet):
 class UserFeedbackViewSet(ModelViewSet):
     queryset = UserFeedback.objects.all()
     serializer_class = UserFeedbackSerializer
+
+
+# 活动
+class ActivityViewSet(ModelViewSet):
+    queryset = Activity.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return ActivitySerializer
+        if self.action == "destroy":
+            return ActivitySerializer
+        return ActDetailSerializer
+
+    # 获取组织下的活动
+    def get_org_act(self, request, org_id):
+        acts = Activity.objects.filter(org=org_id)
+        serializer = self.get_serializer(instance=acts, many=True)
+        return Response(serializer.data, 200)
+
+    # 获取用户发布的活动
+    def get_user_act(self, request, user_id):
+        acts = Activity.objects.filter(owner=user_id)
+        serializer = self.get_serializer(instance=acts, many=True)
+        return Response(serializer.data, 200)
+
+    # 获取板块下的活动
+    def get_block_act(self, request, block_id):
+        acts = Activity.objects.filter(block=block_id)
+        serializer = self.get_serializer(instance=acts, many=True)
+        return Response(serializer.data, 200)
+
+
+# 活动参与
+class JoinedActViewSet(ModelViewSet):
+    queryset = JoinedAct.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "get_user_joined_act":
+            return UserJoinedActSerializer
+        return JoinedActSerializer
+
+    # 加入活动
+    # TODO
+    def create(self, request, *args, **kwargs):
+        return
+
+    # 退出活动
+    # TODO
+    def destroy(self, request, *args, **kwargs):
+        return
+
+    # 获取用户加入的活动
+    def get_user_joined_act(self, request, user_id):
+        acts = JoinedAct.objects.filter(person=user_id)
+        serializer = self.get_serializer(instance=acts, many=True)
+        return Response(serializer.data, 200)
+
+    # 获取活动的参与人数
+    # TODO
+    def get_act_participants_number(self, request, act_id):
+        return
+
 

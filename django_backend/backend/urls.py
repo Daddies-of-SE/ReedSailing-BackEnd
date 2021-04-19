@@ -74,18 +74,26 @@ urlpatterns = [
     url(r'^feedbacks/$', UserFeedbackViewSet.as_view({"get": "list", "post": "create"})),
     url(r'^feedbacks/(?P<pk>\d+)/$', UserFeedbackViewSet.as_view({"delete": "destroy"})),
 
+    # 活动
+    url(r'^activities/$', ActivityViewSet.as_view({"post": "create", "get": "list"})),
+    url(r'^activities/(?P<pk>\d+)/$', ActivityViewSet.as_view({"get": "retrieve", "delete": "destroy"})),
+    url(r'^organizations/activities/(?P<org_id>\d+)/$', ActivityViewSet.as_view({"get": "get_org_act"})),
+    url(r'^users/released_activities/(?P<user_id>\d+)/$', ActivityViewSet.as_view({"get": "get_user_act"})),
+    url(r'^blocks/activities/(?P<block_id>\d+)/$', ActivityViewSet.as_view({"get": "get_block_act"})),
+
+    # 活动参与
+    url(r'activities/participants/$', JoinedActViewSet.as_view({"post": "create"})),
+    url(r'activities/participants/(?P<pk>\d+)/$', JoinedActViewSet.as_view({"delete": "destroy"})),
+    url(r'user/joined_act/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_joined_act"})),
+    url(r'activities/joined_number/(?P<act_id>\d+)', JoinedActViewSet.as_view({"get": "get_act_participants_number"})),
+
     # 测试使用
     url(r'^test/users/$', WXUserViewSet.as_view({"post": "create"})),
 ]
 
 router = SimpleRouter()
-# router.register('categories', CategoryViewSet)
-# router.register('addresses', AddressViewSet)
 router.register('comments', CommentViewSet)
-# router.register('feedbacks', UserFeedbackViewSet)
-router.register('activities', ActivityViewSet)
 router.register('activities/join_applications', JoinActApplicationViewSet)
-router.register('activities/participants', JoinedActViewSet)
 urlpatterns += router.urls
 
 

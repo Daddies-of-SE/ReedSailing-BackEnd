@@ -7,6 +7,7 @@ from rest_framework import exceptions
 
 class UserLoginSerializer(ModelSerializer):
     """用户登录数据序列化器"""
+
     class Meta:
         model = WXUser
         fields = ['openid']
@@ -14,26 +15,19 @@ class UserLoginSerializer(ModelSerializer):
 
 class UserVerifySerializer(ModelSerializer):
     """用户认证序列化器"""
+
     class Meta:
         model = WXUser
         fields = ['openid', 'email']
 
 
-
-
-
-
-
-
-
-
-
-
-
 """------------------------完成--------------------------"""
+
+
 # 用户
 class WXUserSerializer(ModelSerializer):
     """用户序列化器"""
+
     class Meta:
         model = WXUser
         exclude = ['openid']
@@ -49,6 +43,7 @@ class WXUserUpdateSerializer(ModelSerializer):
 # 版块
 class BlockSerializer(ModelSerializer):
     """版块序列化器"""
+
     class Meta:
         model = Block
         fields = "__all__"
@@ -62,6 +57,8 @@ class BlockSerializer(ModelSerializer):
 
 # 组织申请
 class OrgApplySerializer(ModelSerializer):
+    user = WXUserSerializer(read_only=True)
+
     class Meta:
         model = OrgApplication
         fields = "__all__"
@@ -104,6 +101,8 @@ class OrganizationSerializer(ModelSerializer):
 
 
 class OrgDetailSerializer(ModelSerializer):
+    owner = WXUserSerializer(read_only=True)
+
     class Meta:
         model = Organization
         fields = "__all__"
@@ -118,6 +117,7 @@ class OrgOwnerSerializer(ModelSerializer):
 
 # 关注组织
 class FollowedOrgSerializer(ModelSerializer):
+
     class Meta:
         model = FollowedOrg
         fields = "__all__"
@@ -132,6 +132,8 @@ class FollowedOrgSerializer(ModelSerializer):
 
 
 class UserFollowedOrgSerializer(ModelSerializer):
+    org = OrgDetailSerializer(read_only=True)
+
     class Meta:
         model = FollowedOrg
         fields = ['org']
@@ -141,6 +143,7 @@ class UserFollowedOrgSerializer(ModelSerializer):
 # 组织管理
 class OrgManagerSerializer(ModelSerializer):
     """组织管理员序列化器"""
+
     class Meta:
         model = OrgManager
         fields = "__all__"
@@ -155,13 +158,16 @@ class OrgManagerSerializer(ModelSerializer):
 
 
 class UserManagedOrgSerializer(ModelSerializer):
+    org = OrgDetailSerializer(read_only=True)
+
     class Meta:
         model = OrgManager
         fields = ['org']
-        depth = 2
 
 
 class OrgAllManagersSerializer(ModelSerializer):
+    person = WXUserSerializer(read_only=True)
+
     class Meta:
         model = OrgManager
         fields = ['person']
@@ -203,69 +209,86 @@ class UserFeedbackSerializer(ModelSerializer):
         fields = "__all__"
 
 
+# 活动
+class ActivitySerializer(ModelSerializer):
+    """活动序列化器"""
+
+    class Meta:
+        model = Activity
+        fields = "__all__"
+
+    def validate(self, attrs):
+        org_id = attrs.get('org')
+        if org_id:
+            return attrs
+        block_id = attrs.get('block')
+        org = Organization.objects.get(id=org_id)
+        if org.block != block_id:
+            raise ValidationError({'org/block': '组织与版块不匹配。'})
+        return attrs
 
 
+class ActDetailSerializer(ModelSerializer):
+    owner = WXUserSerializer(read_only=True)
+
+    class Meta:
+        model = Activity
+        fields = "__all__"
+        depth = 1
 
 
+# 活动参与
+class JoinedActSerializer(ModelSerializer):
 
+    class Meta:
+        model = JoinedAct
+        fields = "__all__"
+
+
+class JoinedActDetailSerializer(ModelSerializer):
+    person = WXUserSerializer(read_only=True)
+
+    class Meta:
+        model = JoinedAct
+        fields = "__all__"
+        depth = 1
+
+
+class UserJoinedActSerializer(ModelSerializer):
+    class Meta:
+        model = JoinedAct
+        fields = ['act']
+        depth = 1
 
 
 
 """--------------------------未完成------------------------------"""
 
 
-class ActivitySerializer(ModelSerializer):
-    """活动序列化器"""
-    owner = WXUserSerializer()
-    type = CategorySerializer()
-    org = OrganizationSerializer()
-    location = AddressSerializer()
-    class Meta:
-        model = Activity
-        fields = ('name','begin_time','end_time','pub_time','contain',
-                  'description','review','owner','type','org','location')
-
-
-
-
-
-
-
 class CommentSerializer(ModelSerializer):
     """评论序列化器"""
     act = ActivitySerializer()
     user = WXUserSerializer()
+
     class Meta:
         model = Comment
-        fields = ('content','pub_time','score','act','user')
-
-
-class JoinActApplicationSerializer(ModelSerializer):
-    """活动加入申请序列化器"""
-    act = ActivitySerializer()
-    user = WXUserSerializer()
-    class Meta:
-        model = JoinActApplication
-        fields = ('act', 'user')
-
-
-class JoinedActSerializer(ModelSerializer):
-    """已加入活动序列化器"""
-    act = ActivitySerializer()
-    person = WXUserSerializer()
-    class Meta:
-        model = JoinedAct
-        fields = ('act', 'person')
+        fields = ('content', 'pub_time', 'score', 'act', 'user')
 
 
 class ManagerApplicationSerializer(ModelSerializer):
     org = OrgManagerSerializer()
     user = WXUserSerializer()
+
     class Meta:
         model = ManagerApplication
         fields = ('org', 'user', 'content', 'pub_time')
 
 
+# 加入活动申请
+class JoinActApplicationSerializer(ModelSerializer):
+    class Meta:
+        model = JoinActApplication
+        fields = "__all__"
 
 # test
 class TestUserSerializer(ModelSerializer):
