@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'BUAA.apps.BuaaConfig',
     'rest_framework',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
