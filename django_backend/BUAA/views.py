@@ -1,7 +1,3 @@
-from django.shortcuts import render
-from django.core.mail import send_mail, send_mass_mail
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-from BUAA.models import *
 from BUAA import utils
 import json
 import uuid
@@ -9,13 +5,11 @@ import hashlib
 import backend.settings as settings
 from django.core.cache import cache
 import requests
-# from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes
-# from django_redis import get_redis_connection
 from .serializers import *
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.viewsets import *
+from rest_framework import status
                         
 
 def get_random_str():
@@ -140,6 +134,8 @@ class JoinActApplicationViewSet(ModelViewSet):
 
 
 """-------------------完成--------------------"""
+
+
 # 用户
 class WXUserViewSet(ModelViewSet):
     queryset = WXUser.objects.all()
@@ -283,6 +279,8 @@ class ActivityViewSet(ModelViewSet):
             return ActivitySerializer
         if self.action == "destroy":
             return ActivitySerializer
+        if self.action == "update":
+            return ActUpdateSerializer
         return ActDetailSerializer
 
     # 获取组织下的活动
@@ -314,24 +312,22 @@ class JoinedActViewSet(ModelViewSet):
         return JoinedActSerializer
 
     # 加入活动
-    # TODO
     def create(self, request, *args, **kwargs):
-        return
-
-    # 退出活动
-    # TODO
-    def destroy(self, request, *args, **kwargs):
-        return
-
-    # 获取用户加入的活动
-    def get_user_joined_act(self, request, user_id):
-        acts = JoinedAct.objects.filter(person=user_id)
-        serializer = self.get_serializer(instance=acts, many=True)
-        return Response(serializer.data, 200)
+        act_id = request.data.get("act")
+        current_number = JoinedAct.objects.filter(act=act_id).count()
+        limit_number = Activity.objects.get(id=act_id).contain
+        if current_number < limit_number:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        else:
+            return Response({"detail": "活动人数已满。"}, 400)
 
     # 获取活动的参与人数
-    # TODO
     def get_act_participants_number(self, request, act_id):
-        return
+        number = JoinedAct.objects.filter(act=act_id).count()
+        return Response({"number": number}, 200)
 
 
