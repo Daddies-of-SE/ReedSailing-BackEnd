@@ -301,6 +301,9 @@ class ActivityViewSet(ModelViewSet):
         serializer = self.get_serializer(instance=acts, many=True)
         return Response(serializer.data, 200)
 
+    # 获取用户关注的组织发布的活动
+    # TODO
+
 
 # 活动参与
 class JoinedActViewSet(ModelViewSet):
@@ -313,21 +316,35 @@ class JoinedActViewSet(ModelViewSet):
 
     # 加入活动
     def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         act_id = request.data.get("act")
         current_number = JoinedAct.objects.filter(act=act_id).count()
         limit_number = Activity.objects.get(id=act_id).contain
         if current_number < limit_number:
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         else:
             return Response({"detail": "活动人数已满。"}, 400)
 
+    # 退出活动
+    def destroy(self, request, *args, **kwargs):
+        user_id = request.query_params.get('person')
+        act_id = request.query_params.get('act')
+        JoinedAct.objects.filter(act=act_id, user=user_id).delete()
+        return Response(status=204)
+
     # 获取活动的参与人数
     def get_act_participants_number(self, request, act_id):
         number = JoinedAct.objects.filter(act=act_id).count()
         return Response({"number": number}, 200)
+
+    # 获取用户参与的活动
+    def get_user_joined_act(self, request, user_id):
+        acts = JoinedAct.objects.filter(user=user_id)
+        serializer = self.get_serializer(instance=acts, many=True)
+        return Response(serializer.data, 200)
+
 
 

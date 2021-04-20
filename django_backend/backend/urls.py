@@ -82,10 +82,9 @@ urlpatterns = [
     url(r'^blocks/activities/(?P<block_id>\d+)/$', ActivityViewSet.as_view({"get": "get_block_act"})),
 
     # 活动参与
-    url(r'activities/participants/$', JoinedActViewSet.as_view({"post": "create"})),
-    url(r'activities/participants/(?P<pk>\d+)/$', JoinedActViewSet.as_view({"delete": "destroy"})),
-    url(r'user/joined_act/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_joined_act"})),
-    url(r'activities/joined_number/(?P<act_id>\d+)', JoinedActViewSet.as_view({"get": "get_act_participants_number"})),
+    url(r'activities/participants/$', JoinedActViewSet.as_view({"post": "create", "delete": "destroy"})),
+    url(r'user/joined_acts/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_joined_act"})),
+    url(r'activities/joined_numbers/(?P<act_id>\d+)', JoinedActViewSet.as_view({"get": "get_act_participants_number"})),
 
     # 测试使用
     url(r'^test/users/$', WXUserViewSet.as_view({"post": "create"})),

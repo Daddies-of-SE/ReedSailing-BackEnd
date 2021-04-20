@@ -154,7 +154,7 @@ class OrgManagerSerializer(ModelSerializer):
         user = self.initial_data.get('person')
         exists = OrgManager.objects.filter(org=org, person=user).exists()
         if exists:
-            raise ValidationError('该用户已是此组织管理员。')
+            raise ValidationError({'detail': '该用户已是此组织管理员。'})
         return value
 
 
@@ -238,7 +238,7 @@ class ActivitySerializer(ModelSerializer):
 class ActUpdateSerializer(ModelSerializer):
     class Meta:
         model = Activity
-        fields = ("name", "begin_time", "end_time", "contain", "description", "location")
+        fields = ("name", "begin_time", "end_time", "contain", "description", "type", "location")
 
 
 class ActDetailSerializer(ModelSerializer):
@@ -256,6 +256,14 @@ class JoinedActSerializer(ModelSerializer):
     class Meta:
         model = JoinedAct
         fields = "__all__"
+
+    def validate(self, value):
+        act = self.initial_data.get('act')
+        user = self.initial_data.get('person')
+        exists = self.Meta.model.objects.filter(act=act, person=user).exists()
+        if exists:
+            raise ValidationError({'detail': '不可重复加入活动。'})
+        return value
 
 
 class JoinedActDetailSerializer(ModelSerializer):
