@@ -26,9 +26,10 @@ urlpatterns = [
     # 用户端
     path('sendVerify/', send_email),
     path('verify/', verify_email),
-    path('login/', code2Session),
-    path('adminLogIn/', login),
-    path('register/', register),
+    path('userLogin/', user_login),
+    path('userRegister/', user_register),
+    path('adminLogIn/', sudo_login),
+    path('register/', sudo_register),
 
     # 自动生成接口文档
     url(r'^docs/', include_docs_urls(title='一苇以航API接口')),
@@ -76,19 +77,20 @@ urlpatterns = [
 
     # 活动
     url(r'^activities/$', ActivityViewSet.as_view({"post": "create", "get": "list"})),
-    url(r'^activities/(?P<pk>\d+)/$', ActivityViewSet.as_view({"get": "retrieve", "delete": "destroy"})),
+    url(r'^activities/(?P<pk>\d+)/$', ActivityViewSet.as_view({"get": "retrieve", "delete": "destroy", "put": "update"})),
     url(r'^organizations/activities/(?P<org_id>\d+)/$', ActivityViewSet.as_view({"get": "get_org_act"})),
     url(r'^users/released_activities/(?P<user_id>\d+)/$', ActivityViewSet.as_view({"get": "get_user_act"})),
     url(r'^blocks/activities/(?P<block_id>\d+)/$', ActivityViewSet.as_view({"get": "get_block_act"})),
 
     # 活动参与
-    url(r'activities/participants/$', JoinedActViewSet.as_view({"post": "create"})),
-    url(r'activities/participants/(?P<pk>\d+)/$', JoinedActViewSet.as_view({"delete": "destroy"})),
-    url(r'user/joined_act/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_joined_act"})),
-    url(r'activities/joined_number/(?P<act_id>\d+)', JoinedActViewSet.as_view({"get": "get_act_participants_number"})),
+    url(r'activities/participants/$', JoinedActViewSet.as_view({"post": "create", "delete": "destroy"})),
+    url(r'user/joined_acts/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_joined_act"})),
+    url(r'activities/joined_numbers/(?P<act_id>\d+)', JoinedActViewSet.as_view({"get": "get_act_participants_number"})),
 
     # 测试使用
     url(r'^test/users/$', WXUserViewSet.as_view({"post": "create"})),
+
+
 ]
 
 router = SimpleRouter()

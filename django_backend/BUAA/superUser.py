@@ -16,7 +16,7 @@ class SuperUserViewSet(ModelViewSet):
     serializers_class = SuperUserSerializer
 
 
-def register(request):
+def sudo_register(request):
     data = json.loads(request.body)
     name = data.get('username')
     passwd1 = data.get('password')
@@ -45,7 +45,7 @@ def register(request):
             return HttpResponse(json.dumps(res), content_type='application/json')
 
 
-def login(request):
+def sudo_login(request):
     data = json.loads(request.body)
     name = data.get('username')
     passwd = data.get('password')

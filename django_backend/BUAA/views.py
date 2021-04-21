@@ -1,7 +1,3 @@
-from django.shortcuts import render
-from django.core.mail import send_mail, send_mass_mail
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
-from BUAA.models import *
 from BUAA import utils
 import json
 import uuid
@@ -9,13 +5,11 @@ import hashlib
 import backend.settings as settings
 from django.core.cache import cache
 import requests
-# from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes
-# from django_redis import get_redis_connection
 from .serializers import *
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.viewsets import *
+from rest_framework import status
                         
 
 def get_random_str():
@@ -77,19 +71,20 @@ def verify_email(request):
 
 
 @api_view(['POST'])
-@authentication_classes([])  # 用户认证
-def code2Session(request):
+@authentication_classes([])
+def user_login(request):
     # 取出数据
     js_code = request.data['code']
-    user_info = request.data['userInfo']
-
+    
     # 获取openid和session_key
     appid = settings.APPID
     secret = settings.SECRET
     url = 'https://api.weixin.qq.com/sns/jscode2session' + '?appid=' + appid + '&secret=' + secret + '&js_code=' + js_code + '&grant_type=authorization_code'
     response = json.loads(requests.get(url).content)  # 将json数据包转成字典
+    
     if 'errcode' in response:
         # 有错误码
+        print("err msg" + response['errmsg'])
         return Response(data={
             'status': 1, 
             'code': response['errcode'], 
@@ -98,25 +93,40 @@ def code2Session(request):
     # 登录成功
     openid = response['openid']
     session_key = response['session_key']
-
+    
     # 保存openid, name, avatar
     user, create = WXUser.objects.get_or_create(openid=openid)
-    WXUser.objects.filter(openid=openid).update(name=user_info.get("nickName"), avatar=user_info.get("avatarUrl"))
     
     print(WXUser.objects.get_or_create(openid=openid))
-
+    
     token = utils.encode_openid(openid, 24*60*60)
     cache.set(token, openid)
-
+    
     res = {
         "status": 0,
-        "user_Exist": 0 if create else 1,
+        "userExist": 0 if create else 1,
         "token": token,
         "email": user.email,
         "id": user.id,
         "avatar": user.avatar,
         "sign": user.sign,
         "name": user.name,
+    }
+    return Response(data=res, status=200)
+    
+
+@api_view(['POST'])
+@authentication_classes([])  # 用户认证
+def user_register(request):
+    # 取出数据
+    id_ = request.data['id']
+    user_info = request.data['userInfo']
+    WXUser.objects.filter(id=id_).update(name=user_info.get("nickName"), avatar=user_info.get("avatarUrl"))
+    
+    print("register user", WXUser.objects.get_or_create(id=id_))
+
+    res = {
+        "status": 0
     }
     return Response(data=res, status=200)
 
@@ -140,6 +150,8 @@ class JoinActApplicationViewSet(ModelViewSet):
 
 
 """-------------------完成--------------------"""
+
+
 # 用户
 class WXUserViewSet(ModelViewSet):
     queryset = WXUser.objects.all()
@@ -283,6 +295,8 @@ class ActivityViewSet(ModelViewSet):
             return ActivitySerializer
         if self.action == "destroy":
             return ActivitySerializer
+        if self.action == "update":
+            return ActUpdateSerializer
         return ActDetailSerializer
 
     # 获取组织下的活动
@@ -303,6 +317,9 @@ class ActivityViewSet(ModelViewSet):
         serializer = self.get_serializer(instance=acts, many=True)
         return Response(serializer.data, 200)
 
+    # 获取用户关注的组织发布的活动
+    # TODO
+
 
 # 活动参与
 class JoinedActViewSet(ModelViewSet):
@@ -314,24 +331,37 @@ class JoinedActViewSet(ModelViewSet):
         return JoinedActSerializer
 
     # 加入活动
-    # TODO
     def create(self, request, *args, **kwargs):
-        return
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        act_id = request.data.get("act")
+        current_number = JoinedAct.objects.filter(act=act_id).count()
+        limit_number = Activity.objects.get(id=act_id).contain
+        if current_number < limit_number:
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        else:
+            return Response({"detail": "活动人数已满。"}, 400)
 
     # 退出活动
-    # TODO
     def destroy(self, request, *args, **kwargs):
-        return
+        user_id = request.query_params.get('person')
+        act_id = request.query_params.get('act')
+        JoinedAct.objects.filter(act=act_id, user=user_id).delete()
+        return Response(status=204)
 
-    # 获取用户加入的活动
+    # 获取活动的参与人数
+    def get_act_participants_number(self, request, act_id):
+        number = JoinedAct.objects.filter(act=act_id).count()
+        return Response({"number": number}, 200)
+
+    # 获取用户参与的活动
     def get_user_joined_act(self, request, user_id):
-        acts = JoinedAct.objects.filter(person=user_id)
+        acts = JoinedAct.objects.filter(user=user_id)
         serializer = self.get_serializer(instance=acts, many=True)
         return Response(serializer.data, 200)
 
-    # 获取活动的参与人数
-    # TODO
-    def get_act_participants_number(self, request, act_id):
-        return
 
 
+    

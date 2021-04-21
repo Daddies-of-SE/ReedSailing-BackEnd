@@ -3,6 +3,7 @@ from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from rest_framework.exceptions import ValidationError
 from BUAA.models import *
 from rest_framework import exceptions
+from django.utils import timezone
 
 
 class UserLoginSerializer(ModelSerializer):
@@ -153,7 +154,7 @@ class OrgManagerSerializer(ModelSerializer):
         user = self.initial_data.get('person')
         exists = OrgManager.objects.filter(org=org, person=user).exists()
         if exists:
-            raise ValidationError('该用户已是此组织管理员。')
+            raise ValidationError({'detail': '该用户已是此组织管理员。'})
         return value
 
 
@@ -225,7 +226,19 @@ class ActivitySerializer(ModelSerializer):
         org = Organization.objects.get(id=org_id)
         if org.block != block_id:
             raise ValidationError({'org/block': '组织与版块不匹配。'})
+        begin_time = attrs.get('begin_time')
+        end_time = attrs.get('end_time')
+        if end_time < begin_time:
+            raise ValidationError({'begin_time/end_time': '活动开始时间不应早于结束时间。'})
+        if begin_time < timezone.now():
+            raise ValidationError({'begin_time': "活动开始时间不应早于当前时间。"})
         return attrs
+
+
+class ActUpdateSerializer(ModelSerializer):
+    class Meta:
+        model = Activity
+        fields = ("name", "begin_time", "end_time", "contain", "description", "type", "location")
 
 
 class ActDetailSerializer(ModelSerializer):
@@ -243,6 +256,14 @@ class JoinedActSerializer(ModelSerializer):
     class Meta:
         model = JoinedAct
         fields = "__all__"
+
+    def validate(self, value):
+        act = self.initial_data.get('act')
+        user = self.initial_data.get('person')
+        exists = self.Meta.model.objects.filter(act=act, person=user).exists()
+        if exists:
+            raise ValidationError({'detail': '不可重复加入活动。'})
+        return value
 
 
 class JoinedActDetailSerializer(ModelSerializer):
