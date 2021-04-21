@@ -60,3 +60,7 @@ def decode_openid(token, ex):
 
     # 3, 返回加密结果
     return openid
+
+if __name__ == "__main__":
+    a=MailSender()
+    a.send_mail("asdaf","ASdasdasd", "847791804@qq.com")
