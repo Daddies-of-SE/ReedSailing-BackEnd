@@ -26,9 +26,10 @@ urlpatterns = [
     # 用户端
     path('sendVerify/', send_email),
     path('verify/', verify_email),
-    path('login/', code2Session),
-    path('adminLogIn/', login),
-    path('register/', register),
+    path('userLogin/', user_login),
+    path('userRegister/', user_register),
+    path('adminLogIn/', sudo_login),
+    path('register/', sudo_register),
 
     # 自动生成接口文档
     url(r'^docs/', include_docs_urls(title='一苇以航API接口')),
