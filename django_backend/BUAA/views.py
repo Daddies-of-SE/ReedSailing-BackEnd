@@ -179,11 +179,20 @@ class OrgApplicationViewSet(ModelViewSet):
             return OrgAppVerifySerializer
         return OrgApplySerializer
 
-    def user_get_all(self, request, user_id):
-        applications = OrgApplication.objects.filter(user=user_id)
-        serializer = self.get_serializer(instance=applications, many=True)
+    def paginate(self, objects):
+        page = self.paginate_queryset(objects)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(objects, many=True)
         return Response(serializer.data)
 
+    # 获取用户的组织申请
+    def user_get_all(self, request, user_id):
+        applications = OrgApplication.objects.filter(user=user_id)
+        return self.paginate(applications)
+
+    # 审批组织申请
     def verify(self, request, pk):
         application = self.get_object()
         old_status = application.status
@@ -206,11 +215,20 @@ class OrganizationModelViewSet(ModelViewSet):
             return OrgOwnerSerializer
         return OrgDetailSerializer
 
+    def paginate(self, objects):
+        page = self.paginate_queryset(objects)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(objects, many=True)
+        return Response(serializer.data)
+
+    # 获取版块下的组织
     def get_org_by_block(self, request, block_id):
         organizations = Organization.objects.filter(block=block_id)
-        serializer = self.get_serializer(instance=organizations, many=True)
-        return Response(serializer.data, 200)
+        return self.paginate(organizations)
 
+    # 修改组织负责人
     def change_org_owner(self, request, pk):
         organization = self.get_object()
         serializer = self.get_serializer(instance=organization, data=request.data)
@@ -228,16 +246,24 @@ class FollowedOrgViewSet(ModelViewSet):
             return UserFollowedOrgSerializer
         return FollowedOrgSerializer
 
+    def paginate(self, objects):
+        page = self.paginate_queryset(objects)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(objects, many=True)
+        return Response(serializer.data)
+
     def destroy(self, request, *args, **kwargs):
         user_id = request.query_params.get('user')
         org_id = request.query_params.get('org')
         FollowedOrg.objects.filter(org=org_id, person=user_id).delete()
         return Response(status=204)
 
+    # 获取用户关注的组织
     def get_followed_org(self, request, pk):
         followed = FollowedOrg.objects.filter(person=pk)
-        serializer = self.get_serializer(instance=followed, many=True)
-        return Response(serializer.data, 200)
+        return self.paginate(followed)
 
 
 # 组织管理
@@ -251,21 +277,29 @@ class OrgManageViewSet(ModelViewSet):
             return OrgAllManagersSerializer
         return OrgManagerSerializer
 
+    def paginate(self, objects):
+        page = self.paginate_queryset(objects)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(objects, many=True)
+        return Response(serializer.data)
+
     def destroy(self, request, *args, **kwargs):
         user_id = request.query_params.get('user')
         org_id = request.query_params.get('org')
         OrgManager.objects.filter(org=org_id, person=user_id).delete()
         return Response(status=204)
 
+    # 获取用户管理的组织
     def get_managed_org(self, request, pk):
         managed = OrgManager.objects.filter(person=pk)
-        serializer = self.get_serializer(instance=managed, many=True)
-        return Response(serializer.data, 200)
+        return self.paginate(managed)
 
+    # 获取组织的管理员
     def get_all_managers(self, request, pk):
         managers = FollowedOrg.objects.filter(org=pk)
-        serializer = self.get_serializer(instance=managers, many=True)
-        return Response(serializer.data, 200)
+        return self.paginate(managers)
 
 
 # 活动分类
@@ -299,23 +333,28 @@ class ActivityViewSet(ModelViewSet):
             return ActUpdateSerializer
         return ActDetailSerializer
 
+    def paginate(self, objects):
+        page = self.paginate_queryset(objects)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(objects, many=True)
+        return Response(serializer.data)
+
     # 获取组织下的活动
     def get_org_act(self, request, org_id):
         acts = Activity.objects.filter(org=org_id)
-        serializer = self.get_serializer(instance=acts, many=True)
-        return Response(serializer.data, 200)
+        return self.paginate(acts)
 
     # 获取用户发布的活动
     def get_user_act(self, request, user_id):
         acts = Activity.objects.filter(owner=user_id)
-        serializer = self.get_serializer(instance=acts, many=True)
-        return Response(serializer.data, 200)
+        return self.paginate(acts)
 
     # 获取板块下的活动
     def get_block_act(self, request, block_id):
         acts = Activity.objects.filter(block=block_id)
-        serializer = self.get_serializer(instance=acts, many=True)
-        return Response(serializer.data, 200)
+        return self.paginate(acts)
 
     # 获取用户关注的组织发布的活动
     # TODO
@@ -335,6 +374,14 @@ class JoinedActViewSet(ModelViewSet):
         if self.action == "get_user_end_act":
             return UserJoinedActSerializer
         return JoinedActSerializer
+
+    def paginate(self, objects):
+        page = self.paginate_queryset(objects)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(objects, many=True)
+        return Response(serializer.data)
 
     # 加入活动
     def create(self, request, *args, **kwargs):
@@ -365,26 +412,22 @@ class JoinedActViewSet(ModelViewSet):
     # 获取用户参与的活动
     def get_user_joined_act(self, request, user_id):
         acts = JoinedAct.objects.filter(person=user_id)
-        serializer = self.get_serializer(instance=acts, many=True)
-        return Response(serializer.data, 200)
+        return self.paginate(acts)
 
     # 获取用户未开始活动,开始时间>现在
     def get_user_unstart_acts(self, request, user_id):
         now = datetime.datetime.now()
         acts = JoinedAct.objects.filter(act__begin_time__gt=now, person=user_id)
-        serializer = self.get_serializer(instance=acts, many=True)
-        return Response(serializer.data, 200)
+        return self.paginate(acts)
 
     # 获取用户已结束活动，结束时间<现在
     def get_user_end_act(self, request, user_id):
         now = datetime.datetime.now()
         acts = JoinedAct.objects.filter(act__end_time__lt=now, person=user_id)
-        serializer = self.get_serializer(instance=acts, many=True)
-        return Response(serializer.data, 200)
+        return self.paginate(acts)
 
     # 获取用户已结束活动，开始<现在<结束
     def get_user_ing_act(self, request, user_id):
         now = datetime.datetime.now()
         acts = JoinedAct.objects.filter(act__end_time__gte=now, act__begin_time__lte=now, person=user_id)
-        serializer = self.get_serializer(instance=acts, many=True)
-        return Response(serializer.data, 200)
+        return self.paginate(acts)
