@@ -85,6 +85,9 @@ urlpatterns = [
     # 活动参与
     url(r'activities/participants/$', JoinedActViewSet.as_view({"post": "create", "delete": "destroy"})),
     url(r'user/joined_acts/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_joined_act"})),
+    url(r'user/joined_acts/end/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_end_act"})),
+    url(r'user/joined_acts/unstart/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_unstart_acts"})),
+    url(r'user/joined_acts/cur/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_ing_act"})),
     url(r'activities/joined_numbers/(?P<act_id>\d+)', JoinedActViewSet.as_view({"get": "get_act_participants_number"})),
 
     # 测试使用

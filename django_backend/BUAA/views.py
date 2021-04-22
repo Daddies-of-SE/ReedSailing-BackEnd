@@ -10,7 +10,7 @@ from .serializers import *
 from rest_framework.response import Response
 from rest_framework.viewsets import *
 from rest_framework import status
-                        
+import datetime
 
 def get_random_str():
     uuid_val = uuid.uuid4()
@@ -328,6 +328,12 @@ class JoinedActViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == "get_user_joined_act":
             return UserJoinedActSerializer
+        if self.action == "get_user_unstart_acts":
+            return UserJoinedActSerializer
+        if self.action == "get_user_ing_act":
+            return UserJoinedActSerializer
+        if self.action == "get_user_end_act":
+            return UserJoinedActSerializer
         return JoinedActSerializer
 
     # 加入活动
@@ -358,10 +364,27 @@ class JoinedActViewSet(ModelViewSet):
 
     # 获取用户参与的活动
     def get_user_joined_act(self, request, user_id):
-        acts = JoinedAct.objects.filter(user=user_id)
+        acts = JoinedAct.objects.filter(person=user_id)
         serializer = self.get_serializer(instance=acts, many=True)
         return Response(serializer.data, 200)
 
+    # 获取用户未开始活动,开始时间>现在
+    def get_user_unstart_acts(self, request, user_id):
+        now = datetime.datetime.now()
+        acts = JoinedAct.objects.filter(act__begin_time__gt=now, person=user_id)
+        serializer = self.get_serializer(instance=acts, many=True)
+        return Response(serializer.data, 200)
 
+    # 获取用户已结束活动，结束时间<现在
+    def get_user_end_act(self, request, user_id):
+        now = datetime.datetime.now()
+        acts = JoinedAct.objects.filter(act__end_time__lt=now, person=user_id)
+        serializer = self.get_serializer(instance=acts, many=True)
+        return Response(serializer.data, 200)
 
-    
+    # 获取用户已结束活动，开始<现在<结束
+    def get_user_ing_act(self, request, user_id):
+        now = datetime.datetime.now()
+        acts = JoinedAct.objects.filter(act__end_time__gte=now, act__begin_time__lte=now, person=user_id)
+        serializer = self.get_serializer(instance=acts, many=True)
+        return Response(serializer.data, 200)
