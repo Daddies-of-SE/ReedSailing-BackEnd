@@ -219,12 +219,11 @@ class ActivitySerializer(ModelSerializer):
         fields = "__all__"
 
     def validate(self, attrs):
-        org_id = attrs.get('org')
-        if org_id is None:
+        org = attrs.get('org')
+        if org is None:
             return attrs
-        block_id = attrs.get('block')
-        org = Organization.objects.get(id=org_id)
-        if org.block != block_id:
+        block = attrs.get('block')
+        if org.block != block:
             raise ValidationError({'org/block': '组织与版块不匹配。'})
         begin_time = attrs.get('begin_time')
         end_time = attrs.get('end_time')
