@@ -79,6 +79,10 @@ urlpatterns = [
     url(r'^activities/$', ActivityViewSet.as_view({"post": "create", "get": "list"})),
     url(r'^activities/(?P<pk>\d+)/$', ActivityViewSet.as_view({"get": "retrieve", "delete": "destroy", "put": "update"})),
     url(r'^organizations/activities/(?P<org_id>\d+)/$', ActivityViewSet.as_view({"get": "get_org_act"})),
+    url(r'^organizations/activities/unstart/(?P<org_id>\d+)/$',ActivityViewSet.as_view({"get": "get_unstart_act"})),
+    url(r'^organizations/activities/cur/(?P<org_id>\d+)/$', ActivityViewSet.as_view({"get": "get_ing_act"})),
+    url(r'^organizations/activities/end/(?P<org_id>\d+)/$',ActivityViewSet.as_view({"get": "get_finish_act"})),
+
     url(r'^users/released_activities/(?P<user_id>\d+)/$', ActivityViewSet.as_view({"get": "get_user_act"})),
     url(r'^blocks/activities/(?P<block_id>\d+)/$', ActivityViewSet.as_view({"get": "get_block_act"})),
 

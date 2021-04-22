@@ -346,6 +346,24 @@ class ActivityViewSet(ModelViewSet):
         acts = Activity.objects.filter(org=org_id)
         return self.paginate(acts)
 
+    # 获取组织下未开始活动 开始时间>现在
+    def get_unstart_act(self, request, org_id):
+        now = datetime.datetime.now()
+        acts = Activity.objects.filter(org=org_id,begin_time__gt=now)
+        return self.paginate(acts)
+
+    #获取组织下进行中活动 开始时间 < 现在 < 结束时间
+    def get_ing_act(self, request, org_id):
+        now = datetime.datetime.now()
+        acts = Activity.objects.filter(org=org_id, end_time__gte=now, begin_time__lte=now)
+        return self.paginate(acts)
+
+    #获取组织下已结束活动,结束时间 < 现在
+    def get_finish_act(self,request,org_id):
+        now = datetime.datetime.now()
+        acts = Activity.objects.filter(org=org_id, end_time__lt=now)
+        return self.paginate(acts)
+
     # 获取用户发布的活动
     def get_user_act(self, request, user_id):
         acts = Activity.objects.filter(owner=user_id)
