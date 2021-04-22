@@ -220,7 +220,7 @@ class ActivitySerializer(ModelSerializer):
 
     def validate(self, attrs):
         org_id = attrs.get('org')
-        if org_id:
+        if org_id is None:
             return attrs
         block_id = attrs.get('block')
         org = Organization.objects.get(id=org_id)
