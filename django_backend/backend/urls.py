@@ -79,12 +79,19 @@ urlpatterns = [
     url(r'^activities/$', ActivityViewSet.as_view({"post": "create", "get": "list"})),
     url(r'^activities/(?P<pk>\d+)/$', ActivityViewSet.as_view({"get": "retrieve", "delete": "destroy", "put": "update"})),
     url(r'^organizations/activities/(?P<org_id>\d+)/$', ActivityViewSet.as_view({"get": "get_org_act"})),
-    url(r'^organizations/activities/unstart/(?P<org_id>\d+)/$',ActivityViewSet.as_view({"get": "get_unstart_act"})),
-    url(r'^organizations/activities/cur/(?P<org_id>\d+)/$', ActivityViewSet.as_view({"get": "get_ing_act"})),
-    url(r'^organizations/activities/end/(?P<org_id>\d+)/$',ActivityViewSet.as_view({"get": "get_finish_act"})),
+    url(r'^organizations/activities/unstart/(?P<org_id>\d+)/$',ActivityViewSet.as_view({"get": "get_org_unstart_act"})),
+    url(r'^organizations/activities/cur/(?P<org_id>\d+)/$', ActivityViewSet.as_view({"get": "get_org_ing_act"})),
+    url(r'^organizations/activities/end/(?P<org_id>\d+)/$',ActivityViewSet.as_view({"get": "get_org_finish_act"})),
 
     url(r'^users/released_activities/(?P<user_id>\d+)/$', ActivityViewSet.as_view({"get": "get_user_act"})),
+    url(r'^users/released_activities/unstart/(?P<user_id>\d+)/$', ActivityViewSet.as_view({"get": "get_user_unstart_act"})),
+    url(r'^users/released_activities/cur/(?P<user_id>\d+)/$', ActivityViewSet.as_view({"get": "get_user_ing_act"})),
+    url(r'^users/released_activities/end/(?P<user_id>\d+)/$', ActivityViewSet.as_view({"get": "get_user_finish_act"})),
+
     url(r'^blocks/activities/(?P<block_id>\d+)/$', ActivityViewSet.as_view({"get": "get_block_act"})),
+    url(r'^blocks/activities/unstart/(?P<block_id>\d+)/$', ActivityViewSet.as_view({"get": "get_block_unstart_act"})),
+    url(r'^blocks/activities/cur/(?P<block_id>\d+)/$', ActivityViewSet.as_view({"get": "get_block_ing_act"})),
+    url(r'^blocks/activities/end/(?P<block_id>\d+)/$', ActivityViewSet.as_view({"get": "get_block_finish_act"})),
 
     # 活动参与
     url(r'activities/participants/$', JoinedActViewSet.as_view({"post": "create", "delete": "destroy"})),

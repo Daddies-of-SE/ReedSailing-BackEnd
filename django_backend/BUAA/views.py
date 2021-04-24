@@ -347,19 +347,19 @@ class ActivityViewSet(ModelViewSet):
         return self.paginate(acts)
 
     # 获取组织下未开始活动 开始时间>现在
-    def get_unstart_act(self, request, org_id):
+    def get_org_unstart_act(self, request, org_id):
         now = datetime.datetime.now()
         acts = Activity.objects.filter(org=org_id,begin_time__gt=now)
         return self.paginate(acts)
 
     # 获取组织下进行中活动 开始时间 < 现在 < 结束时间
-    def get_ing_act(self, request, org_id):
+    def get_org_ing_act(self, request, org_id):
         now = datetime.datetime.now()
         acts = Activity.objects.filter(org=org_id, end_time__gte=now, begin_time__lte=now)
         return self.paginate(acts)
 
     # 获取组织下已结束活动,结束时间 < 现在
-    def get_finish_act(self,request,org_id):
+    def get_org_finish_act(self,request,org_id):
         now = datetime.datetime.now()
         acts = Activity.objects.filter(org=org_id, end_time__lt=now)
         return self.paginate(acts)
@@ -369,9 +369,45 @@ class ActivityViewSet(ModelViewSet):
         acts = Activity.objects.filter(owner=user_id)
         return self.paginate(acts)
 
+    # 获取组织下未开始活动 开始时间>现在
+    def get_user_unstart_act(self, request, user_id):
+        now = datetime.datetime.now()
+        acts = Activity.objects.filter(owner=user_id,begin_time__gt=now)
+        return self.paginate(acts)
+
+    # 获取组织下进行中活动 开始时间 < 现在 < 结束时间
+    def get_user_ing_act(self, request, user_id):
+        now = datetime.datetime.now()
+        acts = Activity.objects.filter(owner=user_id, end_time__gte=now, begin_time__lte=now)
+        return self.paginate(acts)
+
+    # 获取组织下已结束活动,结束时间 < 现在
+    def get_user_finish_act(self,request,user_id):
+        now = datetime.datetime.now()
+        acts = Activity.objects.filter(owner=user_id, end_time__lt=now)
+        return self.paginate(acts)
+
     # 获取板块下的活动
     def get_block_act(self, request, block_id):
         acts = Activity.objects.filter(block=block_id)
+        return self.paginate(acts)
+
+    # 获取组织下未开始活动 开始时间>现在
+    def get_block_unstart_act(self, request, block_id):
+        now = datetime.datetime.now()
+        acts = Activity.objects.filter(block = block_id,begin_time__gt=now)
+        return self.paginate(acts)
+
+    # 获取组织下进行中活动 开始时间 < 现在 < 结束时间
+    def get_block_ing_act(self, request, block_id):
+        now = datetime.datetime.now()
+        acts = Activity.objects.filter(block = block_id, end_time__gte=now, begin_time__lte=now)
+        return self.paginate(acts)
+
+    # 获取组织下已结束活动,结束时间 < 现在
+    def get_block_finish_act(self,request,block_id):
+        now = datetime.datetime.now()
+        acts = Activity.objects.filter(block = block_id, end_time__lt=now)
         return self.paginate(acts)
 
     # 获取用户关注的组织发布的活动
