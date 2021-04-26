@@ -66,18 +66,18 @@
   * `run`原理阐释：进入后端目录下`django_backend`，运行`python manage.py runserver 0:80`（注意这里的ip必须写0:80）
 
 * 前端调试：在自己的电脑上（首先要保证后端已经在运行上述命令）
-  * 小程序开发工具—右上角“详情”—本地设置—勾选“不校验合法域名”
-  * 确认`app.js`中的`server`为`http://rs.test/`（不要尝试改成reedsailing.xyz，会因未备案被墙，后端显示broken pipe）
-  * 修改hosts文件
-    * 路径：mac/linux下为`/etc/hosts`，windows下为`C:\Windows\System32\drivers\etc\hosts`
-    * 在该文件最后增加一行`114.116.94.235 rs.test`
-  * 此时尝试编译运行，点击首页登录并查看调试器，或者直接在浏览器中输入`rs.test/users/`，可以看到返回结果；后端（即服务器python运行窗口）可以看到收到的请求
+  * ~~小程序开发工具—右上角“详情”—本地设置—勾选“不校验合法域名”~~
+  * 确认`app.js`中的`server`为`http://reedsailing.xyz/`
+  * ~~修改hosts文件~~
+    * ~~路径：mac/linux下为`/etc/hosts`，windows下为`C:\Windows\System32\drivers\etc\hosts`~~
+    * ~~在该文件最后增加一行`114.116.94.235 rs.test`~~
+  * 此时尝试编译运行，点击首页登录并查看调试器，或者直接在浏览器中输入`reedsailing.xyz/users/`，可以看到返回结果；后端（即服务器python运行窗口）可以看到收到的请求
 
 ### 说明
 
 以后尽可能都直接用这个服务器上的后端，首先可以避免每个人都反复pull、migrate（理想情况下后端代码只存在于服务器上），其次可以保证数据库一致便于测试
 
-现在实际上使用了nginx，从而使IP地址可以解析到后端目录下的django项目，但后续上线到手机端时需要配置后端到域名（使用nginx和uwsgi）
+~~现在实际上使用了nginx，从而使IP地址可以解析到后端目录下的django项目，但后续上线到手机端时需要配置后端到域名（使用nginx和uwsgi）~~
 
 
 
@@ -85,7 +85,7 @@
 
 运行后端
 
-在`http://127.0.0.1:8000/docs`可以查看API接口
+在`http://reedsailing.xyz/docs`可以查看API接口
 
 
 
