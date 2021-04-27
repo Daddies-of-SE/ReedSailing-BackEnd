@@ -36,7 +36,7 @@ urlpatterns = [
 
     # 版块
     url(r'^blocks/$', BlockViewSet.as_view({"get": "list", "post": "create"})),
-    url(r'^blocks/(?P<pk>\d+)/$', BlockViewSet.as_view({"put": "update", "delete": "destroy"})),
+    url(r'^blocks/(?P<pk>\d+)/$', BlockViewSet.as_view({"get": "retrieve", "put": "update", "delete": "destroy"})),
 
     # 用户
     url(r'^users/$', WXUserViewSet.as_view({"get": "list"})),
@@ -49,7 +49,7 @@ urlpatterns = [
     url(r'^organizations/applications/verifications/(?P<pk>\d+)/$', OrgApplicationViewSet.as_view({"put": "verify"})),
 
     # 组织
-    url(r'^organizations/$', OrganizationModelViewSet.as_view({"post": "create"})),
+    url(r'^organizations/$', OrganizationModelViewSet.as_view({"post": "create", "get": "list"})),
     url(r'^organizations/(?P<pk>\d+)/$', OrganizationModelViewSet.as_view({"get": "retrieve", "put": "update", "delete": "destroy"})),
     url(r'^blocks/organizations/(?P<block_id>\d+)/$', OrganizationModelViewSet.as_view({"get": "get_org_by_block"})),
     url(r'^organizations/owner/(?P<pk>\d+)/$', OrganizationModelViewSet.as_view({"post": "change_org_owner"})),
