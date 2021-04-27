@@ -528,7 +528,7 @@ class JoinedActViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         user_id = request.query_params.get('person')
         act_id = request.query_params.get('act')
-        JoinedAct.objects.filter(act=act_id, user=user_id).delete()
+        JoinedAct.objects.filter(act=act_id, person=user_id).delete()
         return Response(status=204)
 
     # 获取活动的参与人数
