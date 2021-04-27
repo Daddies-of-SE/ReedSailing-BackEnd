@@ -204,9 +204,7 @@ def user_act_relation(request):
 
 
 
-class CommentViewSet(ModelViewSet):
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
+
 
 
 
@@ -559,3 +557,26 @@ class JoinedActViewSet(ModelViewSet):
         acts = JoinedAct.objects.filter(act__end_time__gte=now, act__begin_time__lte=now, person=user_id)
         return self.paginate(acts)
 
+
+# 活动评价
+class CommentViewSet(ModelViewSet):
+    queryset = Comment.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "get_act_comments":
+            return CommentDetailSerializer
+        if self.action == "list":
+            return CommentDetailSerializer
+        return CommentSerializer
+
+    def paginate(self, objects):
+        page = self.paginate_queryset(objects)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(objects, many=True)
+        return Response(serializer.data)
+
+    def get_act_comments(self, request, act_id):
+        comments = Comment.objects.filter(act=act_id)
+        return self.paginate(comments)

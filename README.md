@@ -89,6 +89,35 @@
 
 
 
+## 消息发送
+
+### 定时获取access_token
+
+由于微信小程序的消息推送需要使用`access_token`，而`access_token`两个小时过期，因此需要定期向微信服务接口发送请求获取。
+
+定时任务需要用到`django-crontab`，运行和django无关，依赖的是linux的crontab定时服务，因此无法在windowns下运行。
+
+安装：`pip install django-crontab`
+
+启动定时任务
+ `python manage.py crontab add`
+
+显示定时任务
+ `python manage.py crontab show`
+
+删除定时任务
+ `python manage.py crontab remove`
+
+
+
+参考资料：https://www.cnblogs.com/linqiaobao/p/14230337.html
+
+
+
+消息队列，异步执行：celery
+
+
+
 ## 附录
 
 ### 修改MySQL密码

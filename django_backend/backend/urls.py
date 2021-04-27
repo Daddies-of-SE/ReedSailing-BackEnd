@@ -101,7 +101,12 @@ urlpatterns = [
     url(r'user/joined_acts/end/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_end_act"})),
     url(r'user/joined_acts/unstart/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_unstart_acts"})),
     url(r'user/joined_acts/cur/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_ing_act"})),
-    url(r'activities/joined_numbers/(?P<act_id>\d+)', JoinedActViewSet.as_view({"get": "get_act_participants_number"})),
+    url(r'activities/joined_numbers/(?P<act_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_act_participants_number"})),
+
+    # 活动评论
+    url(r'activities/comments/$', CommentViewSet.as_view({"get": "list", "post": "create"})),
+    url(r'activities/(?P<act_id>\d+)/comments/$', CommentViewSet.as_view({"get": "get_act_comments"})),
+    url(r'activities/comments/(?P<pk>\d+)/$', CommentViewSet.as_view({"delete": "destroy"})),
 
     # 测试使用
     url(r'^test/users/$', WXUserViewSet.as_view({"post": "create"})),
@@ -109,10 +114,9 @@ urlpatterns = [
 
 ]
 
-router = SimpleRouter()
-router.register('comments', CommentViewSet)
-router.register('activities/join_applications', JoinActApplicationViewSet)
-urlpatterns += router.urls
+# router = SimpleRouter()
+# router.register('activities/join_applications', JoinActApplicationViewSet)
+# urlpatterns += router.urls
 
 
 

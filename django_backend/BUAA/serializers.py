@@ -281,18 +281,24 @@ class UserJoinedActSerializer(ModelSerializer):
         depth = 1
 
 
+# 活动评价
+class CommentSerializer(ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = "__all__"
+
+
+class CommentDetailSerializer(ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = "__all__"
+        depth = 1
+
 
 """--------------------------未完成------------------------------"""
 
 
-class CommentSerializer(ModelSerializer):
-    """评论序列化器"""
-    act = ActivitySerializer()
-    user = WXUserSerializer()
 
-    class Meta:
-        model = Comment
-        fields = ('content', 'pub_time', 'score', 'act', 'user')
 
 
 class ManagerApplicationSerializer(ModelSerializer):
