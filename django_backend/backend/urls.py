@@ -30,6 +30,8 @@ urlpatterns = [
     path('userRegister/', user_register),
     path('adminLogIn/', sudo_login),
     path('register/', sudo_register),
+    path('userOrgRelation/',user_org_relation),
+    path('userActRelation/',user_act_relation),
 
     # 自动生成接口文档
     url(r'^docs/', include_docs_urls(title='一苇以航API接口')),

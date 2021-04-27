@@ -131,6 +131,77 @@ def user_register(request):
     return Response(data=res, status=200)
 
 
+@api_view(['GET'])
+def user_org_relation(request):
+    user_id = request.data['user']
+    org_id = request.data['org']
+    try:
+        user = WXUser.objects.get(id=user_id)
+    except:
+        res = {
+            "detail": '未找到用户'
+        }
+        status = 404
+        return Response(res,status)
+    try:
+        org = Organization.objects.get(id = org_id)
+    except:
+        res = {
+            "detail": '未找到组织'
+        }
+        status = 404
+        return Response(res,status)
+    res = {
+        "isFollower" : False,
+        "isOwner" : False,
+        "isManager" : False,
+    }
+    if FollowedOrg.objects.filter(org=org_id,person=user_id):
+        res["isFollower"]=True
+    if Organization.objects.filter(id = org_id, owner=user_id):
+        res["isOwner"]=True
+    if OrgManager.objects.filter(org=org_id,person=user_id):
+        res["isManager"]=True
+    return Response(res)
+
+@api_view(['GET'])
+def user_act_relation(request):
+    user_id = request.data['user']
+    act_id = request.data['act']
+    try:
+        user = WXUser.objects.get(id=user_id)
+    except:
+        res = {
+            "detail": '未找到用户'
+        }
+        status = 404
+        return Response(res,status)
+    try:
+        act = Activity.objects.get(id=act_id)
+    except:
+        res = {
+            "detail": '未找到活动'
+        }
+        status = 404
+        return Response(res,status)
+    res = {
+        "hasJoined" : False,
+        "underReview" : False,
+        "isOwner" : False,
+        "isManager" :False,
+    }
+    if JoinedAct.objects.filter(act=act_id,person=user_id):
+        res["hasJoined"] = True
+    if Activity.objects.filter(id=act_id,owner=user_id):
+        res["isOwner"]=True
+        res["isManager"] = True
+    org_id = act.org_id
+    if Organization.objects.filter(id = org_id,owner=user_id):
+        res["isManager"] = True
+    if OrgManager.objects.filter(org=org_id,person=user_id):
+        res["isManager"] = True
+    return Response(res)
+
 
 
 class CommentViewSet(ModelViewSet):
@@ -414,6 +485,8 @@ class ActivityViewSet(ModelViewSet):
     # TODO
 
 
+
+
 # 活动参与
 class JoinedActViewSet(ModelViewSet):
     queryset = JoinedAct.objects.all()
@@ -485,3 +558,4 @@ class JoinedActViewSet(ModelViewSet):
         now = datetime.datetime.now()
         acts = JoinedAct.objects.filter(act__end_time__gte=now, act__begin_time__lte=now, person=user_id)
         return self.paginate(acts)
+
