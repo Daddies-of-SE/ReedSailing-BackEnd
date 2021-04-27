@@ -131,7 +131,7 @@ def user_register(request):
     return Response(data=res, status=200)
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 def user_org_relation(request):
     user_id = request.data['user']
     org_id = request.data['org']
@@ -164,7 +164,7 @@ def user_org_relation(request):
         res["isManager"]=True
     return Response(res)
 
-@api_view(['GET'])
+@api_view(['POST'])
 def user_act_relation(request):
     user_id = request.data['user']
     act_id = request.data['act']
