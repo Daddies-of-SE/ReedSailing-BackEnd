@@ -289,10 +289,11 @@ class CommentSerializer(ModelSerializer):
 
 
 class CommentDetailSerializer(ModelSerializer):
+    user = WXUserSerializer(read_only=True)
+
     class Meta:
         model = Comment
         fields = "__all__"
-        depth = 1
 
 
 """--------------------------未完成------------------------------"""

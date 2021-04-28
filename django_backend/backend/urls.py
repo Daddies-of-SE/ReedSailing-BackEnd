@@ -108,6 +108,9 @@ urlpatterns = [
     url(r'activities/(?P<act_id>\d+)/comments/$', CommentViewSet.as_view({"get": "get_act_comments"})),
     url(r'activities/comments/(?P<pk>\d+)/$', CommentViewSet.as_view({"delete": "destroy"})),
 
+    # 个性化推荐
+    url(r'recommended/activities/$', ActivityViewSet.as_view({"get": "get_recommended_act"})),
+    url(r'recommended/organizations/$', OrganizationModelViewSet.as_view({"get": "get_recommended_org"})),
     # 测试使用
     url(r'^test/users/$', WXUserViewSet.as_view({"post": "create"})),
 
