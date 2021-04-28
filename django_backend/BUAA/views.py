@@ -275,7 +275,7 @@ class OrgApplicationViewSet(ModelViewSet):
 
 # 组织
 class OrganizationModelViewSet(ModelViewSet):
-    queryset = Organization
+    queryset = Organization.objects.all()
 
     def get_serializer_class(self):
         if self.action == "create":
