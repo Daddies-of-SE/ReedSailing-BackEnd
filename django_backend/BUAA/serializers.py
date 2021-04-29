@@ -296,6 +296,12 @@ class CommentDetailSerializer(ModelSerializer):
         fields = "__all__"
 
 
+class CommentUpdateSerializer(ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['content', 'score']
+
+
 """--------------------------未完成------------------------------"""
 
 

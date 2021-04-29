@@ -505,8 +505,6 @@ class ActivityViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-
-
 # 活动参与
 class JoinedActViewSet(ModelViewSet):
     queryset = JoinedAct.objects.all()
@@ -589,6 +587,10 @@ class CommentViewSet(ModelViewSet):
             return CommentDetailSerializer
         if self.action == "list":
             return CommentDetailSerializer
+        if self.action == "get_user_comment":
+            return CommentDetailSerializer
+        if self.action == "update":
+            return CommentUpdateSerializer
         return CommentSerializer
 
     def paginate(self, objects):
@@ -599,6 +601,17 @@ class CommentViewSet(ModelViewSet):
         serializer = self.get_serializer(objects, many=True)
         return Response(serializer.data)
 
+    # 获取指定活动的所有评价
     def get_act_comments(self, request, act_id):
         comments = Comment.objects.filter(act=act_id)
         return self.paginate(comments)
+
+    # 获取指定用户的指定活动的评论
+    def get_user_comment(self, request, act_id, user_id):
+        if Comment.objects.filter(user=user_id, act=act_id).exists():
+            comment = Comment.objects.get(user=user_id, act=act_id)
+            serializer = self.get_serializer(instance=comment)
+            return Response(serializer.data)
+        return Response({"id": -1}, 404)
+
+

@@ -106,7 +106,8 @@ urlpatterns = [
     # 活动评论
     url(r'activities/comments/$', CommentViewSet.as_view({"get": "list", "post": "create"})),
     url(r'activities/(?P<act_id>\d+)/comments/$', CommentViewSet.as_view({"get": "get_act_comments"})),
-    url(r'activities/comments/(?P<pk>\d+)/$', CommentViewSet.as_view({"delete": "destroy"})),
+    url(r'activities/(?P<act_id>\d+)/users/(?P<user_id>\d+)/comments', CommentViewSet.as_view({"get": "get_user_comment"})),
+    url(r'activities/comments/(?P<pk>\d+)/$', CommentViewSet.as_view({"delete": "destroy", "put": "update"})),
 
     # 个性化推荐
     url(r'recommended/activities/$', ActivityViewSet.as_view({"get": "get_recommended_act"})),
