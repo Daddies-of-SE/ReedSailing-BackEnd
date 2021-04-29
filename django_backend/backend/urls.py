@@ -112,6 +112,10 @@ urlpatterns = [
     # 个性化推荐
     url(r'recommended/activities/$', ActivityViewSet.as_view({"get": "get_recommended_act"})),
     url(r'recommended/organizations/$', OrganizationModelViewSet.as_view({"get": "get_recommended_org"})),
+
+    # 关注组织发布的活动
+    url(r'users/followed_organizations/activities/(?P<user_id>\d+)/$', ActivityViewSet.as_view({"get": "get_followed_org_act"})),
+
     # 测试使用
     url(r'^test/users/$', WXUserViewSet.as_view({"post": "create"})),
 

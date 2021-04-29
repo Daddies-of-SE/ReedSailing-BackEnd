@@ -80,7 +80,7 @@ class FollowedOrg(models.Model):
 class Comment(models.Model):
     content = models.CharField(max_length=500, null=True, verbose_name="内容")
     pub_time = models.DateTimeField(auto_now_add=True, verbose_name="发布时间")
-    score = models.IntegerField(verbose_name="评分")
+    score = models.DecimalField(max_digits=2, decimal_places=1, verbose_name="评分")
 
     act = models.ForeignKey('Activity', on_delete=models.CASCADE, verbose_name="所属活动")
     user = models.ForeignKey('WXUser', on_delete=models.CASCADE, verbose_name="所属用户")

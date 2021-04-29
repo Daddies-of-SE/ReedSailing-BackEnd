@@ -411,6 +411,8 @@ class ActivityViewSet(ModelViewSet):
             return ActivitySerializer
         if self.action == "update":
             return ActUpdateSerializer
+        if self.action == "get_followed_org_act":
+            return ActivitySerializer
         return ActDetailSerializer
 
     def paginate(self, objects):
@@ -491,7 +493,10 @@ class ActivityViewSet(ModelViewSet):
         return self.paginate(acts)
 
     # 获取用户关注的组织发布的活动
-    # TODO
+    def get_followed_org_act(self, request, user_id):
+        orgs = FollowedOrg.objects.filter(person=user_id)
+        acts = Activity.objects.filter(org__in=[org.org_id for org in orgs]).order_by('pub_time').reverse()
+        return self.paginate(acts)
 
     # 推荐活动
     def get_recommended_act(self, request, *args, **kwargs):
