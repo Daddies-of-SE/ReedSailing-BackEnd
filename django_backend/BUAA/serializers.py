@@ -302,6 +302,15 @@ class CommentUpdateSerializer(ModelSerializer):
         fields = ['content', 'score']
 
 
+class CommentListSerializer(ModelSerializer):
+    user = WXUserSerializer(read_only=True)
+    act = ActivitySerializer(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = "__all__"
+
+
 """--------------------------未完成------------------------------"""
 
 
