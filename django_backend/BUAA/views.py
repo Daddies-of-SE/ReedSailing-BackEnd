@@ -411,8 +411,6 @@ class ActivityViewSet(ModelViewSet):
             return ActivitySerializer
         if self.action == "update":
             return ActUpdateSerializer
-        if self.action == "get_followed_org_act":
-            return ActivitySerializer
         return ActDetailSerializer
 
     def paginate(self, objects):
