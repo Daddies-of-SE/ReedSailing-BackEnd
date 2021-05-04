@@ -110,8 +110,8 @@ urlpatterns = [
     url(r'activities/comments/(?P<pk>\d+)/$', CommentViewSet.as_view({"delete": "destroy", "put": "update", "get": "retrieve"})),
 
     # 个性化推荐
-    url(r'recommended/activities/$', ActivityViewSet.as_view({"get": "get_recommended_act"})),
-    url(r'recommended/organizations/$', OrganizationModelViewSet.as_view({"get": "get_recommended_org"})),
+    url(r'recommended/activities/(?P<user_id>\d+)/$', ActivityViewSet.as_view({"get": "get_recommended_act"})),
+    url(r'recommended/organizations/(?P<user_id>\d+)/$', OrganizationModelViewSet.as_view({"get": "get_recommended_org"})),
 
     # 关注组织发布的活动
     url(r'users/followed_organizations/activities/(?P<user_id>\d+)/$', ActivityViewSet.as_view({"get": "get_followed_org_act"})),

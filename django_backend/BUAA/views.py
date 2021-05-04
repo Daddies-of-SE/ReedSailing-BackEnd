@@ -267,6 +267,25 @@ class OrgApplicationViewSet(ModelViewSet):
         old_status = application.status
         if old_status != 0:
             return Response(data={"detail": ["该组织申请已审批。"]}, status=400)
+        if request.data.get('status') == "1":
+            # 审核通过
+            # 1.创建组织
+            data = {
+                "name": application.name,
+                "owner": application.user.id,
+                "block": application.block.id
+            }
+            serializer = OrganizationSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            # 2.添加负责人为管理员
+            data = {
+                "org": serializer.data.get("id"),
+                "person": application.user.id
+            }
+            serializer = OrgManagerSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
         serializer = self.get_serializer(instance=application, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -378,7 +397,7 @@ class OrgManageViewSet(ModelViewSet):
 
     # 获取组织的管理员
     def get_all_managers(self, request, pk):
-        managers = FollowedOrg.objects.filter(org=pk)
+        managers = OrgManager.objects.filter(org=pk)
         return self.paginate(managers)
 
 

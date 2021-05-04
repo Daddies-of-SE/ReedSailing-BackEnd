@@ -228,7 +228,7 @@ class ActivitySerializer(ModelSerializer):
         begin_time = attrs.get('begin_time')
         end_time = attrs.get('end_time')
         if end_time < begin_time:
-            raise ValidationError({'begin_time/end_time': '活动开始时间不应早于结束时间。'})
+            raise ValidationError({'begin_time/end_time': '活动开始时间不应迟于结束时间。'})
         if begin_time < timezone.now():
             raise ValidationError({'begin_time': "活动开始时间不应早于当前时间。"})
         return attrs
@@ -331,6 +331,7 @@ class JoinActApplicationSerializer(ModelSerializer):
     class Meta:
         model = JoinActApplication
         fields = "__all__"
+
 
 # test
 class TestUserSerializer(ModelSerializer):
