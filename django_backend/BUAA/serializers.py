@@ -281,6 +281,13 @@ class UserJoinedActSerializer(ModelSerializer):
         depth = 1
 
 
+class JoinedActParticipants(ModelSerializer):
+    class Meta:
+        model = JoinedAct
+        fields = ['person']
+        depth = 1
+
+
 # 活动评价
 class CommentSerializer(ModelSerializer):
     class Meta:

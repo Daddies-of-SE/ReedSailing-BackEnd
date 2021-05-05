@@ -540,6 +540,8 @@ class JoinedActViewSet(ModelViewSet):
             return UserJoinedActSerializer
         if self.action == "get_user_end_act":
             return UserJoinedActSerializer
+        if self.action == "get_act_participants":
+            return JoinedActParticipants
         return JoinedActSerializer
 
     def paginate(self, objects):
@@ -575,6 +577,11 @@ class JoinedActViewSet(ModelViewSet):
     def get_act_participants_number(self, request, act_id):
         number = JoinedAct.objects.filter(act=act_id).count()
         return Response({"number": number}, 200)
+
+    # 获取活动的所有的参与者
+    def get_act_participants(self, request, act_id):
+        users = JoinedAct.objects.filter(act=act_id)
+        return self.paginate(users)
 
     # 获取用户参与的活动
     def get_user_joined_act(self, request, user_id):
