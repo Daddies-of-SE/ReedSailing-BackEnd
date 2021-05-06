@@ -9,7 +9,7 @@ def get_access_token():
     response = response.json()
     cache.set('test', 'work', 300)
     if response.get('access_token', ''):
-        cache.set('if_test', 'work', 300)
+        cache.set('if_test', 'work')
         cache.set('access_token', response['access_token'])
         cache.expire('access_token', response['expires_in'])
 

@@ -100,7 +100,7 @@ def user_login(request):
     print(WXUser.objects.get_or_create(openid=openid))
     
     token = utils.encode_openid(openid, 24*60*60)
-    cache.set(token, openid)
+    cache.set(token, openid, 24*60*60)
     
     res = {
         "status": 0,
