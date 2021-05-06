@@ -198,8 +198,8 @@ class AddressSerializer(ModelSerializer):
     def validate(self, attrs):
         longitude = attrs.get('longitude')
         latitude = attrs.get('latitude')
-        if Address.objects.filter(longitude=longitude, latitude=latitude):
-            raise ValidationError({'address': '地点重复。'})
+        #if Address.objects.filter(longitude=longitude, latitude=latitude):
+        #    raise ValidationError({'address': '地点重复。'})
         return attrs
 
 

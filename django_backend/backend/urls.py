@@ -71,7 +71,7 @@ urlpatterns = [
 
     # 活动地址
     url(r'^activities/addresses/$', AddressViewSet.as_view({"get": "list", "post": "create"})),
-    url(r'^activities/addresses/(?P<pk>\d+)/$', AddressViewSet.as_view({"delete": "destroy"})),
+    url(r'^activities/addresses/(?P<pk>\d+)/$', AddressViewSet.as_view({"put": "update", "delete": "destroy"})),
 
     # 用户反馈
     url(r'^feedbacks/$', UserFeedbackViewSet.as_view({"get": "list", "post": "create"})),
