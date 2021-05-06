@@ -31,7 +31,7 @@ def send_email(request):
     sender.send_mail('BUAA Certification', 'Your verify code is {}, valid in 5 minutes'.format(random_str),
                      email_address)
     
-    cache.set(random_str, email_address)  # 验证码时效5分钟
+    cache.set(random_str, email_address, 300)  # 验证码时效5分钟
     
     res = {
         'status': 0,
