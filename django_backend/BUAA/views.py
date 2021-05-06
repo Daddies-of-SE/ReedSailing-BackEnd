@@ -267,7 +267,7 @@ class OrgApplicationViewSet(ModelViewSet):
         old_status = application.status
         if old_status != 0:
             return Response(data={"detail": ["该组织申请已审批。"]}, status=400)
-        if eval(request.data.get('status')) == 1:
+        if request.data.get('status') == 1 or request.data.get('status') == "1":
             # 审核通过
             # 1.创建组织
             data = {
