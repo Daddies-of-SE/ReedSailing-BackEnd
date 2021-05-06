@@ -267,7 +267,7 @@ class OrgApplicationViewSet(ModelViewSet):
         old_status = application.status
         if old_status != 0:
             return Response(data={"detail": ["该组织申请已审批。"]}, status=400)
-        if request.data.get('status') == "1":
+        if request.data.get('status') == "1" or request.data.get('status') == 1:
             # 审核通过
             # 1.创建组织
             data = {
@@ -608,7 +608,7 @@ class JoinedActViewSet(ModelViewSet):
         acts = JoinedAct.objects.filter(act__end_time__gte=now, act__begin_time__lte=now, person=user_id)
         return self.paginate(acts)
 
-    # 获取用户参与的活动（开始时间排序）
+    # 获取指定用户指定年月中参与的所有活动
     def get_user_joined_act_begin_order(self, request, user_id, month, year):
         acts = JoinedAct.objects.filter(person=user_id, act__begin_time__month=month, act__begin_time__year=year)
         serializer = self.get_serializer(acts, many=True)
