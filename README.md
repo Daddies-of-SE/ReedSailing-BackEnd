@@ -62,9 +62,12 @@
 ### ※ 如何运行
 
 * 后端维护：在服务器上运行
-  * 直接输入`run`命令即可
-  * `run`原理阐释：进入后端目录下`django_backend`，运行`python manage.py runserver 0:80`（注意这里的ip必须写0:80）
-
+  * ~~直接输入`run`命令即可~~
+  * ~~`run`原理阐释：进入后端目录下`django_backend`，运行`python manage.py runserver 0:80`（注意这里的ip必须写0:80）~~
+* 输入`nginx`启动nginx
+  * 在`~/ReedSailing-BackEnd/django_backend`下输入`uwsgi uwsgi.ini`启动uwsgi，配置文件为uwsgi.ini
+  * 修改后端代码后要重启：在`~/ReedSailing-BackEnd/django_backend`下输入`touch reload`（这个命令会修改reload文件的时间戳，触发uwsgi重启服务）
+  
 * 前端调试：在自己的电脑上（首先要保证后端已经在运行上述命令）
   * ~~小程序开发工具—右上角“详情”—本地设置—勾选“不校验合法域名”~~
   * 确认`app.js`中的`server`为`http://reedsailing.xyz/`
