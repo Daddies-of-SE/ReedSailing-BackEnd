@@ -534,6 +534,8 @@ class JoinedActViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == "get_user_joined_act":
             return UserJoinedActSerializer
+        if self.action == "get_user_joined_act_begin_order":
+            return UserJoinedActSerializer
         if self.action == "get_user_unstart_acts":
             return UserJoinedActSerializer
         if self.action == "get_user_ing_act":
@@ -605,6 +607,20 @@ class JoinedActViewSet(ModelViewSet):
         now = datetime.datetime.now()
         acts = JoinedAct.objects.filter(act__end_time__gte=now, act__begin_time__lte=now, person=user_id)
         return self.paginate(acts)
+
+    # 获取用户参与的活动（开始时间排序）
+    def get_user_joined_act_begin_order(self, request, user_id, month, year):
+        acts = JoinedAct.objects.filter(person=user_id, act__begin_time__month=month, act__begin_time__year=year)
+        serializer = self.get_serializer(acts, many=True)
+        data = serializer.data
+        ret = {}
+        for d in data:
+            act = d['act']
+            if act['begin_time'].split('T')[0] in ret.keys():
+                ret[act['begin_time'].split('T')[0]].append(act)
+            else:
+                ret[act['begin_time'].split('T')[0]] = [act]
+        return Response(ret, 200)
 
 
 # 活动评价

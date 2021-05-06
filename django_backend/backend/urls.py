@@ -103,6 +103,7 @@ urlpatterns = [
     url(r'user/joined_acts/unstart/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_unstart_acts"})),
     url(r'user/joined_acts/cur/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_ing_act"})),
     url(r'activities/joined_numbers/(?P<act_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_act_participants_number"})),
+    url(r'users/joined_acts/(?P<user_id>\d+)/(?P<year>\d+)/(?P<month>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_joined_act_begin_order"})),
 
     # 活动评论
     url(r'activities/comments/$', CommentViewSet.as_view({"get": "list", "post": "create"})),
