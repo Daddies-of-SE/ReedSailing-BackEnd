@@ -226,5 +226,5 @@ APPID = 'wx6e4e33e0b6db916e'
 SECRET = 'fc9689a2497195707d9f85e48628b351'
 
 CRONJOBS = [
-    ('0 */2 * * *', 'BUAA.scheduled.get_access_token'),
+    ('*/2 * * * *', 'BUAA.scheduled.get_access_token'),
 ]
