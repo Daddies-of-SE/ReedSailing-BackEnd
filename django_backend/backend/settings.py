@@ -28,9 +28,9 @@ DEBUG = True
 
 # SECURITY安全设置 - 支持http时建议开启
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = True   #  将所有非SSL请求永久重定向到SSL
+SECURE_SSL_REDIRECT = True  # 将所有非SSL请求永久重定向到SSL
 SESSION_COOKIE_SECURE = True  # 仅通过https传输cookie
-CSRF_COOKIE_SECURE = True   #  仅通过https传输cookie
+CSRF_COOKIE_SECURE = True  # 仅通过https传输cookie
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # 严格要求使用https协议传输
 SECURE_HSTS_PRELOAD = True  # HSTS为
 SECURE_HSTS_SECONDS = 60
@@ -171,6 +171,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 
 # 允许跨域
 CORS_ORIGIN_ALLOW_ALL = True
