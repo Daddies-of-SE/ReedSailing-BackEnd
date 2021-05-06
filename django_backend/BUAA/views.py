@@ -299,10 +299,10 @@ class OrgApplicationViewSet(ModelViewSet):
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, 201)
-        serializer = self.get_serializer(instance=application, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, 200)
+        # serializer = self.get_serializer(instance=application, data=request.data)
+        # serializer.is_valid(raise_exception=True)
+        # serializer.save()
+        # return Response(serializer.data, 200)
 
 
 # 组织
