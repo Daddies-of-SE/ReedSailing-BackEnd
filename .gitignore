@@ -5,3 +5,4 @@ venv/
 migrations/
 .vscode/
 buaa.log
+logs/
