@@ -316,13 +316,11 @@ LOGGING = {
         # 控制台输出
 
         'console': {
-
             'level': 'DEBUG',
-
             'class': 'logging.StreamHandler',
-
-            'formatter': 'standard'
-
+            'filename': os.path.join(log_path, 'debug-{}.log'.format(time.strftime('%Y-%m-%d'))),
+            'formatter': 'standard',
+            'encoding': 'utf-8',  # 设置默认编码
         },
 
         # 输出info日志
