@@ -263,7 +263,7 @@ LOGGING = {
         'file': {  # 向文件中输出日志
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(log_path, 'all-{}.log'.format(time.strftime('%Y-%m-%d'))),
+            'filename': os.path.join(cur_path, 'logs/all.log'),
             'maxBytes': 300 * 1024 * 1024,
             'backupCount': 10,
             'formatter': 'verbose'
@@ -273,7 +273,7 @@ LOGGING = {
         'django': {  # 定义了一个名为django的日志器
             'handlers': ['console', 'file'],  # 可以同时向终端与文件中输出日志
             'propagate': True,  # 是否继续传递日志信息
-            'level': 'DEBUG',  # 日志器接收的最低日志级别
+            'level': 'INFO',  # 日志器接收的最低日志级别
         },
     }
 }
