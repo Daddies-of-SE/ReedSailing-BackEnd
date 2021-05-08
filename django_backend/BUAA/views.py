@@ -28,7 +28,7 @@ def send_email(request):
 #
 #    print("request is", request.POST)
     email_address = request.data['email']
-    if  !email_address.endswith("@buaa.edu.cn":
+    if not email_address.endswith("@buaa.edu.cn"):
         res = {
             'status' : 1,
             'msg' : 'Email address not belong to BUAA'
