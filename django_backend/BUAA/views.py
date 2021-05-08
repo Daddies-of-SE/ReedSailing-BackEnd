@@ -69,7 +69,7 @@ def verify_email(request):
     # 用redis代替
     redis_conn = get_redis_connection("code")
     redis_sms_code = redis_conn.get("sms_code_%s" % config_email)
-    if verifyCode != redis_sms_code.decode():
+    if verifyCode != redis_sms_code:
         res = {
             'status': 1,
             'msg': 'Invalid Code',
