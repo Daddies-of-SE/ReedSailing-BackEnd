@@ -226,7 +226,7 @@ SECRET = 'fc9689a2497195707d9f85e48628b351'
 
 CRONJOBS = [
     ('0 */2 * * *', 'BUAA.scheduled.get_access_token', '>>/home/get_access_token.log'),
-    ('*/1 * * * *', 'BUAA.scheduled.get_boya', '>>/home/get_boya.log'),
+    ('0 */5 * * *', 'BUAA.scheduled.get_boya', '>>/home/get_boya.log'),
 ]
 
 cur_path = os.path.dirname(os.path.realpath(__file__))  # log_path是存放日志的路径

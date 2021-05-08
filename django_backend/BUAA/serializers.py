@@ -195,12 +195,12 @@ class AddressSerializer(ModelSerializer):
         model = Address
         fields = "__all__"
 
-    def validate(self, attrs):
-        longitude = attrs.get('longitude')
-        latitude = attrs.get('latitude')
-        #if Address.objects.filter(longitude=longitude, latitude=latitude):
-        #    raise ValidationError({'address': '地点重复。'})
-        return attrs
+    # def validate(self, attrs):
+    #     longitude = attrs.get('longitude')
+    #     latitude = attrs.get('latitude')
+    #     #if Address.objects.filter(longitude=longitude, latitude=latitude):
+    #     #    raise ValidationError({'address': '地点重复。'})
+    #     return attrs
 
 
 # 用户反馈
