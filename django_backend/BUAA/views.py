@@ -49,7 +49,7 @@ def send_email(request):
         'status': 0,
         'msg': 'Email send'
     }
-    print("successfully send email to", email_address)
+    # print("successfully send email to", email_address)
     return Response(data=res, status=200)
     # return my_response(res)
 
@@ -100,7 +100,7 @@ def user_login(request):
     
     if 'errcode' in response:
         # 有错误码
-        print("err msg" + response['errmsg'])
+        # print("err msg" + response['errmsg'])
         return Response(data={
             'status': 1, 
             'code': response['errcode'], 
@@ -113,7 +113,7 @@ def user_login(request):
     # 保存openid, name, avatar
     user, create = WXUser.objects.get_or_create(openid=openid)
     
-    print(WXUser.objects.get_or_create(openid=openid))
+    # print(WXUser.objects.get_or_create(openid=openid))
     
     token = utils.encode_openid(openid, 24*60*60)
     cache.set(token, openid, 24*60*60)
@@ -139,7 +139,7 @@ def user_register(request):
     user_info = request.data['userInfo']
     WXUser.objects.filter(id=id_).update(name=user_info.get("nickName"), avatar=user_info.get("avatarUrl"))
     
-    print("register user", WXUser.objects.get_or_create(id=id_))
+    # print("register user", WXUser.objects.get_or_create(id=id_))
 
     res = {
         "status": 0

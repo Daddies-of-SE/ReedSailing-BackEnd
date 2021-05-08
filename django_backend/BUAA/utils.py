@@ -30,9 +30,9 @@ class MailSender:
             smtpObj.connect(self.mail_host, 25)  # 25 为 SMTP 端口号
             smtpObj.login(self.mail_user, self.mail_pass)
             smtpObj.sendmail(self.sender, receiver, str(message))
-            print("邮件发送成功")
+            # print("邮件发送成功")
         except SMTPException:
-            print("ERROR：无法发送邮件")
+            # print("ERROR：无法发送邮件")
 
 
 # 1, 加密openid
