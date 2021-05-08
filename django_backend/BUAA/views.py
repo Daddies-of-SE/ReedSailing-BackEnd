@@ -43,9 +43,7 @@ def send_email(request):
     # cache.set(random_str, email_address, 300)  # 验证码时效5分钟
     # 用redis代替
     redis_conn = get_redis_connection("code")
-    pipeline = redis_conn.pipeline()
-    pipeline.set("sms_code_%s" % email_address, random_str, 300)
-    pipeline.execute()
+    redis_conn.set("sms_code_%s" % email_address, random_str, 300)
     
     res = {
         'status': 0,
