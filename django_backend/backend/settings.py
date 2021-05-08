@@ -26,7 +26,6 @@ SECRET_KEY = ')n&%s@g3!jpkyz@tdj*)jst3mbzhhp$7v(trttcrl5x!7il--_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-
 # SECURITY安全设置 - 支持http时建议开启
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = True  # 将所有非SSL请求永久重定向到SSL
@@ -35,7 +34,7 @@ CSRF_COOKIE_SECURE = True  # 仅通过https传输cookie
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # 严格要求使用https协议传输
 SECURE_HSTS_PRELOAD = True  # HSTS为
 SECURE_HSTS_SECONDS = 60
-SECURE_CONTENT_TYPE_NOSNIFF = True   # 防止浏览器猜测资产的内容类型
+SECURE_CONTENT_TYPE_NOSNIFF = True  # 防止浏览器猜测资产的内容类型
 
 ALLOWED_HOSTS = ['*']
 
@@ -177,7 +176,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 # 允许跨域
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
-#CORS_ORIGIN_WHITELIST = ('*')
+# CORS_ORIGIN_WHITELIST = ('*')
 
 CORS_ALLOW_METHODS = (
     'DELETE',
@@ -222,7 +221,6 @@ REST_FRAMEWORK = {
 
 }
 
-
 APPID = 'wx6e4e33e0b6db916e'
 SECRET = 'fc9689a2497195707d9f85e48628b351'
 
@@ -230,12 +228,12 @@ CRONJOBS = [
     ('*/2 * * * *', 'BUAA.scheduled.get_access_token', '>>/home/test.log'),
 ]
 
-
 cur_path = os.path.dirname(os.path.realpath(__file__))  # log_path是存放日志的路径
 
 log_path = os.path.join(os.path.dirname(cur_path), 'logs')
 
-if not os.path.exists(log_path): os.mkdir(log_path)  # 如果不存在这个logs文件夹，就自动创建一个
+if not os.path.exists(log_path):
+    os.mkdir(log_path)  # 如果不存在这个logs文件夹，就自动创建一个
 
 LOGGING = {
     'version': 1,
@@ -263,7 +261,7 @@ LOGGING = {
         'file': {  # 向文件中输出日志
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(cur_path, 'logs/all.log'),
+            'filename': os.path.join(log_path, 'all.log'),
             'maxBytes': 300 * 1024 * 1024,
             'backupCount': 10,
             'formatter': 'verbose'
@@ -277,4 +275,3 @@ LOGGING = {
         },
     }
 }
-
