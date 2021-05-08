@@ -67,19 +67,20 @@ def verify_email(request):
     # 用redis代替
     redis_conn = get_redis_connection("code")
     redis_sms_code = redis_conn.get("sms_code_%s" % config_email)
-    if verifyCode != redis_sms_code:
-        res = {
-            'status': 1,
-            'msg': 'Invalid Code',
-        }
-        status = 400
-    else:
+    if verifyCode == redis_sms_code:
         res = {
             'status': 0,
             'msg': 'Valid Code'
         }
         WXUser.objects.filter(id=id).update(email=config_email)
         status = 200
+
+    else:
+        res = {
+            'status': 1,
+            'msg': 'Invalid Code',
+        }
+        status = 400
 
     return Response(res, status)
     # return my_response(res)
