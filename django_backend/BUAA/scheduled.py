@@ -40,6 +40,6 @@ def add_to_activities(name, description, contain, begin_time, end_time, location
         "location": address,
     }
     print(data)
-    serializer = OrganizationSerializer(data=data)
-    serializer.is_valid(raise_exception=True)
+    serializer = ActivitySerializer(data=data)
+    serializer.is_valid()
     serializer.save()
