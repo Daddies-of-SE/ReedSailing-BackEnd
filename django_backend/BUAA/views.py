@@ -10,6 +10,7 @@ from .serializers import *
 from rest_framework.response import Response
 from rest_framework.viewsets import *
 from rest_framework import status
+from django_redis import get_redis_connection
 import datetime
 
 def get_random_str():
@@ -39,7 +40,12 @@ def send_email(request):
     sender.send_mail('BUAA Certification', 'Your verify code is {}, valid in 5 minutes'.format(random_str),
                      email_address)
     
-    cache.set(random_str, email_address, 300)  # 验证码时效5分钟
+    # cache.set(random_str, email_address, 300)  # 验证码时效5分钟
+    # 用redis代替
+    redis_conn = get_redis_connection("code")
+    pipeline = redis_conn.pipeline()
+    pipeline.set("sms_code_%s" % email_address, random_str, 300)
+    pipeline.execute()
     
     res = {
         'status': 0,
@@ -59,23 +65,24 @@ def verify_email(request):
 
     # token = request.COOKIES.get('token')
     # openid = utils.decode_openid(token)
-    email = cache.get(verifyCode)
-
-    if config_email == email:
+    # email = cache.get(verifyCode)
+    # 用redis代替
+    redis_conn = get_redis_connection("code")
+    redis_sms_code = redis_conn.get("sms_code_%s" % config_email)
+    if verifyCode != redis_sms_code.decode():
+        res = {
+            'status': 1,
+            'msg': 'Invalid Code',
+        }
+        status = 400
+    else:
         res = {
             'status': 0,
             'msg': 'Valid Code'
         }
-        WXUser.objects.filter(id=id).update(email=email)
+        WXUser.objects.filter(id=id).update(email=config_email)
         status = 200
-    else:
-        res = {
-            'status': 1,
-            'msg': 'Invalid Code',
-            'config_email': config_email,
-            'email': email
-        }
-        status = 400
+
     return Response(res, status)
     # return my_response(res)
 
