@@ -235,6 +235,8 @@ log_path = os.path.join(os.path.dirname(cur_path), 'logs')
 if not os.path.exists(log_path):
     os.mkdir(log_path)  # 如果不存在这个logs文件夹，就自动创建一个
 
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,  # 是否禁用已经存在的日志器
@@ -271,7 +273,7 @@ LOGGING = {
         'django': {  # 定义了一个名为django的日志器
             'handlers': ['console', 'file'],  # 可以同时向终端与文件中输出日志
             'propagate': True,  # 是否继续传递日志信息
-            'level': 'INFO',  # 日志器接收的最低日志级别
+            'level': 'DEBUG',  # 日志器接收的最低日志级别
         },
     }
 }
