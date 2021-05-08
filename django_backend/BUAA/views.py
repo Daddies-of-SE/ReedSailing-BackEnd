@@ -23,10 +23,18 @@ def get_random_str():
 @api_view(['POST'])
 @authentication_classes([])  # 添加
 def send_email(request):
+
     sender = utils.MailSender()
 #
 #    print("request is", request.POST)
     email_address = request.data['email']
+    if  !email_address.endswith("@buaa.edu.cn":
+        res = {
+            'status' : 1,
+            'msg' : 'Email address not belong to BUAA'
+        }
+        return Response(data=res, status=400)
+
     random_str = get_random_str()[:6]
     sender.send_mail('BUAA Certification', 'Your verify code is {}, valid in 5 minutes'.format(random_str),
                      email_address)
