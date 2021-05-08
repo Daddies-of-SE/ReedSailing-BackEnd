@@ -32,6 +32,7 @@ class MailSender:
             smtpObj.sendmail(self.sender, receiver, str(message))
             # print("邮件发送成功")
         except SMTPException:
+            print("error")
             # print("ERROR：无法发送邮件")
 
 
