@@ -64,8 +64,8 @@
 
 * 输入`nginx`启动nginx
 * 在`~/ReedSailing-BackEnd/django_backend`下输入`uwsgi uwsgi.ini`启动uwsgi，配置文件为uwsgi.ini
-* 修改nginx配置文件后要输入`nginx -s reload`使nginx重新加载配置文件
-* 修改django代码后要在`~/ReedSailing-BackEnd/django_backend`下输入`touch reload`（这个命令会修改reload文件的时间戳，触发uwsgi重启服务）
+* 修改nginx配置文件后要输入`nreload`使nginx重新加载配置文件
+* 修改django代码后要输入`ureload`
 * 前端调试：在自己的电脑上（首先要保证后端已经在运行上述命令）
   * ~~小程序开发工具—右上角“详情”—本地设置—勾选“不校验合法域名”~~
   * 确认`app.js`中的`server`为`http://reedsailing.xyz/api/`
