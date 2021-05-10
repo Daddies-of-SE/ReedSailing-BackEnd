@@ -6,3 +6,4 @@ migrations/
 .vscode/
 buaa.log
 logs/
+django_backend/static/

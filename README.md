@@ -23,6 +23,8 @@
 
 ### 3、运行框架
 
+* 运行`python manage.py collectstatic`将静态文件复制到`django_backend/static`
+
 * 运行`python manage.py createcachetable`
 
 * 运行`python manage.py runserver`
@@ -53,42 +55,31 @@
   * `pi`：封装了`pip install -i 清华源`，直接`pi numpy`即可安装
   * `upload`：封装了`git add, commit, push`，直接`upload "hello world"`即可上传
   * `run`：封装了进入后端目录、运行`runserver`的操作，直接`run`即可部署后端
-* 已安装配置：git、python（pip、django及依赖库、pymysql）、mysql、vim（colorscheme等）
-
-* 待安装配置：nginx、uwsgi（域名部署相关，后期需要完成）
+* 已安装配置：git、python（pip、django及依赖库、pymysql）、mysql、vim（colorscheme等）、nginx、uwsgi
 
 
 
-### ※ 如何运行
 
-* 后端维护：在服务器上运行
-  * ~~直接输入`run`命令即可~~
-  * ~~`run`原理阐释：进入后端目录下`django_backend`，运行`python manage.py runserver 0:80`（注意这里的ip必须写0:80）~~
+### 运行与调试
+
 * 输入`nginx`启动nginx
-  * 在`~/ReedSailing-BackEnd/django_backend`下输入`uwsgi uwsgi.ini`启动uwsgi，配置文件为uwsgi.ini
-  * 修改后端代码后要重启：在`~/ReedSailing-BackEnd/django_backend`下输入`touch reload`（这个命令会修改reload文件的时间戳，触发uwsgi重启服务）
-  
+* 在`~/ReedSailing-BackEnd/django_backend`下输入`uwsgi uwsgi.ini`启动uwsgi，配置文件为uwsgi.ini
+* 修改nginx配置文件后要输入`nginx -s reload`使nginx重新加载配置文件
+* 修改django代码后要在`~/ReedSailing-BackEnd/django_backend`下输入`touch reload`（这个命令会修改reload文件的时间戳，触发uwsgi重启服务）
 * 前端调试：在自己的电脑上（首先要保证后端已经在运行上述命令）
   * ~~小程序开发工具—右上角“详情”—本地设置—勾选“不校验合法域名”~~
-  * 确认`app.js`中的`server`为`http://reedsailing.xyz/`
-  * ~~修改hosts文件~~
-    * ~~路径：mac/linux下为`/etc/hosts`，windows下为`C:\Windows\System32\drivers\etc\hosts`~~
-    * ~~在该文件最后增加一行`114.116.94.235 rs.test`~~
-  * 此时尝试编译运行，点击首页登录并查看调试器，或者直接在浏览器中输入`reedsailing.xyz/users/`，可以看到返回结果；后端（即服务器python运行窗口）可以看到收到的请求
+  * 确认`app.js`中的`server`为`http://reedsailing.xyz/api/`
+  * 此时尝试编译运行，点击首页登录并查看调试器，或者直接在浏览器中输入`reedsailing.xyz/api/users/`，可以看到返回结果；后端（即服务器python运行窗口）可以看到收到的请求
 
 ### 说明
 
 以后尽可能都直接用这个服务器上的后端，首先可以避免每个人都反复pull、migrate（理想情况下后端代码只存在于服务器上），其次可以保证数据库一致便于测试
 
-~~现在实际上使用了nginx，从而使IP地址可以解析到后端目录下的django项目，但后续上线到手机端时需要配置后端到域名（使用nginx和uwsgi）~~
-
-
-
 ## API接口
 
 运行后端
 
-在`http://reedsailing.xyz/docs`可以查看API接口
+在`http://reedsailing.xyz/api/docs`可以查看API接口
 
 
 
