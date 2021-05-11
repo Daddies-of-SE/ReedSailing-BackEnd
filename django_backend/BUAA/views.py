@@ -371,6 +371,18 @@ class OrganizationModelViewSet(ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    #搜索组织
+    def search_all(self,request):
+        org_name = request.data.get('name')
+        organizations = Organization.objects.filter(name__contains=org_name)
+        return self.paginate(organizations)
+
+    #板块下搜索组织
+    def search_org_by_block(self, request, block_id):
+        org_name = request.data.get('name')
+        organizations = Organization.objects.filter(name__contains=org_name,block=block_id)
+        return self.paginate(organizations)
+
 
 # 关注组织
 class FollowedOrgViewSet(ModelViewSet):
@@ -406,7 +418,7 @@ class OrgManageViewSet(ModelViewSet):
     queryset = OrgManager.objects.all()
 
     def get_serializer_class(self):
-        if self.action == "get_managed_org":
+        if self.action == "get_managed_org" or self.action == "search_managed_org":
             return UserManagedOrgSerializer
         if self.action == "get_all_managers":
             return OrgAllManagersSerializer
@@ -435,6 +447,12 @@ class OrgManageViewSet(ModelViewSet):
     def get_all_managers(self, request, pk):
         managers = OrgManager.objects.filter(org=pk)
         return self.paginate(managers)
+
+    #搜索用户管理的组织
+    def search_managed_org(self,request,pk):
+        org_name = request.data.get("name")
+        managed = OrgManager.objects.filter(person=pk, org__name__contains=org_name)
+        return self.paginate(managed)
 
 
 # 活动分类
@@ -562,6 +580,29 @@ class ActivityViewSet(ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    #搜索活动
+    def search_all(self,request):
+        act_name = request.data.get("name")
+        activities = Activity.objects.filter(name__contains=act_name)
+        return self.paginate(activities)
+
+    #板块下搜索活动
+    def search_act_by_block(self,request,block_id):
+        act_name = request.data.get("name")
+        activities = Activity.objects.filter(name__contains=act_name,block=block_id)
+        return self.paginate(activities)
+
+    #组织下搜索活动
+    def search_act_by_org(self,request,org_id):
+        act_name = request.data.get("name")
+        activities = Activity.objects.filter(name__contains=act_name,org=org_id)
+        return self.paginate(activities)
+
+    #搜索指定用户发布的活动
+    def search_user_released_act(self, request,user_id):
+        act_name = request.data.get("name")
+        activities = Activity.objects.filter(name__contains=act_name,owner=user_id)
+        return self.paginate(activities)
 
 # 活动参与
 class JoinedActViewSet(ModelViewSet):
@@ -657,6 +698,12 @@ class JoinedActViewSet(ModelViewSet):
             else:
                 ret[act['begin_time'].split('T')[0]] = [act]
         return Response(ret, 200)
+
+   #搜索用户参与的活动
+    def search_user_joined_act(self,request,user_id):
+        act_name = request.data.get("name")
+        acts = JoinedAct.objects.filter(person=user_id,act__name__contains=act_name)
+        return self.paginate(acts)
 
 
 # 活动评价

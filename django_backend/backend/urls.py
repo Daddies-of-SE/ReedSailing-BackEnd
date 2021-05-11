@@ -67,6 +67,10 @@ urlpatterns = [
             OrganizationModelViewSet.as_view({"get": "get_org_by_block"})),
         url(r'^organizations/owner/(?P<pk>\d+)/$',
             OrganizationModelViewSet.as_view({"post": "change_org_owner"})),
+        url(r'^organizations/search/$',
+            OrganizationModelViewSet.as_view({"get":"search_all"})),
+        url(r'^blocks/organizations/search/(?P<block_id>\d+)/$',
+            OrganizationModelViewSet.as_view({"get": "search_org_by_block"})),
 
         # 关注组织
         url(r'^users/followed_organizations/$',
@@ -81,6 +85,8 @@ urlpatterns = [
             OrgManageViewSet.as_view({"get": "get_all_managers"})),
         url(r'^users/managed_organizations/(?P<pk>\d+)/$',
             OrgManageViewSet.as_view({"get": "get_managed_org"})),
+        url(r'^users/managed_organizations/search/(?P<pk>\d+)/$',
+            OrgManageViewSet.as_view({"get": "search_managed_org"})),
 
         # 活动分类
         url(r'^activities/categories/$',
@@ -105,6 +111,8 @@ urlpatterns = [
             ActivityViewSet.as_view({"post": "create", "get": "list"})),
         url(r'^activities/(?P<pk>\d+)/$', ActivityViewSet.as_view(
             {"get": "retrieve", "delete": "destroy", "put": "update"})),
+        url(r'^activities/search/$',
+            ActivityViewSet.as_view({"get":"search_all"})),
         url(r'^organizations/activities/(?P<org_id>\d+)/$',
             ActivityViewSet.as_view({"get": "get_org_act"})),
         url(r'^organizations/activities/unstart/(?P<org_id>\d+)/$',
@@ -113,6 +121,8 @@ urlpatterns = [
             ActivityViewSet.as_view({"get": "get_org_ing_act"})),
         url(r'^organizations/activities/end/(?P<org_id>\d+)/$',
             ActivityViewSet.as_view({"get": "get_org_finish_act"})),
+        url(r'^organizations/activities/search/(?P<org_id>\d+)/$',
+            ActivityViewSet.as_view({"get": "search_act_by_org"})),
 
         url(r'^users/released_activities/(?P<user_id>\d+)/$',
             ActivityViewSet.as_view({"get": "get_user_act"})),
@@ -122,6 +132,8 @@ urlpatterns = [
             ActivityViewSet.as_view({"get": "get_user_ing_act"})),
         url(r'^users/released_activities/end/(?P<user_id>\d+)/$',
             ActivityViewSet.as_view({"get": "get_user_finish_act"})),
+        url(r'^users/released_activities/search/(?P<user_id>\d+)/$',
+            ActivityViewSet.as_view({"get": "search_user_released_act"})),
 
         url(r'^blocks/activities/(?P<block_id>\d+)/$',
             ActivityViewSet.as_view({"get": "get_block_act"})),
@@ -131,6 +143,8 @@ urlpatterns = [
             ActivityViewSet.as_view({"get": "get_block_ing_act"})),
         url(r'^blocks/activities/end/(?P<block_id>\d+)/$',
             ActivityViewSet.as_view({"get": "get_block_finish_act"})),
+        url(r'^blocks/activities/search/(?P<block_id>\d+)/$',
+           ActivityViewSet.as_view({"get": "search_act_by_block"})),
 
         # 活动参与
         url(r'activities/participants/$',
@@ -138,6 +152,8 @@ urlpatterns = [
         url(r'activities/(?P<act_id>\d+)/participants/$',
             JoinedActViewSet.as_view({"get": "get_act_participants"})),
         url(r'user/joined_acts/(?P<user_id>\d+)/$',
+            JoinedActViewSet.as_view({"get": "get_user_joined_act"})),
+        url(r'user/joined_acts/search/(?P<user_id>\d+)/$',
             JoinedActViewSet.as_view({"get": "get_user_joined_act"})),
         url(r'user/joined_acts/end/(?P<user_id>\d+)/$',
             JoinedActViewSet.as_view({"get": "get_user_end_act"})),
