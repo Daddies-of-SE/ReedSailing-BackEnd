@@ -13,7 +13,7 @@ class WXUser(models.Model):
     avatar = models.CharField(max_length=500, null=True, blank=True, verbose_name="头像", help_text="头像 --string")
     email = models.EmailField(max_length=100, null=True, verbose_name="邮箱", help_text="邮箱 --string")
     sign = models.CharField(max_length=200, null=True, blank=True, verbose_name="个性签名", help_text="个性签名 --string")
-
+    contact = models.CharField(max_length=50, verbose_name="联系方式", null=True, blank=True, help_text="联系方式 --string")
 
 # 活动
 class Activity(models.Model):
