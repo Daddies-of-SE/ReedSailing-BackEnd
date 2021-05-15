@@ -104,6 +104,7 @@ def verify_email(request):
 @api_view(['POST'])
 @authentication_classes([])
 def user_login(request):
+    #raise Exception
     # 取出数据
     js_code = request.data['code']
     

@@ -31,7 +31,7 @@ DEBUG = True
 PLATFORM = sys.platform
 
 
-if PLATFORM == 'linux':
+if PLATFORM in ['linux']:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = True  # 将所有非SSL请求永久重定向到SSL
     SESSION_COOKIE_SECURE = True  # 仅通过https传输cookie
@@ -41,7 +41,7 @@ if PLATFORM == 'linux':
     SECURE_HSTS_SECONDS = 60
     SECURE_CONTENT_TYPE_NOSNIFF = True  # 防止浏览器猜测资产的内容类型
 
-elif PLATFORM == 'win32' or PLATFORM=='win64':
+elif PLATFORM in ["win32", "win64", "darwin"]:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = False  # 将所有非SSL请求永久重定向到SSL
     SESSION_COOKIE_SECURE =  False # 仅通过https传输cookie
@@ -84,6 +84,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'BUAA.utils.ExceptionLoggingMiddleware'
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -324,3 +325,4 @@ LOGGING = {
         },
     }
 }
+

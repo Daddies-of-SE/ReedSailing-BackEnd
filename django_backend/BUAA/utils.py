@@ -63,6 +63,17 @@ def decode_openid(token, ex):
     # 3, 返回加密结果
     return openid
 
+import traceback
+import logging
+from django.utils.deprecation import MiddlewareMixin
+
+logger = logging.getLogger('default')
+
+class ExceptionLoggingMiddleware(MiddlewareMixin):
+    def process_exception(self, request, exception):
+        import traceback
+        logger.error(traceback.format_exc())
+
 if __name__ == "__main__":
     a=MailSender()
     a.send_mail("asdaf","ASdasdasd", "847791804@qq.com")
