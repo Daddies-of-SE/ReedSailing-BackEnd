@@ -44,7 +44,7 @@ if PLATFORM in ['linux']:
 elif PLATFORM in ["win32", "win64", "darwin"]:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = False  # 将所有非SSL请求永久重定向到SSL
-    SESSION_COOKIE_SECURE =  False # 仅通过https传输cookie
+    SESSION_COOKIE_SECURE = False  # 仅通过https传输cookie
     CSRF_COOKIE_SECURE = False  # 仅通过https传输cookie
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # 严格要求使用https协议传输
     SECURE_HSTS_PRELOAD = True  # HSTS为
@@ -53,7 +53,6 @@ elif PLATFORM in ["win32", "win64", "darwin"]:
 
 else:
     raise OSError('unrecognized platform')
-
 
 
 ALLOWED_HOSTS = ['*']
@@ -285,6 +284,7 @@ DJANGO_LOG_LEVEL = DEBUG
 #         },
 #     },
 # }
+LOGGING_CONFIG = None
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,  # 是否禁用已经存在的日志器
@@ -316,28 +316,20 @@ LOGGING = {
             'backupCount': 10,
             'formatter': 'verbose'
         },
-        'django.server': {  # 向文件中输出日志
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(log_path, 'all.log'),
-            'maxBytes': 300 * 1024 * 1024,
-            'backupCount': 10,
-            'formatter': 'verbose'
-        },
-
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'DEBUG',
     },
     'loggers': {  # 日志器
         'django': {  # 定义了一个名为django的日志器
             'handlers': ['console', 'file'],  # 可以同时向终端与文件中输出日志
-            'propagate': True,  # 是否继续传递日志信息
+            'propagate': False,  # 是否继续传递日志信息
             'level': 'INFO',  # 日志器接收的最低日志级别
         },
-        
+
         'django.server': {
-            #'handlers': ['django.server'],
-            #'level': 'INFO',
             'propagate': True,
         },
     }
 }
-
