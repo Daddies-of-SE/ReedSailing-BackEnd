@@ -318,7 +318,7 @@ LOGGING = {
     },
     'root': {
         'handlers': ['console', 'file'],
-        'level': DEBUG,
+        'level': 'DEBUG',
     },
     'loggers': {  # 日志器
         'django': {  # 定义了一个名为django的日志器
