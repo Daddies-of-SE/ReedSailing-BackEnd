@@ -190,7 +190,7 @@ urlpatterns = [
         url(r'^test/users/$', WXUserViewSet.as_view({"post": "create"})),
 
         # WebSocket实时通信
-        path('link/', link),
+        #path('link/', link),
 
     ]))
 

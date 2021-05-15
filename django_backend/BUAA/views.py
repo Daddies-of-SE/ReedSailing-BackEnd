@@ -143,6 +143,7 @@ def user_login(request):
         "avatar": user.avatar,
         "sign": user.sign,
         "name": user.name,
+        "contact" : user.contact
     }
     return Response(data=res, status=200)
     
@@ -749,6 +750,7 @@ class CommentViewSet(ModelViewSet):
 
 clients = {}
 
+'''
 @require_websocket
 def link(request):
     """for test: connect with clients by Socket """
@@ -760,7 +762,7 @@ def link(request):
     else:
         request.websocket.send(message)
 
-
+'''
 
 
 class SentNotifViewSet(ModelViewSet):
