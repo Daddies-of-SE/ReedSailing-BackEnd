@@ -104,7 +104,7 @@ urlpatterns = [
         url(r'^feedbacks/$',
             UserFeedbackViewSet.as_view({"get": "list", "post": "create"})),
         url(r'^feedbacks/(?P<pk>\d+)/$',
-            UserFeedbackViewSet.as_view({"delete": "destroy"})),
+            UserFeedbackViewSet.as_view({"get": "retrieve", "delete": "destroy"})),
 
         # 活动
         url(r'^activities/$',

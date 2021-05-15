@@ -311,11 +311,20 @@ LOGGING = {
         'file': {  # 向文件中输出日志
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(log_path, 'all.log'),
+            'filename': os.path.join(log_path, 'new.log'),
             'maxBytes': 300 * 1024 * 1024,
             'backupCount': 10,
             'formatter': 'verbose'
         },
+        'django.server': {  # 向文件中输出日志
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(log_path, 'new2.log'),
+            'maxBytes': 300 * 1024 * 1024,
+            'backupCount': 10,
+            'formatter': 'verbose'
+        },
+
     },
     'root': {
         'handlers': ['console', 'file'],
@@ -329,7 +338,9 @@ LOGGING = {
         },
 
         'django.server': {
+            'handlers' : ['django.server'],
             'propagate': True,
+            'level' : 'INFO'
         },
     }
 }
