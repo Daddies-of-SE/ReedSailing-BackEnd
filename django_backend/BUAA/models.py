@@ -140,3 +140,13 @@ class JoinActApplication(models.Model):
     user = models.ForeignKey('WXUser', on_delete=models.CASCADE, verbose_name="申请人")
 
 
+# 通知
+class Notification(models.Model):
+    time = models.DateTimeField(auto_now_add=True, verbose_name="发布时间")
+    content = models.CharField(max_length=500, blank=False, verbose_name="通知内容")
+
+# 发送通知
+class SentNotif(models.Model):
+    notif = models.ForeignKey('Notification', on_delete=models.CASCADE, verbose_name='通知')
+    person = models.ForeignKey('WXUser', verbose_name="接收人员", on_delete=models.CASCADE)
+    # TODO:add a boolen field 'already_read'

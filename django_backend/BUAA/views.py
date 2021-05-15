@@ -12,6 +12,7 @@ from rest_framework.viewsets import *
 from rest_framework import status
 from django_redis import get_redis_connection
 import datetime
+from dwebsocket.decorators import accept_websocket, require_websocket
 
 def get_random_str():
     uuid_val = uuid.uuid4()
@@ -19,6 +20,7 @@ def get_random_str():
     md5 = hashlib.md5()
     md5.update(uuid_str)
     return md5.hexdigest()
+
 
 
 @api_view(['POST'])
@@ -243,9 +245,6 @@ def user_act_relation(request):
 class JoinActApplicationViewSet(ModelViewSet):
     queryset = JoinActApplication.objects.all()
     serializer_class = JoinActApplicationSerializer
-
-
-
 
 
 """-------------------完成--------------------"""
@@ -743,5 +742,28 @@ class CommentViewSet(ModelViewSet):
             serializer = self.get_serializer(instance=comment)
             return Response(serializer.data)
         return Response({"id": -1}, 404)
+
+
+# WebSocket实时通信
+
+
+clients = {}
+
+@require_websocket
+def link(request):
+    """for test: connect with clients by Socket """
+    message = request.websocket.wait()
+    if message:
+        user_id = ''
+        clients[user_id] = request.websocket
+        request.websocket.send(message)
+    else:
+        request.websocket.send(message)
+
+
+
+
+class SentNotifViewSet(ModelViewSet):
+    pass
 
 
