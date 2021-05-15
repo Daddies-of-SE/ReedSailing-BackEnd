@@ -142,6 +142,7 @@ def user_login(request):
         "avatar": user.avatar,
         "sign": user.sign,
         "name": user.name,
+        "contact" : user.contact
     }
     return Response(data=res, status=200)
     

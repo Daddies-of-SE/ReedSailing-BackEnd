@@ -16,8 +16,11 @@ def get_access_token():
 
 
 def get_boya():
-    print(str(datetime.datetime.now()) + " get_boya")
-    add_to_activities("test_boya", "test_description", 100, "2021-9-9T20:00:00", "2021-9-9T21:00:00", "test_address")
+    with open("/root/ReedSailing-BackEnd/boya.log", "w+"):
+        print(str(datetime.datetime.now()) + " get_boya")
+        
+        
+        add_to_activities("test_boya", "test_description", 100, "2021-9-9T20:00:00", "2021-9-9T21:00:00", "test_address")
 
 
 
@@ -43,3 +46,7 @@ def add_to_activities(name, description, contain, begin_time, end_time, location
     serializer = ActivitySerializer(data=data)
     serializer.is_valid()
     serializer.save()
+
+
+if __name__ == "__main__":
+    get_boya()

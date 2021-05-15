@@ -26,6 +26,7 @@ class MailSender:
         subject = title  # 主题
         message['Subject'] = Header(subject, 'utf-8')
         try:
+            #print("中文测试")
             smtpObj = SMTP()
             smtpObj.connect(self.mail_host, 25)  # 25 为 SMTP 端口号
             smtpObj.login(self.mail_user, self.mail_pass)
