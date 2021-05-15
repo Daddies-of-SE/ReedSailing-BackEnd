@@ -12,7 +12,6 @@ from rest_framework.viewsets import *
 from rest_framework import status
 from django_redis import get_redis_connection
 import datetime
-from dwebsocket.decorators import accept_websocket, require_websocket
 
 def get_random_str():
     uuid_val = uuid.uuid4()
@@ -745,23 +744,8 @@ class CommentViewSet(ModelViewSet):
 
 
 # WebSocket实时通信
-
-
-clients = {}
-
-@require_websocket
-def link(request):
-    """for test: connect with clients by Socket """
-    message = request.websocket.wait()
-    if message:
-        user_id = ''
-        clients[user_id] = request.websocket
-        request.websocket.send(message)
-    else:
-        request.websocket.send(message)
-
-
-
+class NotificationViewSet(ModelViewSet):
+    pass
 
 class SentNotifViewSet(ModelViewSet):
     pass

@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 from pathlib import Path
 import os
 import time
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,20 +28,40 @@ SECRET_KEY = ')n&%s@g3!jpkyz@tdj*)jst3mbzhhp$7v(trttcrl5x!7il--_'
 DEBUG = True
 
 # SECURITY安全设置 - 支持http时建议开启
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = True  # 将所有非SSL请求永久重定向到SSL
-SESSION_COOKIE_SECURE = True  # 仅通过https传输cookie
-CSRF_COOKIE_SECURE = True  # 仅通过https传输cookie
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # 严格要求使用https协议传输
-SECURE_HSTS_PRELOAD = True  # HSTS为
-SECURE_HSTS_SECONDS = 60
-SECURE_CONTENT_TYPE_NOSNIFF = True  # 防止浏览器猜测资产的内容类型
+PLATFORM = sys.platform
+
+
+if PLATFORM == 'linux':
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True  # 将所有非SSL请求永久重定向到SSL
+    SESSION_COOKIE_SECURE = True  # 仅通过https传输cookie
+    CSRF_COOKIE_SECURE = True  # 仅通过https传输cookie
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # 严格要求使用https协议传输
+    SECURE_HSTS_PRELOAD = True  # HSTS为
+    SECURE_HSTS_SECONDS = 60
+    SECURE_CONTENT_TYPE_NOSNIFF = True  # 防止浏览器猜测资产的内容类型
+
+elif PLATFORM == 'win32' or PLATFORM=='win64':
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = False  # 将所有非SSL请求永久重定向到SSL
+    SESSION_COOKIE_SECURE =  False # 仅通过https传输cookie
+    CSRF_COOKIE_SECURE = False  # 仅通过https传输cookie
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # 严格要求使用https协议传输
+    SECURE_HSTS_PRELOAD = True  # HSTS为
+    SECURE_HSTS_SECONDS = 60
+    SECURE_CONTENT_TYPE_NOSNIFF = True  # 防止浏览器猜测资产的内容类型
+
+else:
+    raise OSError('unrecognized platform')
+
+
 
 ALLOWED_HOSTS = ['*']
 
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -88,6 +109,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
+ASGI_APPLICATION = 'backend.asgi.application'
+
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
