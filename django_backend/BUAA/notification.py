@@ -5,7 +5,18 @@ import json
 
 clients = {}
 
-class ChatConsumer(WebsocketConsumer):
+NOTIF_LIST_EXAMPLE = [
+    {
+        "pub_time": 'time1',
+        'content': 'notification1'
+    },
+    {
+        "pub_time" : 'time2',
+        'content' : 'notification2'
+    }
+]
+
+class NotificationConsumer(WebsocketConsumer):
     def websocket_connect(self, message) :
         """
         客户端请求链接之后自动触发
@@ -13,8 +24,14 @@ class ChatConsumer(WebsocketConsumer):
         """
         # print('请求链接')
         self.accept()  # 建立链接
-        self.user_id = message
+        self.user_id = self.scope["url_route"]["kwargs"]["user_id"]
+        # print(f'client user id is {self.user_id}')
         clients[self.user_id] = self
+        # 客户登录时无条件push新通知
+        self.send(text_data=json.dumps(NOTIF_LIST_EXAMPLE))
+        # 修改通知状态为已读
+        # todo
+
 
     def websocket_receive(self, message) :
         """

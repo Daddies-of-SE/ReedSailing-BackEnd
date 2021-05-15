@@ -110,7 +110,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
-ASGI_APPLICATION = 'backend.asgi.application'
+ASGI_APPLICATION = 'backend.routing.application'
 
 
 # Database

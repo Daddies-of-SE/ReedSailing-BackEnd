@@ -106,6 +106,7 @@ def verify_email(request):
 def user_login(request):
     #raise Exception
     # 取出数据
+    # print('login')
     js_code = request.data['code']
     
     # 获取openid和session_key
