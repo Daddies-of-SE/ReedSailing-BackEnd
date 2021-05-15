@@ -284,6 +284,7 @@ DJANGO_LOG_LEVEL = DEBUG
 #         },
 #     },
 # }
+LOGGING_CONFIG = None
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,  # 是否禁用已经存在的日志器
