@@ -68,11 +68,15 @@ import logging
 from django.utils.deprecation import MiddlewareMixin
 
 logger = logging.getLogger('default')
+logger2 = logging.getLogger('django.server')
 
 class ExceptionLoggingMiddleware(MiddlewareMixin):
     def process_exception(self, request, exception):
         import traceback
+        #with open("/root/test.txt", "w") as f:
+        #    f.write(traceback.format_exc())
         logger.error(traceback.format_exc())
+        logger2.error(traceback.format_exc())
 
 if __name__ == "__main__":
     a=MailSender()

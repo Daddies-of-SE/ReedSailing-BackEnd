@@ -316,12 +316,27 @@ LOGGING = {
             'backupCount': 10,
             'formatter': 'verbose'
         },
+        'django.server': {  # 向文件中输出日志
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(log_path, 'all.log'),
+            'maxBytes': 300 * 1024 * 1024,
+            'backupCount': 10,
+            'formatter': 'verbose'
+        },
+
     },
     'loggers': {  # 日志器
         'django': {  # 定义了一个名为django的日志器
             'handlers': ['console', 'file'],  # 可以同时向终端与文件中输出日志
             'propagate': True,  # 是否继续传递日志信息
             'level': 'INFO',  # 日志器接收的最低日志级别
+        },
+        
+        'django.server': {
+            #'handlers': ['django.server'],
+            #'level': 'INFO',
+            'propagate': True,
         },
     }
 }
