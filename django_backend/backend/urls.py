@@ -186,6 +186,9 @@ urlpatterns = [
         url(r'users/followed_organizations/activities/(?P<user_id>\d+)/$',
             ActivityViewSet.as_view({"get": "get_followed_org_act"})),
 
+
+        # 通知
+        url(r'^notifications/read/(?P<user_id>\d+)/$', SentNotifViewSet.as_view({"post": "read_notifications"})),
         # 测试使用
         url(r'^test/users/$', WXUserViewSet.as_view({"post": "create"})),
 

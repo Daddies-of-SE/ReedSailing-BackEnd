@@ -318,6 +318,18 @@ class CommentListSerializer(ModelSerializer):
         fields = "__all__"
 
 
+class NotificationSerializer(ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = "__all__"
+
+
+class SentNotificationSerializer(ModelSerializer):
+    class Meta:
+        model = SentNotif
+        fields = "__all__"
+
+
 """--------------------------未完成------------------------------"""
 
 

@@ -20,6 +20,55 @@ def get_random_str():
     md5.update(uuid_str)
     return md5.hexdigest()
 
+"""
+新建通知
+
+输入：
+    content：通知内容
+输出：
+    数据字典
+        id：该notification的id
+        time： 发布时间
+        content： 通知内容
+"""
+def new_notification(content):
+    data = {
+        'content': content
+    }
+    serializer = NotificationSerializer(instance=data)
+    serializer.is_valid()
+    serializer.save()
+    return serializer.data
+
+
+"""
+新建发送通知关系
+
+输入：
+    notif_id: 通知的id
+    user_id: 接收通知的用户id
+输出：
+    数据字典：
+        id：发送通知关系的id
+        notif： 通知的id
+        person： 接收通知的用户的id
+        already_read： 是否已读（为false）
+"""
+def new_send_notification(notif_id, user_id):
+    data = {
+        'notif': notif_id,
+        'person': user_id
+    }
+    serializer = SentNotificationSerializer(instance=data)
+    serializer.is_valid()
+    serializer.save()
+    return serializer.data
+
+
+
+
+
+
 
 
 @api_view(['POST'])
@@ -758,11 +807,29 @@ class CommentViewSet(ModelViewSet):
 
 
 # WebSocket实时通信
+class SentNotifViewSet(ModelViewSet):
+    queryset = SentNotif.objects.all()
+    serializer_class = SentNotificationSerializer
+
+    def read_notification(self, request, user_id):
+        notifications = request.data.get("notifications")
+        for notification in notifications:
+            if SentNotif.objects.filter(notif=notifications, person=user_id).exists():
+                sent = SentNotif.objects.get(notif=notifications, person=user_id)
+                serializer = self.get_serializer(instance=sent, data={"already_read": True})
+                serializer.is_valid()
+                serializer.save()
+        return Response(data=None, status=200)
+
+
+
 class NotificationViewSet(ModelViewSet):
     pass
 
-class SentNotifViewSet(ModelViewSet):
-    pass
+
+
+
+
 
 
     
