@@ -165,9 +165,11 @@ urlpatterns = [
 
         # 通知
         url(r'^notifications/read/(?P<user_id>\d+)/$', SentNotifViewSet.as_view({"put": "read_notification"})),
+
         # 测试使用
         url(r'^test/users/$', WXUserViewSet.as_view({"post": "create"})),
-
+        url(r'^test/notifications/', NotificationViewSet.as_view({"post": "create", "get": "list"})),
+        url(r'^test/read/notifications/', SentNotifViewSet.as_view({"post": "create",  "get": "list"})),
         # wzk优化
         url(r'users/joined_acts/status/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_joined_act_status"})),
         url(r'^users/released_activities/status/(?P<user_id>\d+)/$', ActivityViewSet.as_view({"get": "get_user_act_status"})),

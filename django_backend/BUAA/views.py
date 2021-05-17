@@ -781,9 +781,9 @@ class SentNotifViewSet(ModelViewSet):
     def read_notification(self, request, user_id):
         notifications = request.data.get("notifications")
         for notification in notifications:
-            if SentNotif.objects.filter(notif=notifications, person=user_id).exists():
-                sent = SentNotif.objects.get(notif=notifications, person=user_id)
-                serializer = self.get_serializer(instance=sent, data={"already_read": True})
+            if SentNotif.objects.filter(notif=notification, person=user_id).exists():
+                sent = SentNotif.objects.get(notif=notification, person=user_id)
+                serializer = self.get_serializer(instance=sent, data={"notif": notification, "person": user_id, "already_read": True})
                 serializer.is_valid()
                 serializer.save()
         return Response(data=None, status=200)
@@ -791,7 +791,8 @@ class SentNotifViewSet(ModelViewSet):
 
 
 class NotificationViewSet(ModelViewSet):
-    pass
+    queryset = Notification.objects.all()
+    serializer_class = NotificationSerializer
 
 
 
