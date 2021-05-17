@@ -32,6 +32,7 @@ class SuperAdminAuthentication(BaseAuthentication):
         #     raise exceptions.AuthenticationFailed('非法token')
         # user = SuperAdmin.objects.get(username=username)
         # return user, None
+        return None
         pass
         return None, None
 
