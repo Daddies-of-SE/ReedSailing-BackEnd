@@ -9,3 +9,4 @@ logs/
 django_backend/static/
 *.log
 *.swp
+access_token.txt

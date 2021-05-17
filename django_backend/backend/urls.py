@@ -35,6 +35,7 @@ urlpatterns = [
         path('userActRelation/', user_act_relation),
         path('orgAvatar/', upload_org_avatar),
         path('actAvatar/', upload_act_avatar),
+        path('qrcode/', get_page_qrcode),
 
         # 自动生成接口文档
         url(r'^docs/', include_docs_urls(title='一苇以航API接口')),

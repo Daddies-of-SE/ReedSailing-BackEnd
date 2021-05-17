@@ -12,6 +12,8 @@ from rest_framework.viewsets import *
 from rest_framework import status
 from django_redis import get_redis_connection
 import datetime
+import time
+import os
 
 def get_random_str():
     uuid_val = uuid.uuid4()
@@ -67,8 +69,47 @@ def new_send_notification(notif_id, user_id):
 
 
 
+def get_access_token():
+    def get_from_wx_api():
+        appid = settings.APPID
+        secret = settings.SECRET
+        url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=' + appid + '&secret=' + secret
+        response = json.loads(requests.get(url).content)
+        with open("./access_token.txt", "w") as f:
+            print(response["access_token"], file=f)
+            print(time.time(), file=f)
+            print(response["expires_in"], file=f)
+        return response["access_token"]
+    
+    if not os.path.exists("../access_token.txt"):
+        return get_from_wx_api()
+        
+    with open("../access_token.txt") as f:
+        lines = f.readlines()
+        if time.time() - int(lines[1].strip()) > int(lines[2].strip()):
+            return get_from_wx_api()
+        return lines[0].strip()
+            
 
-
+@api_view(['POST'])
+@authentication_classes([])
+def get_page_qrcode(request):
+    body = {
+        "path" : request.data["path"],
+        "width" : request.data["width"],
+    }
+    r = requests.post(url="https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=" + get_access_token(), data=json.dumps(body), headers={"Content-Type": "application/json"})
+    
+    filename = get_random_str()
+    with open('/root/ReedSailing-Web/server_files/' + filename + '.png', 'wb') as f:
+            f.write(r.content)
+    
+    res = {
+        "img" : "https://www.reedsailing.xyz/server_files/" + filename + '.png'
+    }
+    
+    return Response(data=res, status=200)
+    
 
 
 @api_view(['POST'])
@@ -866,4 +907,5 @@ class NotificationViewSet(ModelViewSet):
 
 
 
-    
+if __name__=="__main__":
+    print(get_access_token())
