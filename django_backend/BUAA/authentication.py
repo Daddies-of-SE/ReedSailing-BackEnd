@@ -42,6 +42,7 @@ class SuperAdminAuthentication(BaseAuthentication):
 
 class ErrorAuthentication(BaseAuthentication):
     def authenticate(self, request):
+        return None
         raise exceptions.AuthenticationFailed('缺少token。')
 
     def authenticate_header(self, request):
