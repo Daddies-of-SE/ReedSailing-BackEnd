@@ -27,6 +27,7 @@ SECRET_KEY = ')n&%s@g3!jpkyz@tdj*)jst3mbzhhp$7v(trttcrl5x!7il--_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+
 # SECURITY安全设置 - 支持http时建议开启
 PLATFORM = sys.platform
 
@@ -54,13 +55,12 @@ elif PLATFORM in ["win32", "win64", "darwin"]:
 else:
     raise OSError('unrecognized platform')
 
-
 ALLOWED_HOSTS = ['*']
 
 # Application definition
 
 INSTALLED_APPS = [
-    'channels',
+    # 'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

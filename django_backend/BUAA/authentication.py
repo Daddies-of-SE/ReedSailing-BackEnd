@@ -1,31 +1,39 @@
 from rest_framework import exceptions
 from rest_framework.authentication import BaseAuthentication
-from django_redis import get_redis_connection
+from django.core.cache import cache
+from .serializers import *
 
 
 class UserAuthentication(BaseAuthentication):
     def authenticate(self, request):
-        # test
-        return 'ogKAG5QoLisYHbHzc8BFSPUVYFOI', 'ogKAG5QoLisYHbHzc8BFSPUVYFOI'
-
-        if 'HTTP_SKEY' in request.META:
-            skey = request.META['HTTP_SKEY']
-            conn = get_redis_connection('session')
-            if conn.exists(skey):
-                user = conn.get(skey)
-                return user, skey
-            else:
-                raise exceptions.AuthenticationFailed(detail={'code': 401, 'msg': 'skey已过期'})
-        else:
-            raise exceptions.AuthenticationFailed(detail={'code': 400, 'msg': '缺少skey'})
+        authorization = request.META.get('HTTP_AUTHORIZATION')
+        if not authorization:
+            return None
+        token = authorization.split()[1]
+        if not token:
+            return None
+        openid = cache.get(token)
+        if not openid:
+            raise exceptions.AuthenticationFailed('非法token')
+        user = WXUser.objects.get(openid=openid)
+        return user, None
 
     def authenticate_header(self, request):
-        return 'skey'
+        return '缺少token。'
 
 
 class SuperAdminAuthentication(BaseAuthentication):
     def authenticate(self, request):
-        return
+        token = request.META.get('HTTP_TOKEN')
+        if not token:
+            return None
+        username = cache.get(token)
+        if not username:
+            raise exceptions.AuthenticationFailed('非法token')
+        user = SuperAdmin.objects.get(username=username)
+        return user, None
 
     def authenticate_header(self, request):
-        return
+        return '缺少token。'
+
+

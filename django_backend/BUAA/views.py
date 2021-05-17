@@ -3,13 +3,12 @@ import json
 import uuid
 import hashlib
 import backend.settings as settings
-from django.core.cache import cache
 import requests
 from rest_framework.decorators import api_view, authentication_classes
-from .serializers import *
 from rest_framework.response import Response
 from rest_framework.viewsets import *
 from rest_framework import status
+from .authentication import *
 from django_redis import get_redis_connection
 import datetime
 
@@ -23,7 +22,7 @@ def get_random_str():
 
 
 @api_view(['POST'])
-@authentication_classes([])  # 添加
+@authentication_classes([UserAuthentication])
 def send_email(request):
 
     sender = utils.MailSender()
@@ -56,7 +55,7 @@ def send_email(request):
 
 
 @api_view(['POST'])
-@authentication_classes([])  # 添加
+@authentication_classes([UserAuthentication])  # 添加
 def verify_email(request):
     verifyCode = request.data['verifyCode']
     config_email = request.data['email']
@@ -102,7 +101,7 @@ def verify_email(request):
 
 
 @api_view(['POST'])
-@authentication_classes([])
+# @authentication_classes([UserAuthentication])
 def user_login(request):
     #raise Exception
     # 取出数据
@@ -150,7 +149,8 @@ def user_login(request):
     
 
 @api_view(['POST'])
-@authentication_classes([])  # 用户认证
+@authentication_classes([UserAuthentication])
+# @authentication_classes([UserAuthentication])  # 用户认证
 def user_register(request):
     # 取出数据
     id_ = request.data['id']
@@ -166,6 +166,8 @@ def user_register(request):
 
 
 @api_view(['POST'])
+@authentication_classes([UserAuthentication])
+# @authentication_classes([UserAuthentication])  # 用户认证
 def user_org_relation(request):
     user_id = request.data['user']
     org_id = request.data['org']
@@ -199,6 +201,8 @@ def user_org_relation(request):
     return Response(res)
 
 @api_view(['POST'])
+@authentication_classes([UserAuthentication])
+# thentication_classes([UserAuthentication])  # 用户认证
 def user_act_relation(request):
     user_id = request.data['user']
     act_id = request.data['act']
@@ -254,7 +258,9 @@ class JoinActApplicationViewSet(ModelViewSet):
 
 # 用户
 class WXUserViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication]
     queryset = WXUser.objects.all()
+
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -264,12 +270,14 @@ class WXUserViewSet(ModelViewSet):
 
 # 版块
 class BlockViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication]
     queryset = Block.objects.all()
     serializer_class = BlockSerializer
 
 
 # 组织申请
 class OrgApplicationViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication]
     queryset = OrgApplication.objects.all()
 
     def get_serializer_class(self):
@@ -331,6 +339,7 @@ class OrgApplicationViewSet(ModelViewSet):
 
 # 组织
 class OrganizationModelViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication]
     queryset = Organization.objects.all()
 
     def get_serializer_class(self):
@@ -387,6 +396,7 @@ class OrganizationModelViewSet(ModelViewSet):
 
 # 关注组织
 class FollowedOrgViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication]
     queryset = FollowedOrg.objects.all()
 
     def get_serializer_class(self):
@@ -416,6 +426,7 @@ class FollowedOrgViewSet(ModelViewSet):
 
 # 组织管理
 class OrgManageViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication]
     queryset = OrgManager.objects.all()
 
     def get_serializer_class(self):
@@ -458,24 +469,28 @@ class OrgManageViewSet(ModelViewSet):
 
 # 活动分类
 class CategoryViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
 # 活动地址
 class AddressViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication]
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
 
 
 # 用户反馈
 class UserFeedbackViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication]
     queryset = UserFeedback.objects.all()
     serializer_class = UserFeedbackSerializer
 
 
 # 活动
 class ActivityViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication]
     queryset = Activity.objects.all()
 
     def get_serializer_class(self):
