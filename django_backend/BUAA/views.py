@@ -3,12 +3,13 @@ import json
 import uuid
 import hashlib
 import backend.settings as settings
+from django.core.cache import cache
 import requests
 from rest_framework.decorators import api_view, authentication_classes
+from .serializers import *
 from rest_framework.response import Response
 from rest_framework.viewsets import *
 from rest_framework import status
-from .authentication import *
 from django_redis import get_redis_connection
 import datetime
 
@@ -19,10 +20,59 @@ def get_random_str():
     md5.update(uuid_str)
     return md5.hexdigest()
 
+"""
+新建通知
+
+输入：
+    content：通知内容
+输出：
+    数据字典
+        id：该notification的id
+        time： 发布时间
+        content： 通知内容
+"""
+def new_notification(content):
+    data = {
+        'content': content
+    }
+    serializer = NotificationSerializer(instance=data)
+    serializer.is_valid()
+    serializer.save()
+    return serializer.data
+
+
+"""
+新建发送通知关系
+
+输入：
+    notif_id: 通知的id
+    user_id: 接收通知的用户id
+输出：
+    数据字典：
+        id：发送通知关系的id
+        notif： 通知的id
+        person： 接收通知的用户的id
+        already_read： 是否已读（为false）
+"""
+def new_send_notification(notif_id, user_id):
+    data = {
+        'notif': notif_id,
+        'person': user_id
+    }
+    serializer = SentNotificationSerializer(instance=data)
+    serializer.is_valid()
+    serializer.save()
+    return serializer.data
+
+
+
+
+
+
 
 
 @api_view(['POST'])
-@authentication_classes([UserAuthentication, ErrorAuthentication])
+@authentication_classes([])  # 添加
 def send_email(request):
 
     sender = utils.MailSender()
@@ -55,7 +105,7 @@ def send_email(request):
 
 
 @api_view(['POST'])
-@authentication_classes([UserAuthentication, ErrorAuthentication])  # 添加
+@authentication_classes([])  # 添加
 def verify_email(request):
     verifyCode = request.data['verifyCode']
     config_email = request.data['email']
@@ -101,7 +151,7 @@ def verify_email(request):
 
 
 @api_view(['POST'])
-# @authentication_classes([UserAuthentication])
+@authentication_classes([])
 def user_login(request):
     #raise Exception
     # 取出数据
@@ -149,8 +199,7 @@ def user_login(request):
     
 
 @api_view(['POST'])
-@authentication_classes([UserAuthentication, ErrorAuthentication])
-# @authentication_classes([UserAuthentication])  # 用户认证
+@authentication_classes([])  # 用户认证
 def user_register(request):
     # 取出数据
     id_ = request.data['id']
@@ -166,8 +215,6 @@ def user_register(request):
 
 
 @api_view(['POST'])
-@authentication_classes([UserAuthentication, ErrorAuthentication])
-# @authentication_classes([UserAuthentication])  # 用户认证
 def user_org_relation(request):
     user_id = request.data['user']
     org_id = request.data['org']
@@ -201,8 +248,6 @@ def user_org_relation(request):
     return Response(res)
 
 @api_view(['POST'])
-@authentication_classes([UserAuthentication, ErrorAuthentication])
-# thentication_classes([UserAuthentication])  # 用户认证
 def user_act_relation(request):
     user_id = request.data['user']
     act_id = request.data['act']
@@ -258,9 +303,7 @@ class JoinActApplicationViewSet(ModelViewSet):
 
 # 用户
 class WXUserViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = WXUser.objects.all()
-
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -270,14 +313,12 @@ class WXUserViewSet(ModelViewSet):
 
 # 版块
 class BlockViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = Block.objects.all()
     serializer_class = BlockSerializer
 
 
 # 组织申请
 class OrgApplicationViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = OrgApplication.objects.all()
 
     def get_serializer_class(self):
@@ -339,7 +380,6 @@ class OrgApplicationViewSet(ModelViewSet):
 
 # 组织
 class OrganizationModelViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = Organization.objects.all()
 
     def get_serializer_class(self):
@@ -396,7 +436,6 @@ class OrganizationModelViewSet(ModelViewSet):
 
 # 关注组织
 class FollowedOrgViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = FollowedOrg.objects.all()
 
     def get_serializer_class(self):
@@ -426,7 +465,6 @@ class FollowedOrgViewSet(ModelViewSet):
 
 # 组织管理
 class OrgManageViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = OrgManager.objects.all()
 
     def get_serializer_class(self):
@@ -469,28 +507,24 @@ class OrgManageViewSet(ModelViewSet):
 
 # 活动分类
 class CategoryViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
 # 活动地址
 class AddressViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
 
 
 # 用户反馈
 class UserFeedbackViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = UserFeedback.objects.all()
     serializer_class = UserFeedbackSerializer
 
 
 # 活动
 class ActivityViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = Activity.objects.all()
 
     def get_serializer_class(self):
@@ -514,43 +548,43 @@ class ActivityViewSet(ModelViewSet):
     def get_org_act(self, request, org_id):
         acts = Activity.objects.filter(org=org_id)
         return self.paginate(acts)
-
-    # 获取组织下未开始活动 开始时间>现在
-    def get_org_unstart_act(self, request, org_id):
+    
+    def get_org_act_status(self, request, org_id):
         now = datetime.datetime.now()
-        acts = Activity.objects.filter(org=org_id,begin_time__gt=now)
-        return self.paginate(acts)
-
-    # 获取组织下进行中活动 开始时间 < 现在 < 结束时间
-    def get_org_ing_act(self, request, org_id):
-        now = datetime.datetime.now()
-        acts = Activity.objects.filter(org=org_id, end_time__gte=now, begin_time__lte=now)
-        return self.paginate(acts)
-
-    # 获取组织下已结束活动,结束时间 < 现在
-    def get_org_finish_act(self,request,org_id):
-        now = datetime.datetime.now()
-        acts = Activity.objects.filter(org=org_id, end_time__lt=now)
-        return self.paginate(acts)
+        ret = {
+        'unstart': self.get_serializer(Activity.objects.filter(org=org_id,begin_time__gt=now), many=True).data,
+        'cur': self.get_serializer(Activity.objects.filter(org=org_id, end_time__gte=now, begin_time__lte=now), many=True).data,
+        'end': self.get_serializer(Activity.objects.filter(org=org_id, end_time__lt=now), many=True).data
+        }
+        return Response(ret, 200)
 
     # 获取用户发布的活动
     def get_user_act(self, request, user_id):
         acts = Activity.objects.filter(owner=user_id)
         return self.paginate(acts)
+    
+    def get_user_act_status(self, request, user_id):
+        now = datetime.datetime.now()
+        ret = {
+        'unstart': self.get_serializer(Activity.objects.filter(owner=user_id,begin_time__gt=now), many=True).data,
+        'cur': self.get_serializer(Activity.objects.filter(owner=user_id, end_time__gte=now, begin_time__lte=now), many=True).data,
+        'end': self.get_serializer(Activity.objects.filter(owner=user_id, end_time__lt=now), many=True).data
+        }
+        return Response(ret, 200)
 
-    # 获取组织下未开始活动 开始时间>现在
+    # 获取用户管理的未开始活动 开始时间>现在
     def get_user_unstart_act(self, request, user_id):
         now = datetime.datetime.now()
         acts = Activity.objects.filter(owner=user_id,begin_time__gt=now)
         return self.paginate(acts)
 
-    # 获取组织下进行中活动 开始时间 < 现在 < 结束时间
+    # 获取用户管理的进行中活动 开始时间 < 现在 < 结束时间
     def get_user_ing_act(self, request, user_id):
         now = datetime.datetime.now()
         acts = Activity.objects.filter(owner=user_id, end_time__gte=now, begin_time__lte=now)
         return self.paginate(acts)
 
-    # 获取组织下已结束活动,结束时间 < 现在
+    # 获取用户管理的已结束活动,结束时间 < 现在
     def get_user_finish_act(self,request,user_id):
         now = datetime.datetime.now()
         acts = Activity.objects.filter(owner=user_id, end_time__lt=now)
@@ -560,24 +594,15 @@ class ActivityViewSet(ModelViewSet):
     def get_block_act(self, request, block_id):
         acts = Activity.objects.filter(block=block_id)
         return self.paginate(acts)
-
-    # 获取组织下未开始活动 开始时间>现在
-    def get_block_unstart_act(self, request, block_id):
+    
+    def get_block_act_status(self, request, block_id):
         now = datetime.datetime.now()
-        acts = Activity.objects.filter(block = block_id,begin_time__gt=now)
-        return self.paginate(acts)
-
-    # 获取组织下进行中活动 开始时间 < 现在 < 结束时间
-    def get_block_ing_act(self, request, block_id):
-        now = datetime.datetime.now()
-        acts = Activity.objects.filter(block = block_id, end_time__gte=now, begin_time__lte=now)
-        return self.paginate(acts)
-
-    # 获取组织下已结束活动,结束时间 < 现在
-    def get_block_finish_act(self,request,block_id):
-        now = datetime.datetime.now()
-        acts = Activity.objects.filter(block = block_id, end_time__lt=now)
-        return self.paginate(acts)
+        ret = {
+        'unstart': self.get_serializer(Activity.objects.filter(block = block_id,begin_time__gt=now), many=True).data,
+        'cur': self.get_serializer(Activity.objects.filter(block = block_id,begin_time__gt=now), many=True).data,
+        'end': self.get_serializer(Activity.objects.filter(block = block_id, end_time__lt=now), many=True).data
+        }
+        return Response(ret, 200)
 
     # 获取用户关注的组织发布的活动
     def get_followed_org_act(self, request, user_id):
@@ -622,7 +647,6 @@ class ActivityViewSet(ModelViewSet):
 
 # 活动参与
 class JoinedActViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = JoinedAct.objects.all()
 
     def get_serializer_class(self):
@@ -630,16 +654,10 @@ class JoinedActViewSet(ModelViewSet):
             return UserJoinedActSerializer
         if self.action == "get_user_joined_act_begin_order":
             return UserJoinedActSerializer
-        if self.action == "get_user_unstart_acts":
-            return UserJoinedActSerializer
-        if self.action == "get_user_ing_act":
-            return UserJoinedActSerializer
-        if self.action == "get_user_end_act":
+        if self.action == "get_user_joined_act_status":
             return UserJoinedActSerializer
         if self.action == "get_act_participants":
             return JoinedActParticipants
-        if self.action == "search_user_joined_act":
-            return UserJoinedActSerializer
         return JoinedActSerializer
 
     def paginate(self, objects):
@@ -685,24 +703,15 @@ class JoinedActViewSet(ModelViewSet):
     def get_user_joined_act(self, request, user_id):
         acts = JoinedAct.objects.filter(person=user_id)
         return self.paginate(acts)
-
-    # 获取用户未开始活动,开始时间>现在
-    def get_user_unstart_acts(self, request, user_id):
+    
+    def get_user_joined_act_status(self, request, user_id):
         now = datetime.datetime.now()
-        acts = JoinedAct.objects.filter(act__begin_time__gt=now, person=user_id)
-        return self.paginate(acts)
-
-    # 获取用户已结束活动，结束时间<现在
-    def get_user_end_act(self, request, user_id):
-        now = datetime.datetime.now()
-        acts = JoinedAct.objects.filter(act__end_time__lt=now, person=user_id)
-        return self.paginate(acts)
-
-    # 获取用户已结束活动，开始<现在<结束
-    def get_user_ing_act(self, request, user_id):
-        now = datetime.datetime.now()
-        acts = JoinedAct.objects.filter(act__end_time__gte=now, act__begin_time__lte=now, person=user_id)
-        return self.paginate(acts)
+        ret = {
+        'unstart': self.get_serializer(JoinedAct.objects.filter(act__begin_time__gt=now, person=user_id), many=True).data,
+        'cur': self.get_serializer(JoinedAct.objects.filter(act__end_time__gte=now, act__begin_time__lte=now, person=user_id), many=True).data,
+        'end': self.get_serializer(JoinedAct.objects.filter(act__end_time__lt=now, person=user_id), many=True).data
+        }
+        return Response(ret, 200)
 
     # 获取指定用户指定年月中参与的所有活动
     def get_user_joined_act_begin_order(self, request, user_id, month, year):
@@ -727,7 +736,6 @@ class JoinedActViewSet(ModelViewSet):
 
 # 活动评价
 class CommentViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = Comment.objects.all()
 
     def get_serializer_class(self):
@@ -766,10 +774,29 @@ class CommentViewSet(ModelViewSet):
 
 
 # WebSocket实时通信
+class SentNotifViewSet(ModelViewSet):
+    queryset = SentNotif.objects.all()
+    serializer_class = SentNotificationSerializer
+
+    def read_notification(self, request, user_id):
+        notifications = request.data.get("notifications")
+        for notification in notifications:
+            if SentNotif.objects.filter(notif=notifications, person=user_id).exists():
+                sent = SentNotif.objects.get(notif=notifications, person=user_id)
+                serializer = self.get_serializer(instance=sent, data={"already_read": True})
+                serializer.is_valid()
+                serializer.save()
+        return Response(data=None, status=200)
+
+
+
 class NotificationViewSet(ModelViewSet):
     pass
 
-class SentNotifViewSet(ModelViewSet):
-    pass
 
 
+
+
+
+
+    

@@ -145,8 +145,9 @@ class Notification(models.Model):
     time = models.DateTimeField(auto_now_add=True, verbose_name="发布时间")
     content = models.CharField(max_length=500, blank=False, verbose_name="通知内容")
 
+
 # 发送通知
 class SentNotif(models.Model):
     notif = models.ForeignKey('Notification', on_delete=models.CASCADE, verbose_name='通知')
     person = models.ForeignKey('WXUser', verbose_name="接收人员", on_delete=models.CASCADE)
-    # TODO:add a boolen field 'already_read'
+    already_read = models.BooleanField(verbose_name="是否已读", default=False)

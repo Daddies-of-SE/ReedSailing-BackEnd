@@ -17,6 +17,9 @@ NOTIF_LIST_EXAMPLE = [
     }
 ]
 
+
+
+
 class NotificationConsumer(WebsocketConsumer):
     def websocket_connect(self, message) :
         """
