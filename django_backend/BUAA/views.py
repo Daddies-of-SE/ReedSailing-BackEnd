@@ -622,6 +622,7 @@ class ActivityViewSet(ModelViewSet):
 
 # 活动参与
 class JoinedActViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication]
     queryset = JoinedAct.objects.all()
 
     def get_serializer_class(self):
@@ -724,6 +725,7 @@ class JoinedActViewSet(ModelViewSet):
 
 # 活动评价
 class CommentViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication]
     queryset = Comment.objects.all()
 
     def get_serializer_class(self):

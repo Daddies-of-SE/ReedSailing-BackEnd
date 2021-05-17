@@ -24,14 +24,16 @@ class UserAuthentication(BaseAuthentication):
 
 class SuperAdminAuthentication(BaseAuthentication):
     def authenticate(self, request):
-        token = request.META.get('HTTP_TOKEN')
-        if not token:
-            return None
-        username = cache.get(token)
-        if not username:
-            raise exceptions.AuthenticationFailed('非法token')
-        user = SuperAdmin.objects.get(username=username)
-        return user, None
+        # token = request.META.get('HTTP_TOKEN')
+        # if not token:
+        #     return None
+        # username = cache.get(token)
+        # if not username:
+        #     raise exceptions.AuthenticationFailed('非法token')
+        # user = SuperAdmin.objects.get(username=username)
+        # return user, None
+        pass
+        return None, None
 
     def authenticate_header(self, request):
         return '缺少token。'
