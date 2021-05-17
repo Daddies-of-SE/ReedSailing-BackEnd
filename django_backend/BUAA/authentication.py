@@ -6,6 +6,7 @@ from .serializers import *
 
 class UserAuthentication(BaseAuthentication):
     def authenticate(self, request):
+        print('user')
         authorization = request.META.get('HTTP_AUTHORIZATION')
         if not authorization:
             return None
@@ -24,6 +25,7 @@ class UserAuthentication(BaseAuthentication):
 
 class SuperAdminAuthentication(BaseAuthentication):
     def authenticate(self, request):
+        print('admin')
         # token = request.META.get('HTTP_TOKEN')
         # if not token:
         #     return None
@@ -37,4 +39,11 @@ class SuperAdminAuthentication(BaseAuthentication):
     def authenticate_header(self, request):
         return '缺少token。'
 
+
+class ErrorAuthentication(BaseAuthentication):
+    def authenticate(self, request):
+        raise exceptions.AuthenticationFailed('缺少token。')
+
+    def authenticate_header(self, request):
+        return '缺少token。'
 
