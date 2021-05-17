@@ -9,6 +9,7 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib import auth
 from .models import *
+from .views import *
 
 
 class SuperUserViewSet(ModelViewSet):
@@ -59,8 +60,12 @@ def sudo_login(request):
         return HttpResponse(json.dumps(res), content_type='application/json')
     auth.login(request, user)
     ser = SuperUserSerializer(user)
+
+    token = utils.encode_openid(name + passwd, 24 * 60 * 60)
+    cache.set(token, name, 24 * 60 * 60)
     res = {
         'success': 'true',
         'user': ser.data,
+        'token': token
     }
     return HttpResponse(json.dumps(res), content_type='application/json')
