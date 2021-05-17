@@ -164,7 +164,7 @@ urlpatterns = [
 
 
         # 通知
-        url(r'^notifications/read/(?P<user_id>\d+)/$', SentNotifViewSet.as_view({"post": "read_notifications"})),
+        url(r'^notifications/read/(?P<user_id>\d+)/$', SentNotifViewSet.as_view({"put": "read_notification"})),
         # 测试使用
         url(r'^test/users/$', WXUserViewSet.as_view({"post": "create"})),
 
