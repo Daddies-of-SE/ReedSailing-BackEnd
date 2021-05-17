@@ -545,18 +545,20 @@ class ActivityViewSet(ModelViewSet):
         return Response(serializer.data)
 
     # update_wrapper
-    def update_wrapper(self, request, act_id):
-        self.update(request)
+    def update_wrapper(self, request, pk):
+        act_id = pk
+        res = self.update(request)
         # send notification
-        content = f"您参与的活动{1}内容发生了改变，请及时查看"
-        persons = JoinedAct.objects.filter(act=act_id)
-        for p in persons:
-            p_id = p
-            if p_id in notification.clients:
-                p_ws = notification.clients[p_id]
-                p_ws.send(f"{content}")
-            else:
-                pass
+        # content = f"您参与的活动{request.data['name']}内容发生了改变，请及时查看"
+        # persons = JoinedAct.objects.filter(act=act_id)
+        # for p in persons:
+        #     p_id = p.person_id
+        #     if p_id in notification.clients:
+        #         p_ws = notification.clients[p_id]
+        #         p_ws.send(f"{content}")
+        #     else:
+        #         pass
+        return res
 
 
 
@@ -703,6 +705,14 @@ class JoinedActViewSet(ModelViewSet):
         user_id = request.query_params.get('person')
         act_id = request.query_params.get('act')
         JoinedAct.objects.filter(act=act_id, person=user_id).delete()
+        # send notification
+        content = f'您已经退出活动{act_id}'
+        if user_id in notification.clients:
+            p_ws = notification.clients[user_id]
+            p_ws.send(content)
+        else:
+            notif = new_notification(content)
+            new_send_notification(notif.data[id], user_id)
         return Response(status=204)
 
     # 获取活动的参与人数

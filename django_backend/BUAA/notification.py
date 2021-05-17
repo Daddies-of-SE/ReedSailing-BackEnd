@@ -43,11 +43,12 @@ class NotificationConsumer(WebsocketConsumer):
         :param message: 消息数据  {'type': 'websocket.receive', 'text': '你好啊 美女'}
         """
         print(message)
-        INTERVAL = 5
-        for i in range(3):
-            text = f'The {i+1}th notification from server'
-            self.send(text_data=text)
-            time.sleep(INTERVAL)
+        # for test
+        # INTERVAL = 5
+        # for i in range(3):
+        #     text = f'The {i+1}th notification from server'
+        #     self.send(text_data=text)
+        #     time.sleep(INTERVAL)
 
     def websocket_disconnect(self, message) :
         """
