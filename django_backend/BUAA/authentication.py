@@ -33,8 +33,6 @@ class SuperAdminAuthentication(BaseAuthentication):
         # user = SuperAdmin.objects.get(username=username)
         # return user, None
         return None
-        pass
-        return None, None
 
     def authenticate_header(self, request):
         return '缺少token。'
