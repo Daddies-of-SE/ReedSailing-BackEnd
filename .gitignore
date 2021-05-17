@@ -8,3 +8,4 @@ buaa.log
 logs/
 django_backend/static/
 *.log
+*.swp
