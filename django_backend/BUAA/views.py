@@ -638,6 +638,8 @@ class JoinedActViewSet(ModelViewSet):
             return UserJoinedActSerializer
         if self.action == "get_act_participants":
             return JoinedActParticipants
+        if self.action == "search_user_joined_act":
+            return UserJoinedActSerializer
         return JoinedActSerializer
 
     def paginate(self, objects):
