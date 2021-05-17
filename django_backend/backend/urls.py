@@ -115,34 +115,16 @@ urlpatterns = [
             ActivityViewSet.as_view({"post":"search_all"})),
         url(r'^organizations/activities/(?P<org_id>\d+)/$',
             ActivityViewSet.as_view({"get": "get_org_act"})),
-        url(r'^organizations/activities/unstart/(?P<org_id>\d+)/$',
-            ActivityViewSet.as_view({"get": "get_org_unstart_act"})),
-        url(r'^organizations/activities/cur/(?P<org_id>\d+)/$',
-            ActivityViewSet.as_view({"get": "get_org_ing_act"})),
-        url(r'^organizations/activities/end/(?P<org_id>\d+)/$',
-            ActivityViewSet.as_view({"get": "get_org_finish_act"})),
         url(r'^organizations/activities/search/(?P<org_id>\d+)/$',
             ActivityViewSet.as_view({"post": "search_act_by_org"})),
 
         url(r'^users/released_activities/(?P<user_id>\d+)/$',
             ActivityViewSet.as_view({"get": "get_user_act"})),
-        url(r'^users/released_activities/unstart/(?P<user_id>\d+)/$',
-            ActivityViewSet.as_view({"get": "get_user_unstart_act"})),
-        url(r'^users/released_activities/cur/(?P<user_id>\d+)/$',
-            ActivityViewSet.as_view({"get": "get_user_ing_act"})),
-        url(r'^users/released_activities/end/(?P<user_id>\d+)/$',
-            ActivityViewSet.as_view({"get": "get_user_finish_act"})),
         url(r'^users/released_activities/search/(?P<user_id>\d+)/$',
             ActivityViewSet.as_view({"post": "search_user_released_act"})),
 
         url(r'^blocks/activities/(?P<block_id>\d+)/$',
             ActivityViewSet.as_view({"get": "get_block_act"})),
-        url(r'^blocks/activities/unstart/(?P<block_id>\d+)/$',
-            ActivityViewSet.as_view({"get": "get_block_unstart_act"})),
-        url(r'^blocks/activities/cur/(?P<block_id>\d+)/$',
-            ActivityViewSet.as_view({"get": "get_block_ing_act"})),
-        url(r'^blocks/activities/end/(?P<block_id>\d+)/$',
-            ActivityViewSet.as_view({"get": "get_block_finish_act"})),
         url(r'^blocks/activities/search/(?P<block_id>\d+)/$',
            ActivityViewSet.as_view({"post": "search_act_by_block"})),
 
@@ -151,16 +133,10 @@ urlpatterns = [
             JoinedActViewSet.as_view({"post": "create", "delete": "destroy"})),
         url(r'activities/(?P<act_id>\d+)/participants/$',
             JoinedActViewSet.as_view({"get": "get_act_participants"})),
-        url(r'user/joined_acts/(?P<user_id>\d+)/$',
+        url(r'users/joined_acts/(?P<user_id>\d+)/$',
             JoinedActViewSet.as_view({"get": "get_user_joined_act"})),
-        url(r'user/joined_acts/search/(?P<user_id>\d+)/$',
+        url(r'users/joined_acts/search/(?P<user_id>\d+)/$',
             JoinedActViewSet.as_view({"post": "search_user_joined_act"})),
-#        url(r'user/joined_acts/end/(?P<user_id>\d+)/$',
-#            JoinedActViewSet.as_view({"get": "get_user_end_act"})),
-#        url(r'user/joined_acts/unstart/(?P<user_id>\d+)/$',
-#            JoinedActViewSet.as_view({"get": "get_user_unstart_acts"})),
-#        url(r'user/joined_acts/cur/(?P<user_id>\d+)/$',
-#            JoinedActViewSet.as_view({"get": "get_user_ing_act"})),
         url(r'activities/joined_numbers/(?P<act_id>\d+)/$',
             JoinedActViewSet.as_view({"get": "get_act_participants_number"})),
         url(r'users/joined_acts/(?P<user_id>\d+)/(?P<year>\d+)/(?P<month>\d+)/$',
@@ -189,8 +165,11 @@ urlpatterns = [
         # 测试使用
         url(r'^test/users/$', WXUserViewSet.as_view({"post": "create"})),
 
-
-        url(r'user/joined_acts/status/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_joined_act_status"}))
+        # wzk优化
+        url(r'users/joined_acts/status/(?P<user_id>\d+)/$', JoinedActViewSet.as_view({"get": "get_user_joined_act_status"})),
+        url(r'^users/released_activities/status/(?P<user_id>\d+)/$', ActivityViewSet.as_view({"get": "get_user_act_status"})),
+        url(r'^organizations/activities/status/(?P<org_id>\d+)/$', ActivityViewSet.as_view({"get": "get_org_act_status"})),
+        url(r'^blocks/activities/status/(?P<block_id>\d+)/$', ActivityViewSet.as_view({"get": "get_block_act_status"})),
     ]))
 
 
@@ -199,3 +178,4 @@ urlpatterns = [
 # router = SimpleRouter()
 # router.register('activities/join_applications', JoinActApplicationViewSet)
 # urlpatterns += router.urls
+        

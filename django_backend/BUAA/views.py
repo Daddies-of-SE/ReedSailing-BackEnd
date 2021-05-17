@@ -499,43 +499,43 @@ class ActivityViewSet(ModelViewSet):
     def get_org_act(self, request, org_id):
         acts = Activity.objects.filter(org=org_id)
         return self.paginate(acts)
-
-    # 获取组织下未开始活动 开始时间>现在
-    def get_org_unstart_act(self, request, org_id):
+    
+    def get_org_act_status(self, request, org_id):
         now = datetime.datetime.now()
-        acts = Activity.objects.filter(org=org_id,begin_time__gt=now)
-        return self.paginate(acts)
-
-    # 获取组织下进行中活动 开始时间 < 现在 < 结束时间
-    def get_org_ing_act(self, request, org_id):
-        now = datetime.datetime.now()
-        acts = Activity.objects.filter(org=org_id, end_time__gte=now, begin_time__lte=now)
-        return self.paginate(acts)
-
-    # 获取组织下已结束活动,结束时间 < 现在
-    def get_org_finish_act(self,request,org_id):
-        now = datetime.datetime.now()
-        acts = Activity.objects.filter(org=org_id, end_time__lt=now)
-        return self.paginate(acts)
+        ret = {
+        'unstart': self.get_serializer(Activity.objects.filter(org=org_id,begin_time__gt=now), many=True).data,
+        'cur': self.get_serializer(Activity.objects.filter(org=org_id, end_time__gte=now, begin_time__lte=now), many=True).data,
+        'end': self.get_serializer(Activity.objects.filter(org=org_id, end_time__lt=now), many=True).data
+        }
+        return Response(ret, 200)
 
     # 获取用户发布的活动
     def get_user_act(self, request, user_id):
         acts = Activity.objects.filter(owner=user_id)
         return self.paginate(acts)
+    
+    def get_user_act_status(self, request, user_id):
+        now = datetime.datetime.now()
+        ret = {
+        'unstart': self.get_serializer(Activity.objects.filter(owner=user_id,begin_time__gt=now), many=True).data,
+        'cur': self.get_serializer(Activity.objects.filter(owner=user_id, end_time__gte=now, begin_time__lte=now), many=True).data,
+        'end': self.get_serializer(Activity.objects.filter(owner=user_id, end_time__lt=now), many=True).data
+        }
+        return Response(ret, 200)
 
-    # 获取组织下未开始活动 开始时间>现在
+    # 获取用户管理的未开始活动 开始时间>现在
     def get_user_unstart_act(self, request, user_id):
         now = datetime.datetime.now()
         acts = Activity.objects.filter(owner=user_id,begin_time__gt=now)
         return self.paginate(acts)
 
-    # 获取组织下进行中活动 开始时间 < 现在 < 结束时间
+    # 获取用户管理的进行中活动 开始时间 < 现在 < 结束时间
     def get_user_ing_act(self, request, user_id):
         now = datetime.datetime.now()
         acts = Activity.objects.filter(owner=user_id, end_time__gte=now, begin_time__lte=now)
         return self.paginate(acts)
 
-    # 获取组织下已结束活动,结束时间 < 现在
+    # 获取用户管理的已结束活动,结束时间 < 现在
     def get_user_finish_act(self,request,user_id):
         now = datetime.datetime.now()
         acts = Activity.objects.filter(owner=user_id, end_time__lt=now)
@@ -545,24 +545,15 @@ class ActivityViewSet(ModelViewSet):
     def get_block_act(self, request, block_id):
         acts = Activity.objects.filter(block=block_id)
         return self.paginate(acts)
-
-    # 获取组织下未开始活动 开始时间>现在
-    def get_block_unstart_act(self, request, block_id):
+    
+    def get_block_act_status(self, request, block_id):
         now = datetime.datetime.now()
-        acts = Activity.objects.filter(block = block_id,begin_time__gt=now)
-        return self.paginate(acts)
-
-    # 获取组织下进行中活动 开始时间 < 现在 < 结束时间
-    def get_block_ing_act(self, request, block_id):
-        now = datetime.datetime.now()
-        acts = Activity.objects.filter(block = block_id, end_time__gte=now, begin_time__lte=now)
-        return self.paginate(acts)
-
-    # 获取组织下已结束活动,结束时间 < 现在
-    def get_block_finish_act(self,request,block_id):
-        now = datetime.datetime.now()
-        acts = Activity.objects.filter(block = block_id, end_time__lt=now)
-        return self.paginate(acts)
+        ret = {
+        'unstart': self.get_serializer(Activity.objects.filter(block = block_id,begin_time__gt=now), many=True).data,
+        'cur': self.get_serializer(Activity.objects.filter(block = block_id,begin_time__gt=now), many=True).data,
+        'end': self.get_serializer(Activity.objects.filter(block = block_id, end_time__lt=now), many=True).data
+        }
+        return Response(ret, 200)
 
     # 获取用户关注的组织发布的活动
     def get_followed_org_act(self, request, user_id):
@@ -613,12 +604,6 @@ class JoinedActViewSet(ModelViewSet):
         if self.action == "get_user_joined_act":
             return UserJoinedActSerializer
         if self.action == "get_user_joined_act_begin_order":
-            return UserJoinedActSerializer
-        if self.action == "get_user_unstart_acts":
-            return UserJoinedActSerializer
-        if self.action == "get_user_ing_act":
-            return UserJoinedActSerializer
-        if self.action == "get_user_end_act":
             return UserJoinedActSerializer
         if self.action == "get_user_joined_act_status":
             return UserJoinedActSerializer
@@ -678,24 +663,6 @@ class JoinedActViewSet(ModelViewSet):
         'end': self.get_serializer(JoinedAct.objects.filter(act__end_time__lt=now, person=user_id), many=True).data
         }
         return Response(ret, 200)
-
-    # 获取用户未开始活动,开始时间>现在
-    def get_user_unstart_acts(self, request, user_id):
-        now = datetime.datetime.now()
-        acts = JoinedAct.objects.filter(act__begin_time__gt=now, person=user_id)
-        return self.paginate(acts)
-
-    # 获取用户已结束活动，结束时间<现在
-    def get_user_end_act(self, request, user_id):
-        now = datetime.datetime.now()
-        acts = JoinedAct.objects.filter(act__end_time__lt=now, person=user_id)
-        return self.paginate(acts)
-
-    # 获取用户已结束活动，开始<现在<结束
-    def get_user_ing_act(self, request, user_id):
-        now = datetime.datetime.now()
-        acts = JoinedAct.objects.filter(act__end_time__gte=now, act__begin_time__lte=now, person=user_id)
-        return self.paginate(acts)
 
     # 获取指定用户指定年月中参与的所有活动
     def get_user_joined_act_begin_order(self, request, user_id, month, year):
