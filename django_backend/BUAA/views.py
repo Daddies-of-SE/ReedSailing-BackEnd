@@ -1,4 +1,4 @@
-from BUAA import utils
+from BUAA import utils, notification
 import json
 import uuid
 import hashlib
@@ -544,6 +544,22 @@ class ActivityViewSet(ModelViewSet):
         serializer = self.get_serializer(objects, many=True)
         return Response(serializer.data)
 
+    # update_wrapper
+    def update_wrapper(self, request, act_id):
+        self.update(request)
+        # send notification
+        content = f"您参与的活动{1}内容发生了改变，请及时查看"
+        persons = JoinedAct.objects.filter(act=act_id)
+        for p in persons:
+            p_id = p
+            if p_id in notification.clients:
+                p_ws = notification.clients[p_id]
+                p_ws.send(f"{content}")
+            else:
+                pass
+
+
+
     # 获取组织下的活动
     def get_org_act(self, request, org_id):
         acts = Activity.objects.filter(org=org_id)
@@ -781,8 +797,8 @@ class SentNotifViewSet(ModelViewSet):
     def read_notification(self, request, user_id):
         notifications = request.data.get("notifications")
         for notification in notifications:
-            if SentNotif.objects.filter(notif=notifications, person=user_id).exists():
-                sent = SentNotif.objects.get(notif=notifications, person=user_id)
+            if SentNotif.objects.filter(notif=notification, person=user_id).exists():
+                sent = SentNotif.objects.get(notif=notification, person=user_id)
                 serializer = self.get_serializer(instance=sent, data={"already_read": True})
                 serializer.is_valid()
                 serializer.save()

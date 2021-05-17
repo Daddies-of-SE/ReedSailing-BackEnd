@@ -110,7 +110,7 @@ urlpatterns = [
         url(r'^activities/$',
             ActivityViewSet.as_view({"post": "create", "get": "list"})),
         url(r'^activities/(?P<pk>\d+)/$', ActivityViewSet.as_view(
-            {"get": "retrieve", "delete": "destroy", "put": "update"})),
+            {"get": "retrieve", "delete": "destroy", "put": "update_wrapper"})),
         url(r'^activities/search/$',
             ActivityViewSet.as_view({"post":"search_all"})),
         url(r'^organizations/activities/(?P<org_id>\d+)/$',
