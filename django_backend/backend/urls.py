@@ -120,7 +120,7 @@ urlpatterns = [
             ActivityViewSet.as_view({"post":"search_all"})),
         
         url(r'activities/(?P<act_id>\d+)/avatar/$',
-            ActivityViewSet.as_view({"post": "upload_act_avatar"})),
+            ImageUploadViewSet.as_view({"post": "upload_act_avatar"})),
         
         url(r'^organizations/activities/(?P<org_id>\d+)/$',
             ActivityViewSet.as_view({"get": "get_org_act"})),

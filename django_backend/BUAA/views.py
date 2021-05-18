@@ -10,12 +10,14 @@ from .serializers import *
 from rest_framework.response import Response
 from rest_framework.viewsets import *
 from rest_framework import status
+from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from django_redis import get_redis_connection
 import datetime
 import time
 import os
 
-base_dir = '/root/ReedSailing-Web/server_files/'
+base_dir = '/root/ReedSailing-BackEnd/server_files/'
+#base_dir = '/Users/wzk/Desktop/'
 web_dir = 'https://www.reedsailing.xyz/server_files/'
 
 
@@ -764,6 +766,36 @@ class ActivityViewSet(ModelViewSet):
         activities = Activity.objects.filter(name__contains=act_name,owner=user_id)
         return self.paginate(activities)
 
+
+class ImageUploadViewSet(ModelViewSet):
+    parser_classes = [JSONParser, FormParser, MultiPartParser, ]
+    def upload_act_avatar(self,request,act_id):
+        try:
+            image = request.FILES['image']
+        except:
+            import traceback
+            print(traceback.format_exc())
+            exit(0)
+        try:
+            act = Activity.objects.get(id=act_id)
+        except:
+            res = {
+                "detail": '未找到活动'
+            }
+            status = 404
+            return Response(res,status)
+        path = "acts/" + str(act_id) + '.jpg'
+        with open(base_dir + path,'wb') as f1:
+            f1.write(image.read())
+            f1.close()
+            act.avatar = web_dir + path
+            act.save()
+        res = {
+            "img" : web_dir + path
+        }
+        return Response(res,200)
+
+
 # 活动参与
 class JoinedActViewSet(ModelViewSet):
     queryset = JoinedAct.objects.all()
@@ -852,32 +884,7 @@ class JoinedActViewSet(ModelViewSet):
         acts = JoinedAct.objects.filter(person=user_id,act__name__contains=act_name)
         return self.paginate(acts)
     
-    def upload_act_avatar(self,request,act_id):
-        f=open("/root/upload_err.txt", "w")
-        print("1",file=f,flush=True)
-        print("a",file=f,flush=True)
-        image = request.FILES['image']
-        print("2",file=f,flush=True)
-        try:
-            act = Activity.objects.get(id=act_id)
-        except:
-            res = {
-                "detail": '未找到活动'
-            }
-            status = 404
-            return Response(res,status)
-        print("3",file=f,flush=True)
-        path = "acts/" + str(act_id) + '.jpg'
-        with open(base_dir + path,'wb') as f:
-            f.write(image.read())
-            f.close()
-            act.avatar = web_dir + path
-            act.save()
-        print("4",file=f,flush=True)
-        res = {
-            "img" : web_dir + path
-        }
-        return Response(res,200)
+    
 
 
 # 活动评价
