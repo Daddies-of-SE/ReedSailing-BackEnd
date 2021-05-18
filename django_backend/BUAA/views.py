@@ -15,6 +15,10 @@ import datetime
 import time
 import os
 
+base_dir = '/root/ReedSailing-Web/server_files/'
+web_dir = 'https://www.reedsailing.xyz/server_files/'
+
+
 def get_random_str():
     uuid_val = uuid.uuid4()
     uuid_str = str(uuid_val).encode("utf-8")
@@ -100,16 +104,67 @@ def get_page_qrcode(request):
     }
     r = requests.post(url="https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=" + get_access_token(), data=json.dumps(body), headers={"Content-Type": "application/json"})
     
-    filename = get_random_str()
-    with open('/root/ReedSailing-Web/server_files/' + filename + '.png', 'wb') as f:
+    path = "qrcode/" + get_random_str() + '.png'
+    with open(base_dir + path, 'wb') as f:
             f.write(r.content)
     
     res = {
-        "img" : "https://www.reedsailing.xyz/server_files/" + filename + '.png'
+        "img" : web_dir + path
     }
     
     return Response(data=res, status=200)
     
+
+@api_view(['POST'])
+@authentication_classes([])
+def upload_org_avatar(request):
+    org_id = request.data['org']
+    image = request.FILES['image']
+    try:
+        org = Organization.objects.get(id=org_id)
+    except:
+        res = {
+            "detail": '未找到组织'
+        }
+        status = 404
+        return Response(res,status)
+    
+    path = "orgs/" + str(act_id) + '.jpg'
+    with open(base_dir + path,'wb') as f:
+        f.write(image.read())
+        f.close()
+        org.avatar = web_dir + path
+        org.save()
+    res = {
+        "img" : web_dir + path
+    }
+    return Response(res,200)
+
+
+@api_view(['POST'])
+@authentication_classes([])
+def upload_act_avatar(request):
+    act_id = request.data['act']
+    image = request.FILES['image']
+    try:
+        act = Activity.objects.get(id=act_id)
+    except:
+        res = {
+            "detail": '未找到活动'
+        }
+        status = 404
+        return Response(res,status)
+    
+    path = "acts/" + str(act_id) + '.jpg'
+    with open(base_dir + path,'wb') as f:
+        f.write(image.read())
+        f.close()
+        act.avatar = web_dir + path
+        act.save()
+    res = {
+        "img" : web_dir + path
+    }
+    return Response(res,200)
 
 
 @api_view(['POST'])
@@ -326,55 +381,7 @@ def user_act_relation(request):
         res["isManager"] = True
     return Response(res)
 
-@api_view(['POST'])
-def upload_org_avatar(request):
-    org_id = request.data['org']
-    image = request.FILES['image']
-    try:
-        org = Organization.objects.get(id=org_id)
-    except:
-        res = {
-            "detail": '未找到组织'
-        }
-        status = 404
-        return Response(res,status)
-    base_dir = '/root/ReedSailing-Web/server_files/'
-    path = base_dir+'orgs/'
-    with open(path+str(org_id)+'.jpg','wb') as f:
-        f.write(image.read())
-        f.close()
-        org.avatar=path+str(org_id)+'.jpg'
-        org.save()
-    res = {
-        'status': 0,
-        'msg': 'Avatar Upload'
-    }
-    return Response(res)
 
-@api_view(['POST'])
-def upload_act_avatar(request):
-    act_id = request.data['act']
-    image = request.FILES['image']
-    try:
-        act = Activity.objects.get(id=act_id)
-    except:
-        res = {
-            "detail": '未找到活动'
-        }
-        status = 404
-        return Response(res,status)
-    base_dir = '/root/ReedSailing-Web/server_files/'
-    path = base_dir+'acts/'
-    with open(path+str(act_id)+'.jpg','wb') as f:
-        f.write(image.read())
-        f.close()
-        act.avatar = path+str(act_id)+'.jpg'
-        act.save()
-    res = {
-        'status': 0,
-        'msg': 'Avatar Upload'
-    }
-    return Response(res)
 
 
 
