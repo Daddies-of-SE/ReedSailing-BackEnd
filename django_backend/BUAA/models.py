@@ -31,8 +31,9 @@ class Activity(models.Model):
     org = models.ForeignKey('Organization', on_delete=models.CASCADE, null=True, verbose_name="所属组织")
     location = models.ForeignKey('Address', on_delete=models.CASCADE, verbose_name="活动地点")
     block = models.ForeignKey('Block', on_delete=models.CASCADE, verbose_name="所属版块")  # 组织需要与组织模块保证一致
-
+    avatar = models.CharField(max_length=500, null=True, blank=True, verbose_name="活动图片")
     # person = models.ManyToManyField('WXUser', verbose_name="报名人员")
+
 
 
 # 活动参与

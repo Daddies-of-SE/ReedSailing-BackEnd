@@ -285,6 +285,56 @@ def user_act_relation(request):
         res["isManager"] = True
     return Response(res)
 
+@api_view(['POST'])
+def upload_org_avatar(request):
+    org_id = request.data['org']
+    image = request.FILES['image']
+    try:
+        org = Organization.objects.get(id=org_id)
+    except:
+        res = {
+            "detail": '未找到组织'
+        }
+        status = 404
+        return Response(res,status)
+    base_dir = '/root/ReedSailing-Web/server_files/'
+    path = base_dir+'orgs/'
+    with open(path+str(org_id)+'.jpg','wb') as f:
+        f.write(image.read())
+        f.close()
+        org.avatar=path+str(org_id)+'.jpg'
+        org.save()
+    res = {
+        'status': 0,
+        'msg': 'Avatar Upload'
+    }
+    return Response(res)
+
+@api_view(['POST'])
+def upload_act_avatar(request):
+    act_id = request.data['act']
+    image = request.FILES['image']
+    try:
+        act = Activity.objects.get(id=act_id)
+    except:
+        res = {
+            "detail": '未找到活动'
+        }
+        status = 404
+        return Response(res,status)
+    base_dir = '/root/ReedSailing-Web/server_files/'
+    path = base_dir+'acts/'
+    with open(path+str(act_id)+'.jpg','wb') as f:
+        f.write(image.read())
+        f.close()
+        act.avatar = path+str(act_id)+'.jpg'
+        act.save()
+    res = {
+        'status': 0,
+        'msg': 'Avatar Upload'
+    }
+    return Response(res)
+
 
 
 
