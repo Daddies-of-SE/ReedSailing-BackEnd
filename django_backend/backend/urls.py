@@ -118,6 +118,10 @@ urlpatterns = [
             {"get": "retrieve", "delete": "destroy", "put": "update"})),
         url(r'^activities/search/$',
             ActivityViewSet.as_view({"post":"search_all"})),
+        
+        url(r'activities/(?P<act_id>\d+)/avatar/$',
+            ActivityViewSet.as_view({"post": "upload_act_avatar"})),
+        
         url(r'^organizations/activities/(?P<org_id>\d+)/$',
             ActivityViewSet.as_view({"get": "get_org_act"})),
         url(r'^organizations/activities/search/(?P<org_id>\d+)/$',
@@ -188,4 +192,5 @@ urlpatterns = [
 # router = SimpleRouter()
 # router.register('activities/join_applications', JoinActApplicationViewSet)
 # urlpatterns += router.urls
+        
         

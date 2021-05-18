@@ -144,8 +144,12 @@ def upload_org_avatar(request):
 @api_view(['POST'])
 @authentication_classes([])
 def upload_act_avatar(request):
+    f=open("/root/upload_err.txt", "w")
+    print("1",file=f,flush=True)
     act_id = request.data['act']
+    print("a",file=f,flush=True)
     image = request.FILES['image']
+    print("2",file=f,flush=True)
     try:
         act = Activity.objects.get(id=act_id)
     except:
@@ -154,13 +158,14 @@ def upload_act_avatar(request):
         }
         status = 404
         return Response(res,status)
-    
+    print("3",file=f,flush=True)
     path = "acts/" + str(act_id) + '.jpg'
     with open(base_dir + path,'wb') as f:
         f.write(image.read())
         f.close()
         act.avatar = web_dir + path
         act.save()
+    print("4",file=f,flush=True)
     res = {
         "img" : web_dir + path
     }
@@ -846,6 +851,33 @@ class JoinedActViewSet(ModelViewSet):
         act_name = request.data.get("name")
         acts = JoinedAct.objects.filter(person=user_id,act__name__contains=act_name)
         return self.paginate(acts)
+    
+    def upload_act_avatar(self,request,act_id):
+        f=open("/root/upload_err.txt", "w")
+        print("1",file=f,flush=True)
+        print("a",file=f,flush=True)
+        image = request.FILES['image']
+        print("2",file=f,flush=True)
+        try:
+            act = Activity.objects.get(id=act_id)
+        except:
+            res = {
+                "detail": '未找到活动'
+            }
+            status = 404
+            return Response(res,status)
+        print("3",file=f,flush=True)
+        path = "acts/" + str(act_id) + '.jpg'
+        with open(base_dir + path,'wb') as f:
+            f.write(image.read())
+            f.close()
+            act.avatar = web_dir + path
+            act.save()
+        print("4",file=f,flush=True)
+        res = {
+            "img" : web_dir + path
+        }
+        return Response(res,200)
 
 
 # 活动评价
