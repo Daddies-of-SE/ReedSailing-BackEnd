@@ -33,8 +33,6 @@ urlpatterns = [
         #path('register/', sudo_register),
         path('userOrgRelation/', user_org_relation),
         path('userActRelation/', user_act_relation),
-        path('orgAvatar/', upload_org_avatar),
-        path('actAvatar/', upload_act_avatar),
         path('qrcode/', get_page_qrcode),
 
         # 自动生成接口文档
@@ -119,9 +117,6 @@ urlpatterns = [
         url(r'^activities/search/$',
             ActivityViewSet.as_view({"post":"search_all"})),
         
-        url(r'activities/(?P<act_id>\d+)/avatar/$',
-            ImageUploadViewSet.as_view({"post": "upload_act_avatar"})),
-        
         url(r'^organizations/activities/(?P<org_id>\d+)/$',
             ActivityViewSet.as_view({"get": "get_org_act"})),
         url(r'^organizations/activities/search/(?P<org_id>\d+)/$',
@@ -170,6 +165,12 @@ urlpatterns = [
         # 关注组织发布的活动
         url(r'users/followed_organizations/activities/(?P<user_id>\d+)/$',
             ActivityViewSet.as_view({"get": "get_followed_org_act"})),
+        
+        # 上传图片
+        url(r'activities/(?P<act_id>\d+)/avatar/$',
+            ImageUploadViewSet.as_view({"post": "upload_act_avatar"})),
+        url(r'organizations/(?P<org_id>\d+)/avatar/$',
+            ImageUploadViewSet.as_view({"post": "upload_org_avatar"})),
 
 
         # 通知

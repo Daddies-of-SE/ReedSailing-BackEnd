@@ -16,7 +16,7 @@ import datetime
 import time
 import os
 
-base_dir = '/root/ReedSailing-BackEnd/server_files/'
+base_dir = '/root/ReedSailing-Web/server_files/'
 #base_dir = '/Users/wzk/Desktop/'
 web_dir = 'https://www.reedsailing.xyz/server_files/'
 
@@ -115,63 +115,6 @@ def get_page_qrcode(request):
     }
     
     return Response(data=res, status=200)
-    
-
-@api_view(['POST'])
-@authentication_classes([])
-def upload_org_avatar(request):
-    org_id = request.data['org']
-    image = request.FILES['image']
-    try:
-        org = Organization.objects.get(id=org_id)
-    except:
-        res = {
-            "detail": '未找到组织'
-        }
-        status = 404
-        return Response(res,status)
-    
-    path = "orgs/" + str(act_id) + '.jpg'
-    with open(base_dir + path,'wb') as f:
-        f.write(image.read())
-        f.close()
-        org.avatar = web_dir + path
-        org.save()
-    res = {
-        "img" : web_dir + path
-    }
-    return Response(res,200)
-
-
-@api_view(['POST'])
-@authentication_classes([])
-def upload_act_avatar(request):
-    f=open("/root/upload_err.txt", "w")
-    print("1",file=f,flush=True)
-    act_id = request.data['act']
-    print("a",file=f,flush=True)
-    image = request.FILES['image']
-    print("2",file=f,flush=True)
-    try:
-        act = Activity.objects.get(id=act_id)
-    except:
-        res = {
-            "detail": '未找到活动'
-        }
-        status = 404
-        return Response(res,status)
-    print("3",file=f,flush=True)
-    path = "acts/" + str(act_id) + '.jpg'
-    with open(base_dir + path,'wb') as f:
-        f.write(image.read())
-        f.close()
-        act.avatar = web_dir + path
-        act.save()
-    print("4",file=f,flush=True)
-    res = {
-        "img" : web_dir + path
-    }
-    return Response(res,200)
 
 
 @api_view(['POST'])
@@ -767,33 +710,7 @@ class ActivityViewSet(ModelViewSet):
         return self.paginate(activities)
 
 
-class ImageUploadViewSet(ModelViewSet):
-    parser_classes = [JSONParser, FormParser, MultiPartParser, ]
-    def upload_act_avatar(self,request,act_id):
-        try:
-            image = request.FILES['image']
-        except:
-            import traceback
-            print(traceback.format_exc())
-            exit(0)
-        try:
-            act = Activity.objects.get(id=act_id)
-        except:
-            res = {
-                "detail": '未找到活动'
-            }
-            status = 404
-            return Response(res,status)
-        path = "acts/" + str(act_id) + '.jpg'
-        with open(base_dir + path,'wb') as f1:
-            f1.write(image.read())
-            f1.close()
-            act.avatar = web_dir + path
-            act.save()
-        res = {
-            "img" : web_dir + path
-        }
-        return Response(res,200)
+
 
 
 # 活动参与
@@ -949,9 +866,54 @@ class NotificationViewSet(ModelViewSet):
 
 
 
+class ImageUploadViewSet(ModelViewSet):
+    parser_classes = [JSONParser, FormParser, MultiPartParser, ]
+    serializer_class = ImageUploadSerializer
+    def upload_act_avatar(self,request,act_id):
+        image = request.FILES['image']
+        try:
+            act = Activity.objects.get(id=act_id)
+        except:
+            res = {
+                "detail": '未找到活动'
+            }
+            status = 404
+            return Response(res,status)
+        path = "acts/" + str(act_id) + '.jpg'
+        with open(base_dir + path,'wb') as f1:
+            f1.write(image.read())
+            f1.close()
+            act.avatar = web_dir + path
+            act.save()
+        res = {
+            "img" : web_dir + path
+        }
+        return Response(res,200)
 
 
+    def upload_org_avatar(self, request, org_id):
+        image = request.FILES['image']
+        try:
+            org = Organization.objects.get(id=org_id)
+        except:
+            res = {
+                "detail": '未找到组织'
+            }
+            status = 404
+            return Response(res,status)
+        
+        path = "orgs/" + str(org_id) + '.jpg'
+        with open(base_dir + path,'wb') as f:
+            f.write(image.read())
+            f.close()
+            org.avatar = web_dir + path
+            org.save()
+        res = {
+            "img" : web_dir + path
+        }
+        return Response(res,200)
 
 
 if __name__=="__main__":
     print(get_access_token())
+    

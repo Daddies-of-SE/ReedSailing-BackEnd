@@ -351,9 +351,15 @@ class JoinActApplicationSerializer(ModelSerializer):
         model = JoinActApplication
         fields = "__all__"
 
+class ImageUploadSerializer(ModelSerializer):
+    # placeholder
+    class Meta:
+        model = WXUser
+        fields = "__all__"
 
 # test
 class TestUserSerializer(ModelSerializer):
     class Meta:
         model = WXUser
         fields = "__all__"
+        
