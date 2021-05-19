@@ -3,12 +3,23 @@ from email.mime.text import MIMEText
 from email.header import Header
 from itsdangerous.jws import TimedJSONWebSignatureSerializer as TJWSSerializer
 from django.conf import settings
+import BUAA.models as models
+import BUAA.serializers as serializers
 
 mail_host = "smtp.126.com"  # 设置SMTP服务器，如smtp.qq.com
 mail_user = "reedsailing@126.com"  # 发送邮箱的用户名，如xxxxxx@qq.com
 mail_pass = "SJHDAZYRQSGNXCTH"  # 发送邮箱的密码（注：QQ邮箱需要开启SMTP服务后在此填写授权码）
 sender = mail_user  # 发件邮箱，如xxxxxx@qq.com
 
+# Notification part
+def read_notif():
+    pass
+
+def push_all_notif(user_id, ws):
+    unread_send_notifs = models.SentNotif.objects.filter(person=user_id, already_read=False)
+    unread_notifs = list(map(lambda x: serializers.NotificationSerializer(x.notif).data ,unread_send_notifs))
+    ws.send(str(unread_notifs))
+    # unread_notifs.update(already_read = True)
 
 class MailSender:
     def __init__(self):

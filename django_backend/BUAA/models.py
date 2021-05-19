@@ -1,7 +1,7 @@
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
-
+from BUAA.const import NOTIF_TYPE_CHOICES
 
 # Create your models here.
 
@@ -142,8 +142,12 @@ class JoinActApplication(models.Model):
 
 # 通知
 class Notification(models.Model):
+
+    type = models.SmallIntegerField(choices=NOTIF_TYPE_CHOICES, verbose_name='通知类型')
     time = models.DateTimeField(auto_now_add=True, verbose_name="发布时间")
     content = models.CharField(max_length=500, blank=False, verbose_name="通知内容")
+    act = models.ForeignKey('Activity', null=True, on_delete=models.CASCADE, verbose_name="活动")
+    org = models.ForeignKey('Organization', null=True, on_delete=models.CASCADE, verbose_name="组织")
 
 
 # 发送通知

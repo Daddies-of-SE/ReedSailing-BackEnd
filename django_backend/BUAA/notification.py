@@ -3,22 +3,9 @@ from channels.exceptions import StopConsumer
 from channels.generic.websocket import WebsocketConsumer
 import json
 import time
+import BUAA.utils as utils
 
 clients = {}
-
-NOTIF_LIST_EXAMPLE = [
-    {
-        "pub_time": 'time1',
-        'content': 'notification1'
-    },
-    {
-        "pub_time" : 'time2',
-        'content' : 'notification2'
-    }
-]
-
-
-
 
 class NotificationConsumer(WebsocketConsumer):
     def websocket_connect(self, message) :
@@ -30,11 +17,9 @@ class NotificationConsumer(WebsocketConsumer):
         self.accept()  # 建立链接
         self.user_id = self.scope["url_route"]["kwargs"]["user_id"]
         # print(f'client user id is {self.user_id}')
-        clients[self.user_id] = self
+        clients[int(self.user_id)] = self
         # 客户登录时无条件push新通知
-        self.send(text_data=json.dumps(NOTIF_LIST_EXAMPLE))
-        # 修改通知状态为已读
-        # todo
+        utils.push_all_notif(self.user_id, self)
 
 
     def websocket_receive(self, message) :
@@ -42,13 +27,14 @@ class NotificationConsumer(WebsocketConsumer):
         客户端浏览器发送消息来的时候自动触发
         :param message: 消息数据  {'type': 'websocket.receive', 'text': '你好啊 美女'}
         """
-        print(message)
+        print(message['text'])
         # for test
         # INTERVAL = 5
         # for i in range(3):
         #     text = f'The {i+1}th notification from server'
         #     self.send(text_data=text)
         #     time.sleep(INTERVAL)
+        pass
 
     def websocket_disconnect(self, message) :
         """
