@@ -5,6 +5,7 @@ from itsdangerous.jws import TimedJSONWebSignatureSerializer as TJWSSerializer
 from django.conf import settings
 import BUAA.models as models
 import BUAA.serializers as serializers
+from BUAA.const import NOTIF
 
 mail_host = "smtp.126.com"  # 设置SMTP服务器，如smtp.qq.com
 mail_user = "reedsailing@126.com"  # 发送邮箱的用户名，如xxxxxx@qq.com
@@ -12,14 +13,40 @@ mail_pass = "SJHDAZYRQSGNXCTH"  # 发送邮箱的密码（注：QQ邮箱需要�
 sender = mail_user  # 发件邮箱，如xxxxxx@qq.com
 
 # Notification part
-def read_notif():
-    pass
+def get_notif_content(type_, **kwargs):
+    act = kwargs['act_name'] if 'act_name' in kwargs else ''
+    org = kwargs['org_name'] if 'org_name' in kwargs else ''
+
+    content = ''
+    if type_== NOTIF.ActContent:
+        content = f"您参与的活动\'{act}\'内容发生了改变，请及时查看"
+    elif type_ == NOTIF.ActCancel:
+        content = f"您参与的活动\'{act}\'已被取消"
+    elif type_ == NOTIF.RemovalFromAct:
+        content = f"您已被管理员从活动\'{act}\'中移除"
+    elif type_ == NOTIF.NewBoya:
+        content = f"有新的博雅\'{act}\', 如有需要请及时报名"
+    elif type_ == NOTIF.ActCommented:
+        content = f"您管理的活动\'{act}\'被评论了"
+    elif type_ == NOTIF.OrgApplyRes:
+        content = f"您创建\'{org}\'组织的申请已经"
+    elif type_ == NOTIF.BecomeOwner:
+        content = f"您被转让成为\'{org}\'组织的负责人"
+    elif type_ == NOTIF.RemovalFromAdmin:
+        content = f"您被\'{org}\'组织的负责人移除了管理员身份"
+
+    return content
+
+
+
+
 
 def push_all_notif(user_id, ws):
+    """revoke when user gets online"""
     unread_send_notifs = models.SentNotif.objects.filter(person=user_id, already_read=False)
     unread_notifs = list(map(lambda x: serializers.NotificationSerializer(x.notif).data ,unread_send_notifs))
     ws.send(str(unread_notifs))
-    # unread_notifs.update(already_read = True)
+    unread_send_notifs.update(already_read = True)
 
 class MailSender:
     def __init__(self):

@@ -15,9 +15,9 @@ class NotificationConsumer(WebsocketConsumer):
         """
         # print('请求链接')
         self.accept()  # 建立链接
-        self.user_id = self.scope["url_route"]["kwargs"]["user_id"]
+        self.user_id = int(self.scope["url_route"]["kwargs"]["user_id"])
         # print(f'client user id is {self.user_id}')
-        clients[int(self.user_id)] = self
+        clients[self.user_id] = self
         # 客户登录时无条件push新通知
         utils.push_all_notif(self.user_id, self)
 

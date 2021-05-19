@@ -111,7 +111,7 @@ urlpatterns = [
         url(r'^activities/$',
             ActivityViewSet.as_view({"post": "create", "get": "list"})),
         url(r'^activities/(?P<pk>\d+)/$', ActivityViewSet.as_view(
-            {"get": "retrieve", "delete": "destroy", "put": "update_wrapper"})),
+            {"get": "retrieve", "delete": "destroy_wrapper", "put": "update_wrapper"})),
 #         url(r'^activities/(?P<pk>\d+)/$', ActivityViewSet.as_view(
 #             {"get": "retrieve", "delete": "destroy", "put": "update"})),
         url(r'^activities/search/$',
@@ -134,7 +134,7 @@ urlpatterns = [
 
         # 活动参与
         url(r'activities/participants/$',
-            JoinedActViewSet.as_view({"post": "create", "delete": "destroy"})),
+            JoinedActViewSet.as_view({"post": "create", "delete": "destroy_wrapper"})),
         url(r'activities/(?P<act_id>\d+)/participants/$',
             JoinedActViewSet.as_view({"get": "get_act_participants"})),
         url(r'users/joined_acts/(?P<user_id>\d+)/$',

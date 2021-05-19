@@ -1,4 +1,5 @@
 from BUAA import utils, notification
+import BUAA.models
 import json
 import uuid
 import hashlib
@@ -28,6 +29,25 @@ def get_random_str():
     md5 = hashlib.md5()
     md5.update(uuid_str)
     return md5.hexdigest()
+
+# 仅供文件内部调用
+def _send_notif(p_id, notif):
+    """revoke when user keeps online"""
+    p_id = int(p_id)
+    if p_id in notification.clients :
+        p_ws = notification.clients[p_id]
+        p_ws.send(str([notif]))
+    else :
+        new_send_notification(notif['id'], p_id)
+
+
+def _act_id2act_name(pk):
+    pk = int(pk)
+    return BUAA.models.Activity.objects.get(id=pk).name
+
+def _org_id2org_name(pk):
+    pk = int(pk)
+    return BUAA.models.Organization.objects.get(id=pk).name
 
 """
 新建通知
@@ -597,22 +617,26 @@ class ActivityViewSet(ModelViewSet):
 
     # update_wrapper
     def update_wrapper(self, request, pk):
-        act_id = pk
+        pk = int(pk)
         res = self.update(request)
         # create notif
-        content = f"您参与的活动{request.data['name']}内容发生了改变，请及时查看"
-        notif = new_notification(NOTIF.ActContent, content, act_id=act_id, org_id=None)
+        content = utils.get_notif_content(NOTIF.ActContent, act_name=_act_id2act_name(pk))
+        notif = new_notification(NOTIF.ActContent, content, act_id=pk, org_id=None)
         # send notification
-        persons = JoinedAct.objects.filter(act=act_id)
+        persons = JoinedAct.objects.filter(act=pk)
         for p in persons:
-            p_id = p.person_id
-            if p_id in notification.clients:
-                p_ws = notification.clients[p_id]
-                p_ws.send(str([notif]))
-            else:
-                new_send_notification(notif['id'], p_id)
+            _send_notif(p.person_id, notif)
         return res
 
+    def destroy_wrapper(self, request, pk):
+        pk = int(pk)
+        res = self.destroy(request)
+        content = utils.get_notif_content(NOTIF.ActCancel, act_name=_act_id2act_name(pk))
+        notif = new_notification(NOTIF.ActCancel, content, act_id=pk, org_id=None)
+        persons = JoinedAct.objects.filter(act=pk)
+        for p in persons:
+            _send_notif(p.person_id, notif)
+        return res
 
 
     # 获取组织下的活动
@@ -762,15 +786,15 @@ class JoinedActViewSet(ModelViewSet):
         user_id = request.query_params.get('person')
         act_id = request.query_params.get('act')
         JoinedAct.objects.filter(act=act_id, person=user_id).delete()
-        # send notification
-        content = f'您已经退出活动{act_id}'
-        if user_id in notification.clients:
-            p_ws = notification.clients[user_id]
-            p_ws.send(content)
-        else:
-            notif = new_notification(content)
-            new_send_notification(notif.data[id], user_id)
-        return Response(status=204)
+
+    def destroy_wrapper(self, request) :
+        user_id = request.query_params.get('person')
+        act_id = request.query_params.get('act')
+        self.destroy(request)
+        content = utils.get_notif_content(NOTIF.RemovalFromAct, act_name=_act_id2act_name(act_id))
+        notif = new_notification(NOTIF.RemovalFromAct, content, act_id=act_id, org_id=None)
+        _send_notif(user_id, notif)
+        return Response('')
 
     # 获取活动的参与人数
     def get_act_participants_number(self, request, act_id):
