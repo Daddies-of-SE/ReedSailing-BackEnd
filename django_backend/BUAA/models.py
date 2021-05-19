@@ -50,8 +50,8 @@ class Category(models.Model):
 # 地址
 class Address(models.Model):
     name = models.CharField(max_length=50, verbose_name="地址名称")
-    longitude = models.DecimalField(max_digits=10, decimal_places=6, verbose_name="经度")
-    latitude = models.DecimalField(max_digits=10, decimal_places=6, verbose_name="纬度")
+    longitude = models.DecimalField(max_digits=30, decimal_places=25, verbose_name="经度")
+    latitude = models.DecimalField(max_digits=30, decimal_places=25, verbose_name="纬度")
 
 
 # 组织
