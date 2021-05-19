@@ -17,7 +17,7 @@ class WXUser(models.Model):
 
 # 活动
 class Activity(models.Model):
-    name = models.CharField(max_length=100, unique=True, verbose_name="活动名称", help_text="活动名称 --string")
+    name = models.CharField(max_length=100, verbose_name="活动名称", help_text="活动名称 --string")
     begin_time = models.DateTimeField(verbose_name="开始时间", help_text="开始时间")
     end_time = models.DateTimeField(verbose_name="结束时间")
     pub_time = models.DateTimeField(auto_now_add=True, verbose_name="发布时间")
@@ -31,8 +31,9 @@ class Activity(models.Model):
     org = models.ForeignKey('Organization', on_delete=models.CASCADE, null=True, verbose_name="所属组织")
     location = models.ForeignKey('Address', on_delete=models.CASCADE, verbose_name="活动地点")
     block = models.ForeignKey('Block', on_delete=models.CASCADE, verbose_name="所属版块")  # 组织需要与组织模块保证一致
-
+    avatar = models.CharField(max_length=500, null=True, blank=True, verbose_name="活动图片")
     # person = models.ManyToManyField('WXUser', verbose_name="报名人员")
+
 
 
 # 活动参与
@@ -49,8 +50,8 @@ class Category(models.Model):
 # 地址
 class Address(models.Model):
     name = models.CharField(max_length=50, verbose_name="地址名称")
-    longitude = models.DecimalField(max_digits=10, decimal_places=6, verbose_name="经度")
-    latitude = models.DecimalField(max_digits=10, decimal_places=6, verbose_name="纬度")
+    longitude = models.DecimalField(max_digits=30, decimal_places=25, verbose_name="经度")
+    latitude = models.DecimalField(max_digits=30, decimal_places=25, verbose_name="纬度")
 
 
 # 组织

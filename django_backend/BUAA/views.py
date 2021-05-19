@@ -10,9 +10,17 @@ from .serializers import *
 from rest_framework.response import Response
 from rest_framework.viewsets import *
 from rest_framework import status
+from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from django_redis import get_redis_connection
 import datetime
 from BUAA.const import NOTIF
+import time
+import os
+
+base_dir = '/root/ReedSailing-Web/server_files/'
+#base_dir = '/Users/wzk/Desktop/'
+web_dir = 'https://www.reedsailing.xyz/server_files/'
+
 
 def get_random_str():
     uuid_val = uuid.uuid4()
@@ -68,6 +76,48 @@ def new_send_notification(notif_id, user_id):
     serializer.save()
     return serializer.data
 
+
+
+def get_access_token():
+    def get_from_wx_api():
+        appid = settings.APPID
+        secret = settings.SECRET
+        url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=' + appid + '&secret=' + secret
+        response = json.loads(requests.get(url).content)
+        with open("./access_token.txt", "w") as f:
+            print(response["access_token"], file=f)
+            print(time.time(), file=f)
+            print(response["expires_in"], file=f)
+        return response["access_token"]
+    
+    if not os.path.exists("../access_token.txt"):
+        return get_from_wx_api()
+        
+    with open("../access_token.txt") as f:
+        lines = f.readlines()
+        if time.time() - int(lines[1].strip()) > int(lines[2].strip()):
+            return get_from_wx_api()
+        return lines[0].strip()
+            
+
+@api_view(['POST'])
+@authentication_classes([])
+def get_page_qrcode(request):
+    body = {
+        "path" : request.data["path"],
+        "width" : request.data["width"],
+    }
+    r = requests.post(url="https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=" + get_access_token(), data=json.dumps(body), headers={"Content-Type": "application/json"})
+    
+    path = "qrcode/" + get_random_str() + '.png'
+    with open(base_dir + path, 'wb') as f:
+            f.write(r.content)
+    
+    res = {
+        "img" : web_dir + path
+    }
+    
+    return Response(data=res, status=200)
 
 
 @api_view(['POST'])
@@ -283,6 +333,8 @@ def user_act_relation(request):
     if OrgManager.objects.filter(org=org_id,person=user_id):
         res["isManager"] = True
     return Response(res)
+
+
 
 
 
@@ -664,6 +716,10 @@ class ActivityViewSet(ModelViewSet):
         activities = Activity.objects.filter(name__contains=act_name,owner=user_id)
         return self.paginate(activities)
 
+
+
+
+
 # 活动参与
 class JoinedActViewSet(ModelViewSet):
     queryset = JoinedAct.objects.all()
@@ -759,6 +815,8 @@ class JoinedActViewSet(ModelViewSet):
         act_name = request.data.get("name")
         acts = JoinedAct.objects.filter(person=user_id,act__name__contains=act_name)
         return self.paginate(acts)
+    
+    
 
 
 # 活动评价
@@ -823,8 +881,68 @@ class NotificationViewSet(ModelViewSet):
 
 
 
+class ImageUploadViewSet(ModelViewSet):
+    parser_classes = [JSONParser, FormParser, MultiPartParser, ]
+    serializer_class = ImageUploadSerializer
+    def remove_act_avatar(self,request,act_id):
+        try:
+            act = Activity.objects.get(id=act_id)
+        except:
+            res = {
+                "detail": '未找到活动'
+            }
+            status = 404
+            return Response(res,status)
+        
+        act.avatar = None
+        act.save()
+        return Response(status=204)
+    
+    def upload_act_avatar(self,request,act_id):
+        image = request.FILES['image']
+        try:
+            act = Activity.objects.get(id=act_id)
+        except:
+            res = {
+                "detail": '未找到活动'
+            }
+            status = 404
+            return Response(res,status)
+        path = "acts/" + str(act_id) + '_' + get_random_str() + '.jpg'
+        with open(base_dir + path,'wb') as f1:
+            f1.write(image.read())
+            f1.close()
+            act.avatar = web_dir + path
+            act.save()
+        res = {
+            "img" : web_dir + path
+        }
+        return Response(res,200)
+    
+    
+    def upload_org_avatar(self, request, org_id):
+        image = request.FILES['image']
+        try:
+            org = Organization.objects.get(id=org_id)
+        except:
+            res = {
+                "detail": '未找到组织'
+            }
+            status = 404
+            return Response(res,status)
+        
+        path = "orgs/" + str(org_id) + '_' + get_random_str() + '.jpg'
+        with open(base_dir + path,'wb') as f:
+            f.write(image.read())
+            f.close()
+            org.avatar = web_dir + path
+            org.save()
+        res = {
+            "img" : web_dir + path
+        }
+        return Response(res,200)
 
 
-
-
+if __name__=="__main__":
+    print(get_access_token())
     
