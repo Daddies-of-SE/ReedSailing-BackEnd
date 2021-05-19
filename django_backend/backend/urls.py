@@ -168,7 +168,7 @@ urlpatterns = [
         
         # 上传图片
         url(r'activities/(?P<act_id>\d+)/avatar/$',
-            ImageUploadViewSet.as_view({"post": "upload_act_avatar"})),
+            ImageUploadViewSet.as_view({"post": "upload_act_avatar", "delete" : "remove_act_avatar"})),
         url(r'organizations/(?P<org_id>\d+)/avatar/$',
             ImageUploadViewSet.as_view({"post": "upload_org_avatar"})),
 

@@ -17,7 +17,7 @@ class WXUser(models.Model):
 
 # 活动
 class Activity(models.Model):
-    name = models.CharField(max_length=100, unique=True, verbose_name="活动名称", help_text="活动名称 --string")
+    name = models.CharField(max_length=100, verbose_name="活动名称", help_text="活动名称 --string")
     begin_time = models.DateTimeField(verbose_name="开始时间", help_text="开始时间")
     end_time = models.DateTimeField(verbose_name="结束时间")
     pub_time = models.DateTimeField(auto_now_add=True, verbose_name="发布时间")

@@ -869,6 +869,20 @@ class NotificationViewSet(ModelViewSet):
 class ImageUploadViewSet(ModelViewSet):
     parser_classes = [JSONParser, FormParser, MultiPartParser, ]
     serializer_class = ImageUploadSerializer
+    def remove_act_avatar(self,request,act_id):
+        try:
+            act = Activity.objects.get(id=act_id)
+        except:
+            res = {
+                "detail": '未找到活动'
+            }
+            status = 404
+            return Response(res,status)
+        
+        act.avatar = None
+        act.save()
+        return Response(status=204)
+    
     def upload_act_avatar(self,request,act_id):
         image = request.FILES['image']
         try:
@@ -879,7 +893,7 @@ class ImageUploadViewSet(ModelViewSet):
             }
             status = 404
             return Response(res,status)
-        path = "acts/" + str(act_id) + '.jpg'
+        path = "acts/" + str(act_id) + '_' + get_random_str() + '.jpg'
         with open(base_dir + path,'wb') as f1:
             f1.write(image.read())
             f1.close()
@@ -889,8 +903,8 @@ class ImageUploadViewSet(ModelViewSet):
             "img" : web_dir + path
         }
         return Response(res,200)
-
-
+    
+    
     def upload_org_avatar(self, request, org_id):
         image = request.FILES['image']
         try:
@@ -902,7 +916,7 @@ class ImageUploadViewSet(ModelViewSet):
             status = 404
             return Response(res,status)
         
-        path = "orgs/" + str(org_id) + '.jpg'
+        path = "orgs/" + str(org_id) + '_' + get_random_str() + '.jpg'
         with open(base_dir + path,'wb') as f:
             f.write(image.read())
             f.close()
