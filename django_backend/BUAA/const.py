@@ -21,6 +21,8 @@ NOTIF_TYPE_CHOICES = {
     (NOTIF.RemovalFromAdmin, '被移出管理员通知'),
 }
 
+NOTIF_TYPE_DICT = {k[0] : k[1] for k in NOTIF_TYPE_CHOICES}
+
 class BLOCKID:
     BOYA = 2
     PERSONAL = 5

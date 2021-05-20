@@ -19,12 +19,14 @@ import datetime
 from BUAA.const import NOTIF, BLOCKID
 import time
 import os
+from .const import NOTIF_TYPE_DICT
 from .accessPolicy import *
 
 base_dir = '/root/ReedSailing-Web/server_files/'
 #base_dir = '/Users/wzk/Desktop/'
 web_dir = 'https://www.reedsailing.xyz/server_files/'
 
+sender = utils.MailSender()
 
 def get_random_str():
     uuid_val = uuid.uuid4()
@@ -37,6 +39,7 @@ def get_random_str():
 def _send_notif(p_id, notif):
     """revoke when user keeps online"""
     p_id = int(p_id)
+    sender.send_mail(NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
     if p_id in notification.clients :
         p_ws = notification.clients[p_id]
         p_ws.send(str([notif]))
@@ -56,6 +59,9 @@ def _user_id2user_name(pk):
     pk = int(pk)
     return BUAA.models.WXUser.objects.get(id=pk).name
 
+def _user_id2user_email(pk):
+    pk = int(pk)
+    return BUAA.models.WXUser.objects.get(id=pk).email
 
 
 """
@@ -153,7 +159,7 @@ def get_page_qrcode(request):
 @authentication_classes([UserAuthentication, ErrorAuthentication])
 def send_email(request):
 
-    sender = utils.MailSender()
+    
 #
 #    print("request is", request.POST)
     email_address = request.data['email']
@@ -165,7 +171,7 @@ def send_email(request):
         return Response(data=res, status=400)
 
     random_str = get_random_str()[:6]
-    sender.send_mail('BUAA Certification', 'Your verify code is {}, valid in 5 minutes'.format(random_str),
+    sender.send_mail('ReedSailing (BUAA) Certification', 'Your verify code is {}, valid in 5 minutes'.format(random_str),
                      email_address)
     
     cache.set(random_str, email_address, 300)  # 验证码时效5分钟
@@ -1088,4 +1094,5 @@ def lines(request):
 
 if __name__=="__main__":
     print(get_access_token())
+    
     
