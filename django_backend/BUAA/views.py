@@ -385,7 +385,8 @@ class JoinActApplicationViewSet(ModelViewSet):
 # 用户
 class WXUserViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
-    # permission_classes = (WXUserAccessPolicy,)
+    permission_classes = (WXUserAccessPolicy,)
+
     queryset = WXUser.objects.all()
 
     def get_serializer_class(self):
