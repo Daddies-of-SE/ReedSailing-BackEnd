@@ -249,7 +249,7 @@ if __name__ == '__main__':
                 if history_courses.get(cid) == None:
                     create_new_course(cid, cinfo, NEW_PATH)
             for hid, hinfo in list(history_courses.items()):
-                if time_before_now(hinfo['courseEndDate']):
+                if time_before_now(hinfo['end_time']):
                     history_courses.pop(hid)
             history_courses.update(courses)
             with open(HISTORY_PATH, 'w') as f:
