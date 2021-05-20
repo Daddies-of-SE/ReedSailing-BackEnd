@@ -682,12 +682,13 @@ class ActivityViewSet(ModelViewSet):
 
     def destroy_wrapper(self, request, pk):
         pk = int(pk)
-        res = self.destroy(request)
+        #res = self.destroy(request)
         content = utils.get_notif_content(NOTIF.ActCancel, act_name=_act_id2act_name(pk))
         notif = new_notification(NOTIF.ActCancel, content, act_id=pk, org_id=None)
         persons = JoinedAct.objects.filter(act=pk)
         for p in persons:
             _send_notif(p.person_id, notif)
+        res = self.destroy(request)
         return res
 
 
