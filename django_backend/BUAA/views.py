@@ -653,9 +653,9 @@ class ActivityViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.action == "create":
             return ActivitySerializer
-        if self.action == "destroy":
+        if self.action == ["destroy", "destroy_wrapper"]:
             return ActivitySerializer
-        if self.action == "update":
+        if self.action in ["update", "update_wrapper"]:
             return ActUpdateSerializer
         return ActDetailSerializer
 
