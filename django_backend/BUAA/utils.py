@@ -16,6 +16,9 @@ sender = mail_user  # 发件邮箱，如xxxxxx@qq.com
 def get_notif_content(type_, **kwargs):
     act = kwargs['act_name'] if 'act_name' in kwargs else ''
     org = kwargs['org_name'] if 'org_name' in kwargs else ''
+    user = kwargs['user_name'] if 'user_name' in kwargs else ''
+    comment = kwargs['comment'] if 'comment' in kwargs else ''
+    status = kwargs['status'] if 'status' in kwargs else False
 
     content = ''
     if type_== NOTIF.ActContent:
@@ -27,15 +30,18 @@ def get_notif_content(type_, **kwargs):
     elif type_ == NOTIF.NewBoya:
         content = f"有新的博雅\'{act}\', 如有需要请及时报名"
     elif type_ == NOTIF.ActCommented:
-        content = f"您管理的活动\'{act}\'被评论了"
+        content = f"用户\'{user}\'评论了您管理的活动\'{act}\'：\n{comment}"
     elif type_ == NOTIF.OrgApplyRes:
-        content = f"您创建\'{org}\'组织的申请已经"
+        if status:
+            content = f"您创建\'{org}\'组织的申请已经通过"
+        else:
+            content = f"您创建\'{org}\'组织的申请被拒绝了"
     elif type_ == NOTIF.BecomeOwner:
         content = f"您被转让成为\'{org}\'组织的负责人"
     elif type_ == NOTIF.RemovalFromAdmin:
         content = f"您被\'{org}\'组织的负责人移除了管理员身份"
 
-    return content
+    return content+'\n'
 
 
 

@@ -113,6 +113,16 @@
 
 
 
+### 小程序内部消息通知
+
+- 采用离线缓存+上线push的模式，参考[消息推送的工作模式](https://blog.csdn.net/houjixin/article/details/53324748)
+- 采用websocket通信技术，参考https://www.cnblogs.com/huchong/p/8595644.html
+- 采用nginx+daphne在服务器端部署websocket
+
+
+
+
+
 
 
 ## 附录

@@ -49,6 +49,12 @@ def _org_id2org_name(pk):
     pk = int(pk)
     return BUAA.models.Organization.objects.get(id=pk).name
 
+def _user_id2user_name(pk):
+    pk = int(pk)
+    return BUAA.models.WXUser.objects.get(id=pk).name
+
+
+
 """
 新建通知
 
@@ -418,7 +424,8 @@ class OrgApplicationViewSet(ModelViewSet):
         old_status = application.status
         if old_status != 0:
             return Response(data={"detail": ["该组织申请已审批。"]}, status=400)
-        if request.data.get('status') == 1 or request.data.get('status') == "1":
+        status = int(request.data.get('status'))
+        if status == 1:
             # 审核通过
             # 1.创建组织
             data = {
@@ -429,10 +436,12 @@ class OrgApplicationViewSet(ModelViewSet):
             serializer = OrganizationSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
+            org_id = serializer.data.get('id')
+            owner_id = application.user.id
             # 2.添加负责人为管理员
             data = {
-                "org": serializer.data.get("id"),
-                "person": application.user.id
+                "org": org_id,
+                "person": owner_id
             }
             serializer = OrgManagerSerializer(data=data)
             serializer.is_valid(raise_exception=True)
@@ -442,11 +451,25 @@ class OrgApplicationViewSet(ModelViewSet):
             serializer = self.get_serializer(instance=application, data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
+
+            # notification
+            content = utils.get_notif_content(NOTIF.OrgApplyRes, status=True)
+            notif = new_notification(NOTIF.OrgApplyRes, content, org_id=org_id)
+            _send_notif(owner_id, notif)
+
             return Response(serializer.data, 201)
-        serializer = self.get_serializer(instance=application, data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, 200)
+
+        else:
+            serializer = self.get_serializer(instance=application, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            # notification
+            content = utils.get_notif_content(NOTIF.OrgApplyRes, status=False)
+            notif = new_notification(NOTIF.OrgApplyRes, content, org_id=None)
+            _send_notif(application.user.id, notif)
+
+            return Response(serializer.data, 200)
 
 
 # 组织
@@ -468,6 +491,10 @@ class OrganizationModelViewSet(ModelViewSet):
         serializer = self.get_serializer(objects, many=True)
         return Response(serializer.data)
 
+    # def create_wrapper(self, request):
+    #     self.create(request)
+    #     content = utils.get_notif_content(NOTIF.OrgApplyRes, )
+
     # 获取版块下的组织
     def get_org_by_block(self, request, block_id):
         organizations = Organization.objects.filter(block=block_id)
@@ -479,6 +506,12 @@ class OrganizationModelViewSet(ModelViewSet):
         serializer = self.get_serializer(instance=organization, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        content = utils.get_notif_content(NOTIF.BecomeOwner, org_name=_org_id2org_name(pk))
+        notif = new_notification(NOTIF.BecomeOwner, content, org_id=pk)
+        _send_notif(request.data['owner'], notif)
+
+
         return Response(serializer.data, 200)
 
     # 推荐组织
@@ -557,6 +590,11 @@ class OrgManageViewSet(ModelViewSet):
         user_id = request.query_params.get('user')
         org_id = request.query_params.get('org')
         OrgManager.objects.filter(org=org_id, person=user_id).delete()
+
+        content = utils.get_notif_content(NOTIF.RemovalFromAdmin, org_name=_org_id2org_name(org_id))
+        notif = new_notification(NOTIF.RemovalFromAdmin, content, org_id=org_id)
+        _send_notif(user_id, notif)
+
         return Response(status=204)
 
     # 获取用户管理的组织
@@ -880,6 +918,21 @@ class CommentViewSet(ModelViewSet):
             serializer = self.get_serializer(instance=comment)
             return Response(serializer.data)
         return Response({"id": -1}, 404)
+
+    def create_wrapper(self, request):
+        res = self.create(request)
+        act_id = request.data['act']
+        user_id = request.data['user']
+        comment = request.data['content']
+        content = utils.get_notif_content(NOTIF.ActCommented, user_name=_user_id2user_name(user_id),
+                                          act_name=_act_id2act_name(act_id), comment=comment)
+        notif = new_notification(NOTIF.ActCommented, content, act_id=act_id)
+        org_id = BUAA.models.Activity.objects.get(id=act_id).org.id
+        manegers = BUAA.models.OrgManager.objects.filter(org_id=org_id).values('person')
+        for m in manegers:
+            _send_notif(m.id, notif)
+        return res
+
 
 
 # WebSocket实时通信

@@ -148,7 +148,7 @@ urlpatterns = [
 
         # 活动评论
         url(r'activities/comments/$',
-            CommentViewSet.as_view({"get": "list", "post": "create"})),
+            CommentViewSet.as_view({"get": "list", "post": "create_wrapper"})),
         url(r'activities/(?P<act_id>\d+)/comments/$',
             CommentViewSet.as_view({"get": "get_act_comments"})),
         url(r'activities/(?P<act_id>\d+)/users/(?P<user_id>\d+)/comments',
