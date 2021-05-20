@@ -35,12 +35,12 @@ def save_html(dir, content):
     f.close()
 
 
-def get_file_time(_time=time.localtime()):
-    return time.strftime('_%m%d_%H%M%S', _time)
+def get_file_time():
+    return time.strftime('_%m%d_%H%M%S', time.localtime())
 
 
-def get_log_time(_time=time.localtime()):
-    return time.strftime('[%m.%d %H:%M:%S] ', _time)
+def get_log_time():
+    return time.strftime('[%m.%d %H:%M:%S] ', time.localtime())
 
 
 def finalize():
