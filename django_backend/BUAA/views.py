@@ -19,6 +19,7 @@ import datetime
 from BUAA.const import NOTIF, BLOCKID
 import time
 import os
+from .accessPolicy import *
 
 base_dir = '/root/ReedSailing-Web/server_files/'
 #base_dir = '/Users/wzk/Desktop/'
@@ -384,6 +385,7 @@ class JoinActApplicationViewSet(ModelViewSet):
 # 用户
 class WXUserViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (WXUserAccessPolicy,)
     queryset = WXUser.objects.all()
 
     def get_serializer_class(self):
