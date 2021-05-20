@@ -14,6 +14,7 @@ from rest_framework.viewsets import *
 from rest_framework import status
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from django_redis import get_redis_connection
+from .authentication import *
 import datetime
 from BUAA.const import NOTIF, BLOCKID
 import time
@@ -128,7 +129,7 @@ def get_access_token():
             
 
 @api_view(['POST'])
-@authentication_classes([])
+@authentication_classes([UserAuthentication, SuperAdminAuthentication, ErrorAuthentication])
 def get_page_qrcode(request):
     body = {
         "path" : request.data["path"],
@@ -148,7 +149,7 @@ def get_page_qrcode(request):
 
 
 @api_view(['POST'])
-@authentication_classes([])  # 添加
+@authentication_classes([UserAuthentication, ErrorAuthentication])
 def send_email(request):
 
     sender = utils.MailSender()
@@ -181,7 +182,7 @@ def send_email(request):
 
 
 @api_view(['POST'])
-@authentication_classes([])  # 添加
+@authentication_classes([UserAuthentication, ErrorAuthentication])
 def verify_email(request):
     verifyCode = request.data['verifyCode']
     config_email = request.data['email']
@@ -227,7 +228,6 @@ def verify_email(request):
 
 
 @api_view(['POST'])
-@authentication_classes([])
 def user_login(request):
     #raise Exception
     # 取出数据
@@ -291,6 +291,7 @@ def user_register(request):
 
 
 @api_view(['POST'])
+@authentication_classes([UserAuthentication, SuperAdminAuthentication, ErrorAuthentication])
 def user_org_relation(request):
     user_id = request.data['user']
     org_id = request.data['org']
@@ -324,6 +325,7 @@ def user_org_relation(request):
     return Response(res)
 
 @api_view(['POST'])
+@authentication_classes([UserAuthentication, SuperAdminAuthentication, ErrorAuthentication])
 def user_act_relation(request):
     user_id = request.data['user']
     act_id = request.data['act']
@@ -381,6 +383,7 @@ class JoinActApplicationViewSet(ModelViewSet):
 
 # 用户
 class WXUserViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = WXUser.objects.all()
 
     def get_serializer_class(self):
@@ -391,12 +394,14 @@ class WXUserViewSet(ModelViewSet):
 
 # 版块
 class BlockViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = Block.objects.all()
     serializer_class = BlockSerializer
 
 
 # 组织申请
 class OrgApplicationViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = OrgApplication.objects.all()
 
     def get_serializer_class(self):
@@ -476,6 +481,7 @@ class OrgApplicationViewSet(ModelViewSet):
 
 # 组织
 class OrganizationModelViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = Organization.objects.all()
 
     def get_serializer_class(self):
@@ -542,6 +548,7 @@ class OrganizationModelViewSet(ModelViewSet):
 
 # 关注组织
 class FollowedOrgViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = FollowedOrg.objects.all()
 
     def get_serializer_class(self):
@@ -571,6 +578,7 @@ class FollowedOrgViewSet(ModelViewSet):
 
 # 组织管理
 class OrgManageViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = OrgManager.objects.all()
 
     def get_serializer_class(self):
@@ -618,24 +626,28 @@ class OrgManageViewSet(ModelViewSet):
 
 # 活动分类
 class CategoryViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
 # 活动地址
 class AddressViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
 
 
 # 用户反馈
 class UserFeedbackViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = UserFeedback.objects.all()
     serializer_class = UserFeedbackSerializer
 
 
 # 活动
 class ActivityViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = Activity.objects.all()
 
     def get_serializer_class(self):
@@ -781,11 +793,9 @@ class ActivityViewSet(ModelViewSet):
         return self.paginate(activities)
 
 
-
-
-
 # 活动参与
 class JoinedActViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = JoinedAct.objects.all()
 
     def get_serializer_class(self):
@@ -885,6 +895,7 @@ class JoinedActViewSet(ModelViewSet):
 
 # 活动评价
 class CommentViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
     queryset = Comment.objects.all()
 
     def get_serializer_class(self):
