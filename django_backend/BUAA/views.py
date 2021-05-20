@@ -750,7 +750,7 @@ class ActivityViewSet(ModelViewSet):
         now = datetime.datetime.now()
         ret = {
         'unstart': self.get_serializer(Activity.objects.filter(block = block_id,begin_time__gt=now), many=True).data,
-        'cur': self.get_serializer(Activity.objects.filter(block = block_id,begin_time__gt=now), many=True).data,
+        'cur': self.get_serializer(Activity.objects.filter(block = block_id, end_time__gte=now, begin_time__lte=now) , many=True).data,
         'end': self.get_serializer(Activity.objects.filter(block = block_id, end_time__lt=now), many=True).data
         }
         return Response(ret, 200)
