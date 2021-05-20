@@ -14,7 +14,7 @@ from rest_framework import status
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from django_redis import get_redis_connection
 import datetime
-from BUAA.const import NOTIF
+from BUAA.const import NOTIF, BLOCKID
 import time
 import os
 
@@ -425,6 +425,7 @@ class OrgApplicationViewSet(ModelViewSet):
         if old_status != 0:
             return Response(data={"detail": ["该组织申请已审批。"]}, status=400)
         status = int(request.data.get('status'))
+        org_name = application.name
         if status == 1:
             # 审核通过
             # 1.创建组织
@@ -453,7 +454,7 @@ class OrgApplicationViewSet(ModelViewSet):
             serializer.save()
 
             # notification
-            content = utils.get_notif_content(NOTIF.OrgApplyRes, status=True)
+            content = utils.get_notif_content(NOTIF.OrgApplyRes, org_name=org_name, status=True)
             notif = new_notification(NOTIF.OrgApplyRes, content, org_id=org_id)
             _send_notif(owner_id, notif)
 
@@ -465,7 +466,7 @@ class OrgApplicationViewSet(ModelViewSet):
             serializer.save()
 
             # notification
-            content = utils.get_notif_content(NOTIF.OrgApplyRes, status=False)
+            content = utils.get_notif_content(NOTIF.OrgApplyRes, org_name=org_name, status=False)
             notif = new_notification(NOTIF.OrgApplyRes, content, org_id=None)
             _send_notif(application.user.id, notif)
 
@@ -921,16 +922,19 @@ class CommentViewSet(ModelViewSet):
 
     def create_wrapper(self, request):
         res = self.create(request)
-        act_id = request.data['act']
-        user_id = request.data['user']
+        act_id = int(request.data['act'])
+        user_id = int(request.data['user'])
         comment = request.data['content']
         content = utils.get_notif_content(NOTIF.ActCommented, user_name=_user_id2user_name(user_id),
                                           act_name=_act_id2act_name(act_id), comment=comment)
         notif = new_notification(NOTIF.ActCommented, content, act_id=act_id)
-        org_id = BUAA.models.Activity.objects.get(id=act_id).org.id
-        manegers = BUAA.models.OrgManager.objects.filter(org_id=org_id).values('person')
-        for m in manegers:
-            _send_notif(m.id, notif)
+        act = BUAA.models.Activity.objects.get(id=act_id)
+        if act.block_id == BLOCKID.PERSONAL:
+            _send_notif(act.owner.pk, notif)
+        elif act.block_id != BLOCKID.BOYA:
+            manegers = BUAA.models.OrgManager.objects.filter(org_id=act.org.pk).values('person')
+            for m in manegers:
+                _send_notif(m.id, notif)
         return res
 
 

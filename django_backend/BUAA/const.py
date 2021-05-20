@@ -20,3 +20,7 @@ NOTIF_TYPE_CHOICES = {
     (NOTIF.BecomeAdmin, '被设置为管理员通知'),
     (NOTIF.RemovalFromAdmin, '被移出管理员通知'),
 }
+
+class BLOCKID:
+    BOYA = 2
+    PERSONAL = 5

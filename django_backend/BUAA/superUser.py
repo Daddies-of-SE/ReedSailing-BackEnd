@@ -17,6 +17,7 @@ class SuperUserViewSet(ModelViewSet):
     serializers_class = SuperUserSerializer
 
 
+@api_view(['POST'])
 def sudo_register(request):
     data = json.loads(request.body)
     name = data.get('username')
@@ -46,6 +47,7 @@ def sudo_register(request):
             return HttpResponse(json.dumps(res), content_type='application/json')
 
 
+@api_view(['POST'])
 def sudo_login(request):
     data = json.loads(request.body)
     name = data.get('username')
