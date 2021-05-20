@@ -1,0 +1,18 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>《实时战况》</title>
+    <script>
+      function myrefresh() {
+        window.location.reload();
+      }
+      setInterval('myrefresh()', 30000) // 30 秒定时刷新
+    </script>
+</head>
+
+<body>
+  {{graph|safe}} <!--plotly.js 绘制图像-->
+</body>
+
+</html>

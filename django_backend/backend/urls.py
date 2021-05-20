@@ -24,6 +24,7 @@ from rest_framework.routers import SimpleRouter
 urlpatterns = [
     path('api/', include([
         path('admin/', admin.site.urls),
+        path('rank/', lines), 
         # 用户端
         path('sendVerify/', send_email),
         path('verify/', verify_email),

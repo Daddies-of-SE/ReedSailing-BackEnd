@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from BUAA import utils, notification
 import BUAA.models
 import json
@@ -1022,6 +1023,51 @@ class ImageUploadViewSet(ModelViewSet):
             "img" : web_dir + path
         }
         return Response(res,200)
+
+
+import pandas as pd
+import numpy as np
+
+from django.http import HttpResponse
+from django.template import loader
+import plotly.graph_objects as go
+import plotly.offline as opy
+import matplotlib.pyplot as plt
+
+@api_view(['GET'])
+def lines(request):
+    template = loader.get_template('index.html')
+    
+    df = pd.read_csv('/root/rank.csv')
+    
+    x = df.Time.values
+    col_num = df.shape[1]
+    colors = plt.cm.Spectral(list(range(1, col_num))) # 👴 比较喜欢用的 colormap 之一，参见 matplotlib.pyplot.cm，matplotlib.colors，matplotlib.colormap
+    fig = go.Figure() # 参见 plotly 文档
+    fig.update_layout(
+        title="《实时战况》", 
+        xaxis={'title': '时间'}, 
+        yaxis={'title': '通过人数', 'range': [0, 460]}
+    )
+    for i in range(1, col_num):
+        y = df['{}'.format(i)].values
+        
+        fig.add_trace(
+            go.Scatter(
+                x=x,
+                y=y,
+                marker={'color': colors[i-1], 'symbol': 104, 'size': 10},
+                mode="lines",
+                name='Problem {}'.format(i)
+            )
+        )
+        
+    div = opy.plot(fig, auto_open=False, output_type='div')
+    
+    context = {}
+    context['graph'] = div
+    
+    return HttpResponse(template.render(context, request))
 
 
 if __name__=="__main__":
