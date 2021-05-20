@@ -10,6 +10,8 @@ import sys
 
 DEBUG = True
 LOG_DIR = './log'
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
 log_file = open(os.path.join(LOG_DIR, 'log.txt'), 'a')
 ua = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) ' \
      'Chrome/86.0.4240.75 Safari/537.36'
@@ -216,6 +218,8 @@ if __name__ == '__main__':
     ERR_MAX = 10
     HISTORY_PATH = os.path.join(LOG_DIR, 'history.json')
     NEW_PATH = os.path.expanduser('~/boya/')
+    if not os.path.exists(NEW_PATH):
+        os.makedirs(NEW_PATH)
 
     print('For safety reason, you should run this program in a tmux session and\n'
           'destory the session after you entered your password')
