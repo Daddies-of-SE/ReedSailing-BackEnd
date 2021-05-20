@@ -843,10 +843,11 @@ class JoinedActViewSet(ModelViewSet):
     def destroy_wrapper(self, request) :
         user_id = request.query_params.get('person')
         act_id = request.query_params.get('act')
-        self.destroy(request)
+        #self.destroy(request)
         content = utils.get_notif_content(NOTIF.RemovalFromAct, act_name=_act_id2act_name(act_id))
         notif = new_notification(NOTIF.RemovalFromAct, content, act_id=act_id, org_id=None)
         _send_notif(user_id, notif)
+        self.destroy(request)
         return Response('')
 
     # 获取活动的参与人数
