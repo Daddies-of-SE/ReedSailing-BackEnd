@@ -25,11 +25,11 @@ def get_boya():
     for file in files:
         if not file.endswith('.json'):
             continue
-        with open(file, 'r') as f:
+        with open(BOYA_PATH+file, 'r') as f:
             content = f.read()
         content = json.loads(content)
         add_to_activities(description='无', **content)
-        os.remove(file)
+        os.remove(BOYA_PATH+file)
 
 
 def add_to_activities(name, description, contain, begin_time, end_time, location, **kwargs):
