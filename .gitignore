@@ -10,3 +10,5 @@ django_backend/static/
 *.log
 *.swp
 access_token.txt
+django_backend/BUAA/rank.py
+

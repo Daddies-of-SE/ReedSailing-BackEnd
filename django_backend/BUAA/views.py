@@ -977,6 +977,7 @@ import plotly.graph_objects as go
 import plotly.offline as opy
 import matplotlib.pyplot as plt
 
+@api_view(['GET'])
 def lines(request):
     template = loader.get_template('index.html')
     
