@@ -561,7 +561,7 @@ class OrganizationModelViewSet(ModelViewSet):
 # 关注组织
 class FollowedOrgViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
-    permission_classes = (FollowedOrgAccessPolicy,)
+    # permission_classes = (FollowedOrgAccessPolicy,)
     queryset = FollowedOrg.objects.all()
 
     def get_serializer_class(self):
@@ -592,7 +592,7 @@ class FollowedOrgViewSet(ModelViewSet):
 # 组织管理
 class OrgManageViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
-    permission_classes = (OrgManagerAccessPolicy,)
+    # permission_classes = (OrgManagerAccessPolicy,)
     queryset = OrgManager.objects.all()
 
     def get_serializer_class(self):
