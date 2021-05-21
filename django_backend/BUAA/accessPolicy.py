@@ -288,19 +288,19 @@ class ActAccessPolicy(AccessPolicy):
     def is_vaild_create(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
             return False
-        block_id = request.query_params.get('block')
+        block_id = request.data.get('block')
         block = Block.objects.get(id=block_id)
         # 不能是博雅版块下的活动
         if block.name == "博雅":
             return False
         # 活动的拥有者必须是自己
-        if request.user.id != request.query_params.get('owner'):
+        if request.user.id != request.data.get('owner'):
             return False
         # 个人活动可通过
         if block.name == "个人":
             return True
         # 组织下的活动，必须为组织管理员
-        org_id = request.query_params.get('org')
+        org_id = request.data.get('org')
         return OrgManager.objects.filter(org=org_id, person=request.user.id).exists()
 
     def is_vaild_update(self, request, view, action) -> bool:
