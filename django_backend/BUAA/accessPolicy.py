@@ -30,8 +30,7 @@ class WXUserAccessPolicy(AccessPolicy):
     def is_self(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
             return False
-        print(view.get_object().id)
-        return request.user.id == view.get_object().id
+        return request.user == view.get_object()
 
 
 class BlockAccessPolicy(AccessPolicy):
@@ -112,7 +111,7 @@ class OrgAccessPolicy(AccessPolicy):
         if not isinstance(request.user, WXUser):
             return False
         org = view.get_object()
-        return eval(org.owner) == request.user.id
+        return org.owner == request.user
 
 
 class FollowedOrgAccessPolicy(AccessPolicy):
@@ -185,7 +184,7 @@ class OrgManagerAccessPolicy(AccessPolicy):
             return False
         org_id = request.query_params.get('org')
         org = Organization.objects.get(id=org_id)
-        return org.owner == request.user.id
+        return org.owner == request.user
 
     def is_self(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
