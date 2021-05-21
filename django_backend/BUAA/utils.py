@@ -6,11 +6,38 @@ from django.conf import settings
 import BUAA.models as models
 import BUAA.serializers as serializers
 from BUAA.const import NOTIF
+import os
+import json
+import requests
+import time
 
 mail_host = "smtp.126.com"  # 设置SMTP服务器，如smtp.qq.com
 mail_user = "reedsailing@126.com"  # 发送邮箱的用户名，如xxxxxx@qq.com
 mail_pass = "SJHDAZYRQSGNXCTH"  # 发送邮箱的密码（注：QQ邮箱需要开启SMTP服务后在此填写授权码）
 sender = mail_user  # 发件邮箱，如xxxxxx@qq.com
+
+access_token_path = "/root/access_token.txt"
+
+def get_access_token():
+    def get_from_wx_api():
+        appid = settings.APPID
+        secret = settings.SECRET
+        url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=' + appid + '&secret=' + secret
+        response = json.loads(requests.get(url).content)
+        with open("./access_token.txt", "w") as f:
+            print(response["access_token"], file=f)
+            print(time.time(), file=f)
+            print(response["expires_in"], file=f)
+        return response["access_token"]
+    
+    if not os.path.exists(access_token_path):
+        return get_from_wx_api()
+    
+    with open(access_token_path) as f:
+        lines = f.readlines()
+        if time.time() - int(lines[1].strip()) > int(lines[2].strip()):
+            return get_from_wx_api()
+        return lines[0].strip()
 
 # Notification part
 def get_notif_content(type_, **kwargs):
@@ -127,3 +154,4 @@ class ExceptionLoggingMiddleware(MiddlewareMixin):
 if __name__ == "__main__":
     a=MailSender()
     a.send_mail("asdaf","ASdasdasd", "847791804@qq.com")
+    

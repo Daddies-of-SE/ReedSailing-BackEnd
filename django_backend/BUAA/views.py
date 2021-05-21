@@ -111,29 +111,6 @@ def new_send_notification(notif_id, user_id):
     serializer.is_valid()
     serializer.save()
     return serializer.data
-
-
-
-def get_access_token():
-    def get_from_wx_api():
-        appid = settings.APPID
-        secret = settings.SECRET
-        url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=' + appid + '&secret=' + secret
-        response = json.loads(requests.get(url).content)
-        with open("./access_token.txt", "w") as f:
-            print(response["access_token"], file=f)
-            print(time.time(), file=f)
-            print(response["expires_in"], file=f)
-        return response["access_token"]
-    
-    if not os.path.exists("../access_token.txt"):
-        return get_from_wx_api()
-        
-    with open("../access_token.txt") as f:
-        lines = f.readlines()
-        if time.time() - int(lines[1].strip()) > int(lines[2].strip()):
-            return get_from_wx_api()
-        return lines[0].strip()
             
 
 @api_view(['POST'])
@@ -143,7 +120,7 @@ def get_page_qrcode(request):
         "path" : request.data["path"],
         "width" : request.data["width"],
     }
-    r = requests.post(url="https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=" + get_access_token(), data=json.dumps(body), headers={"Content-Type": "application/json"})
+    r = requests.post(url="https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=" + utils.get_access_token(), data=json.dumps(body), headers={"Content-Type": "application/json"})
     
     path = "qrcode/" + get_random_str() + '.png'
     with open(base_dir + path, 'wb') as f:
@@ -156,13 +133,13 @@ def get_page_qrcode(request):
     return Response(data=res, status=200)
 
 
+def _get_boya_followers():
+    return WXUser.objects.filter(follow_boya=True)
+
+
 @api_view(['POST'])
 @authentication_classes([UserAuthentication, ErrorAuthentication])
 def send_email(request):
-
-    
-#
-#    print("request is", request.POST)
     email_address = request.data['email']
     if not email_address.endswith("@buaa.edu.cn"):
         res = {
@@ -277,7 +254,8 @@ def user_login(request):
         "avatar": user.avatar,
         "sign": user.sign,
         "name": user.name,
-        "contact" : user.contact
+        "contact" : user.contact,
+        "follow_boya" : user.follow_boya
     }
     return Response(data=res, status=200)
     
@@ -400,6 +378,11 @@ class WXUserViewSet(ModelViewSet):
         if self.action == 'create':
             return TestUserSerializer
         return WXUserSerializer
+    
+    def get_boya_followers(self, request):
+        users = _get_boya_followers()
+        serializer = self.get_serializer(users, many=True)
+        return Response(serializer.data)
 
 
 # 版块
@@ -1136,6 +1119,7 @@ def lines(request):
 
 
 if __name__=="__main__":
-    print(get_access_token())
+    print(utils.get_access_token())
+    
     
     

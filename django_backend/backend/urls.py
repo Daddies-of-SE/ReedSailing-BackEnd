@@ -35,6 +35,7 @@ urlpatterns = [
         path('userOrgRelation/', user_org_relation),
         path('userActRelation/', user_act_relation),
         path('qrcode/', get_page_qrcode),
+#        path('boyaFollowers/', get_boya_followers),
 
         # 自动生成接口文档
         url(r'^docs/', include_docs_urls(title='一苇以航API接口')),
@@ -49,6 +50,8 @@ urlpatterns = [
         url(r'^users/$', WXUserViewSet.as_view({"get": "list"})),
         url(r'^users/(?P<pk>\d+)/$', WXUserViewSet.as_view(
             {"get": "retrieve", "delete": "destroy", "put": "update"})),
+        url(r'^users/boya_followers/', WXUserViewSet.as_view({"get": "get_boya_followers"})),
+        
 
         # 组织申请
         url(r'^organizations/applications/$',
@@ -204,5 +207,6 @@ urlpatterns = [
 # router = SimpleRouter()
 # router.register('activities/join_applications', JoinActApplicationViewSet)
 # urlpatterns += router.urls
+        
         
         

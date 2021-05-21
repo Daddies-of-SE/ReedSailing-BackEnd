@@ -38,7 +38,7 @@ class WXUserSerializer(ModelSerializer):
 class WXUserUpdateSerializer(ModelSerializer):
     class Meta:
         model = WXUser
-        fields = ['name', 'sign', 'contact']
+        fields = ['name', 'sign', 'contact', 'follow_boya']
 
 
 # 版块

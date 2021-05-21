@@ -12,7 +12,7 @@ class WXUserAccessPolicy(AccessPolicy):
             "condition": "is_super_user"
         },
         {
-            "action": "retrieve",
+            "action": ["retrieve", "get_boya_followers"],
             "principal": "*",
             "effect": "allow",
         },
