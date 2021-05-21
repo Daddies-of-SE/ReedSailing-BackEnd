@@ -55,8 +55,8 @@ urlpatterns = [
             OrgApplicationViewSet.as_view({"post": "create", "get": "list"})),
         url(r'^organizations/applications/(?P<pk>\d+)/$',
             OrgApplicationViewSet.as_view({"delete": "destroy", "get": "retrieve"})),
-        url(r'^users/organizations/applications/(?P<user_id>\d+)/$',
-            OrgApplicationViewSet.as_view({"get": "user_get_all"})),
+        # url(r'^users/organizations/applications/(?P<user_id>\d+)/$',
+        #     OrgApplicationViewSet.as_view({"get": "user_get_all"})),
         url(r'^organizations/applications/verifications/(?P<pk>\d+)/$',
             OrgApplicationViewSet.as_view({"put": "verify"})),
 

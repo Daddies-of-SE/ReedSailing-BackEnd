@@ -404,6 +404,7 @@ class WXUserViewSet(ModelViewSet):
 # 版块
 class BlockViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (BlockAccessPolicy,)
     queryset = Block.objects.all()
     serializer_class = BlockSerializer
 
@@ -411,6 +412,7 @@ class BlockViewSet(ModelViewSet):
 # 组织申请
 class OrgApplicationViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (OrgAppAccessPolicy,)
     queryset = OrgApplication.objects.all()
 
     def get_serializer_class(self):
@@ -491,6 +493,7 @@ class OrgApplicationViewSet(ModelViewSet):
 # 组织
 class OrganizationModelViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (OrgAccessPolicy,)
     queryset = Organization.objects.all()
 
     def get_serializer_class(self):
@@ -558,6 +561,7 @@ class OrganizationModelViewSet(ModelViewSet):
 # 关注组织
 class FollowedOrgViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (FollowedOrgAccessPolicy,)
     queryset = FollowedOrg.objects.all()
 
     def get_serializer_class(self):
@@ -588,6 +592,7 @@ class FollowedOrgViewSet(ModelViewSet):
 # 组织管理
 class OrgManageViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (OrgManagerAccessPolicy,)
     queryset = OrgManager.objects.all()
 
     def get_serializer_class(self):
