@@ -143,7 +143,7 @@ class FollowedOrgAccessPolicy(AccessPolicy):
     def is_self(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
             return False
-        return request.user.id == view.get_object().id
+        return request.user.id == eval(view.kwargs['pk'])
 
     def is_self_create(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
@@ -187,11 +187,10 @@ class OrgManagerAccessPolicy(AccessPolicy):
         org = Organization.objects.get(id=org_id)
         return org.owner == request.user.id
 
-    def is_self(self, request, view, action, *args, **kwargs) -> bool:
-        pk = kwargs['pk']
+    def is_self(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
             return False
-        return request.user.id == pk
+        return request.user.id == eval(view.kwargs['pk'])
 
 
 
