@@ -545,7 +545,7 @@ class OrganizationModelViewSet(ModelViewSet):
 # 关注组织
 class FollowedOrgViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
-    # permission_classes = (FollowedOrgAccessPolicy,)
+    permission_classes = (FollowedOrgAccessPolicy,)
     queryset = FollowedOrg.objects.all()
 
     def get_serializer_class(self):
@@ -576,7 +576,7 @@ class FollowedOrgViewSet(ModelViewSet):
 # 组织管理
 class OrgManageViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
-    # permission_classes = (OrgManagerAccessPolicy,)
+    permission_classes = (OrgManagerAccessPolicy,)
     queryset = OrgManager.objects.all()
 
     def get_serializer_class(self):
@@ -625,6 +625,7 @@ class OrgManageViewSet(ModelViewSet):
 # 活动分类
 class CategoryViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (CategoryAccessPolicy,)
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
@@ -632,6 +633,7 @@ class CategoryViewSet(ModelViewSet):
 # 活动地址
 class AddressViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (AddressAccessPolicy,)
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
 
@@ -639,6 +641,7 @@ class AddressViewSet(ModelViewSet):
 # 用户反馈
 class UserFeedbackViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (FeedbackAccessPolicy,)
     queryset = UserFeedback.objects.all()
     serializer_class = UserFeedbackSerializer
 
@@ -663,6 +666,7 @@ class UserFeedbackViewSet(ModelViewSet):
 # 活动
 class ActivityViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (ActAccessPolicy,)
     queryset = Activity.objects.all()
 
     def get_serializer_class(self):
@@ -812,6 +816,7 @@ class ActivityViewSet(ModelViewSet):
 # 活动参与
 class JoinedActViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    # permission_classes = (JoinedActAccessPolicy,)
     queryset = JoinedAct.objects.all()
 
     def get_serializer_class(self):
