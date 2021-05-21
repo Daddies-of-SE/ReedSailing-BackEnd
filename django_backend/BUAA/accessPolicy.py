@@ -36,12 +36,12 @@ class WXUserAccessPolicy(AccessPolicy):
 class BlockAccessPolicy(AccessPolicy):
     statements = [
         {
-            "action": ["list", "create", "retrieve"],
+            "action": ["list", "retrieve"],
             "principal": "*",
             "effect": "allow",
         },
         {
-            "action": ["update", "destroy"],
+            "action": ["update", "destroy", "create"],
             "principal": "*",
             "effect": "allow",
             "condition": "is_super_user",
@@ -191,6 +191,43 @@ class OrgManagerAccessPolicy(AccessPolicy):
             return False
         return request.user.id == eval(view.kwargs['pk'])
 
+    
+class CategoryAccessPolicy(AccessPolicy):
+    statements = [
+        {
+            "action": ["list", "create", "retrieve"],
+            "principal": "*",
+            "effect": "allow",
+        },
+        {
+            "action": ["update", "destroy"],
+            "principal": "*",
+            "effect": "allow",
+            "condition": "is_super_user",
+        }
+    ]
+
+    def is_super_user(self, request, view, action) -> bool:
+        return isinstance(request.user, SuperAdmin)
+    
+    
+class AddressAccessPolicy(AccessPolicy):
+    statements = [
+        {
+            "action": ["list", "retrieve", "create"],
+            "principal": "*",
+            "effect": "allow",
+        },
+        {
+            "action": ["update", "destroy"],
+            "principal": "*",
+            "effect": "allow",
+            "condition": "is_super_user",
+        }
+    ]
+
+    def is_super_user(self, request, view, action) -> bool:
+        return isinstance(request.user, SuperAdmin)
 
 
 class ArticleAccessPolicy(AccessPolicy):
