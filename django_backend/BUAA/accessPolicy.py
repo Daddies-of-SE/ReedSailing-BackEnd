@@ -252,7 +252,7 @@ class FeedbackAccessPolicy(AccessPolicy):
 class ActAccessPolicy(AccessPolicy):
     statements = [
         {
-            "action": ["list", "retrieve", "search_all", "get_org_act", "search_act_by_org", "get_org_act_status", "get_block_act", "get_block_act_status", "search_all", "search_act_by_block", ],
+            "action": ["list", "retrieve", "search_all", "get_org_act", "search_act_by_org", "get_org_act_status", "get_block_act", "get_block_act_status", "search_all", "search_act_by_block", "get_recommended_act" ],
             "principal": "*",
             "effect": "allow",
         },
@@ -275,7 +275,7 @@ class ActAccessPolicy(AccessPolicy):
             "condition": "is_super_user",
         },
         {
-            "action": ["get_user_act_status", "get_user_act", "get_user_unstart_act", "get_user_ing_act", "get_user_finish_act", "get_followed_org_act", "get_recommended_act", "search_user_released_act"],
+            "action": ["get_user_act_status", "get_user_act", "get_user_unstart_act", "get_user_ing_act", "get_user_finish_act", "get_followed_org_act", "search_user_released_act"],
             "principal": "*",
             "effect": "allow",
             "condition": "is_self",
