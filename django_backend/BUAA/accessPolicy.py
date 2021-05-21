@@ -317,10 +317,10 @@ class ActAccessPolicy(AccessPolicy):
         # 其余情况均为非法
         return False
 
-    def is_self(self, reuqest, view) ->bool:
-        if not isinstance(reuqest.user, WXUser):
+    def is_self(self, request, view) -> bool:
+        if not isinstance(request.user, WXUser):
             return False
-        return reuqest.user.id == eval(view.kwargs['user_id'])
+        return request.user.id == eval(view.kwargs['user_id'])
 
 
 class JoinedActAccessPolicy(AccessPolicy):
