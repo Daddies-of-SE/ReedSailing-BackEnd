@@ -27,8 +27,10 @@ class SuperAdminAuthentication(BaseAuthentication):
     def authenticate(self, request):
         print('admin')
         token = request.META.get('HTTP_TOKEN')
+        
         if not token:
             return None
+        #token = token.split()[1]
         username = cache.get(token)
         if not username:
             raise exceptions.AuthenticationFailed('非法token')

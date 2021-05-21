@@ -40,7 +40,7 @@ def _send_notif(p_id, notif):
     """revoke when user keeps online"""
     p_id = int(p_id)
     
-    #sender.send_mail(NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
+    #sender.send_mail('【一苇以航】' + NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
     if p_id in notification.clients :
         p_ws = notification.clients[p_id]
         p_ws.send(str([notif]))
@@ -149,7 +149,7 @@ def send_email(request):
         return Response(data=res, status=400)
 
     random_str = get_random_str()[:6]
-    sender.send_mail('ReedSailing (BUAA) Certification', 'Your verify code is {}, valid in 5 minutes'.format(random_str),
+    sender.send_mail('【一苇以航】邮箱验证码', '您的验证码为 {}, 5分钟内有效'.format(random_str),
                      email_address)
     
     cache.set(random_str, email_address, 300)  # 验证码时效5分钟

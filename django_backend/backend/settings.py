@@ -231,6 +231,8 @@ CORS_ALLOW_HEADERS = (
     'x-csrftoken',
     'x-requested-with',
     'Pragma',
+    'token',
+    'Token'
 )
 
 MEDIA_URL = '/media/'
