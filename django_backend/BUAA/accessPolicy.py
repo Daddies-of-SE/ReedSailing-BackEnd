@@ -112,7 +112,7 @@ class OrgAccessPolicy(AccessPolicy):
         if not isinstance(request.user, WXUser):
             return False
         org = view.get_object()
-        return org.owner == request.user.id
+        return eval(org.owner) == request.user.id
 
 
 class FollowedOrgAccessPolicy(AccessPolicy):
