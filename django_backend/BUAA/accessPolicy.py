@@ -317,7 +317,7 @@ class ActAccessPolicy(AccessPolicy):
         # 其余情况均为非法
         return False
 
-    def is_self(self, request, view) -> bool:
+    def is_self(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
             return False
         return request.user.id == eval(view.kwargs['user_id'])
