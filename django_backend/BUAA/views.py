@@ -658,6 +658,23 @@ class UserFeedbackViewSet(ModelViewSet):
     queryset = UserFeedback.objects.all()
     serializer_class = UserFeedbackSerializer
 
+    def get_serializer_class(self):
+        if self.action == "search_all_feedback":
+            return FeedbackDetailSerializer
+        return UserFeedbackSerializer
+
+    def search_all_feedback(self,request):
+        content = request.data.get("content")
+        feedbacks = UserFeedback.objects.filter(content__contains=content)
+        serializer = self.get_serializer(feedbacks,many=True)
+        return Response(serializer.data)
+
+    def search_user_feedback(self,request,user_id):
+        content = request.data.get("content")
+        feedbacks = UserFeedback.objects.filter(content__contains=content,user=user_id)
+        serializer = self.get_serializer(feedbacks,many=True)
+        return Response(serializer.data)
+
 
 # 活动
 class ActivityViewSet(ModelViewSet):
@@ -915,7 +932,7 @@ class CommentViewSet(ModelViewSet):
     queryset = Comment.objects.all()
 
     def get_serializer_class(self):
-        if self.action == "get_act_comments":
+        if self.action == "get_act_comments" or self.action == "search_by_act":
             return CommentDetailSerializer
         if self.action == "list":
             return CommentListSerializer
@@ -925,6 +942,11 @@ class CommentViewSet(ModelViewSet):
             return CommentUpdateSerializer
         if self.action == "retrieve":
             return CommentUpdateSerializer
+        if self.action == "search_all_comment":
+            return CommentListSerializer
+        if self.action == "search_by_user":
+            return CommentActDetailSerializer
+
         return CommentSerializer
 
     def paginate(self, objects):
@@ -947,6 +969,21 @@ class CommentViewSet(ModelViewSet):
             serializer = self.get_serializer(instance=comment)
             return Response(serializer.data)
         return Response({"id": -1}, 404)
+
+    def search_all_comment(self,request):
+        content = request.data.get("query")
+        comments = Comment.objects.filter(content__contains=content)
+        return self.paginate(comments)
+
+    def search_by_user(self,request,user_id):
+        content = request.data.get("query")
+        comments = Comment.objects.filter(user=user_id,content__contains=content)
+        return self.paginate(comments)
+
+    def search_by_act(self, request, act_id):
+        content = request.data.get("query")
+        comments = Comment.objects.filter(act=act_id,content__contains=content)
+        return self.paginate(comments)
 
     def create_wrapper(self, request):
         res = self.create(request)

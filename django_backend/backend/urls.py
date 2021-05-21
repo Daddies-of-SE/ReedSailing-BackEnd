@@ -107,6 +107,10 @@ urlpatterns = [
             UserFeedbackViewSet.as_view({"get": "list", "post": "create"})),
         url(r'^feedbacks/(?P<pk>\d+)/$',
             UserFeedbackViewSet.as_view({"get": "retrieve", "delete": "destroy"})),
+        url(r'^feedbacks/search/$',
+            UserFeedbackViewSet.as_view({"get":"search_all_feedback"})),
+        url(r'^feedbacks/user/(?P<user_id>\d+)/search/$',
+            UserFeedbackViewSet.as_view({"get":"search_user_feedback"})),
 
         # 活动
         url(r'^activities/$',
@@ -156,6 +160,12 @@ urlpatterns = [
             CommentViewSet.as_view({"get": "get_user_comment"})),
         url(r'activities/comments/(?P<pk>\d+)/$', CommentViewSet.as_view(
             {"delete": "destroy", "put": "update", "get": "retrieve"})),
+        url(r'activities/comments/search/$',
+            CommentViewSet.as_view({"get":"search_all_comment"})),
+        url(r'activities/(?P<act_id>\d+)/comments/search/$',
+            CommentViewSet.as_view({"get":"search_by_act"})),
+        url(r'activities/users/(?P<user_id>\d+)/comments/search/$',
+            CommentViewSet.as_view({"get":"search_by_user"})),
 
         # 个性化推荐
         url(r'recommended/activities/(?P<user_id>\d+)/$',
