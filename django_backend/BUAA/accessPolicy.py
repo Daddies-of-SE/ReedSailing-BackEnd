@@ -74,7 +74,6 @@ class OrgAppAccessPolicy(AccessPolicy):
 
 class OrgAccessPolicy(AccessPolicy):
     statements = [
-        {
             {
                 "action": ["list", "retrieve", "get_org_by_block", "search_all", "search_org_by_block", "get_recommended_org"],
                 "principal": "*",
@@ -98,7 +97,6 @@ class OrgAccessPolicy(AccessPolicy):
                 "effect": "allow",
                 "condition": ["(is_super_user or is_owner)"]
             },
-        }
     ]
 
     def is_super_user(self, request, view, action) -> bool:
