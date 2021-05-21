@@ -147,7 +147,7 @@ class FollowedOrgAccessPolicy(AccessPolicy):
     def is_self_create(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
             return False
-        return request.user.id == request.query_params.get('person')
+        return request.user.id == request.data.get('person')
 
     def is_self_destroy(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
@@ -357,5 +357,5 @@ class JoinedActAccessPolicy(AccessPolicy):
     def is_self(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
             return False
-        return request.user.id == request.query_params.get('person')
+        return request.user.id == request.data.get('person')
 
