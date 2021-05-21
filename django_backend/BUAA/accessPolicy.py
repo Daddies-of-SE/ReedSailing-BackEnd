@@ -187,7 +187,7 @@ class OrgManagerAccessPolicy(AccessPolicy):
         org = Organization.objects.get(id=org_id)
         return org.owner == request.user.id
 
-    def is_self(self, request, view, pk, action) -> bool:
+    def is_self(self, request, view, action, pk) -> bool:
         if not isinstance(request.user, WXUser):
             return False
         return request.user.id == pk
