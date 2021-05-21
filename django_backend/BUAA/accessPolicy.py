@@ -263,16 +263,10 @@ class ActAccessPolicy(AccessPolicy):
             "condition": ["(is_super_user or is_vaild_create)"],
         },
         {
-            "action": ["update_wrapper"],
+            "action": ["update_wrapper", "destroy_wrapper"],
             "principal": "*",
             "effect": "allow",
             "condition": ["(is_super_user or is_vaild_update)"],
-        },
-        {
-            "action": ["destroy_wrapper"],
-            "principal": "*",
-            "effect": "allow",
-            "condition": "is_super_user",
         },
         {
             "action": ["get_user_act_status", "get_user_act", "get_user_unstart_act", "get_user_ing_act", "get_user_finish_act", "get_followed_org_act", "search_user_released_act"],
