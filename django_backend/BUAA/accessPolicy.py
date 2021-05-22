@@ -381,7 +381,7 @@ class JoinedActAccessPolicy(AccessPolicy):
         if not isinstance(request.user, WXUser):
             return False
         # 活动负责人
-        act_id = view.kwargs['act_id']
+        act_id = eval(view.kwargs['act_id'])
         act = Activity.objects.get(id=act_id)
         if request.user == act.owner:
             return True
@@ -452,7 +452,7 @@ class ImageAccessPolicy(AccessPolicy):
     def is_act_owner_or_manager(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
             return False
-        act_id = view.kwargs['act_id']
+        act_id = eval(view.kwargs['act_id'])
         act = Activity.objects.get(id=act_id)
         # 活动拥有者
         if act.owner == request.user:
@@ -466,7 +466,7 @@ class ImageAccessPolicy(AccessPolicy):
     def is_manager(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
             return False
-        org_id = view.kwargs['org_id']
+        org_id = eval(view.kwargs['org_id'])
         return OrgManager.objects.filter(org=org_id, person=request.user.id).exists()
 
 
