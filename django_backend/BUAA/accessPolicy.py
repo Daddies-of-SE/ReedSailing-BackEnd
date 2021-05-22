@@ -158,7 +158,7 @@ class FollowedOrgAccessPolicy(AccessPolicy):
 class OrgManagerAccessPolicy(AccessPolicy):
     statements = [
         {
-            "action": ["create"],
+            "action": ["create_wrapper"],
             "principal": "*",
             "effect": "allow",
             "condition": ["(is_super_user or is_owner_create)"]
