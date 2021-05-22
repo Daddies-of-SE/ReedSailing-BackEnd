@@ -158,10 +158,16 @@ class FollowedOrgAccessPolicy(AccessPolicy):
 class OrgManagerAccessPolicy(AccessPolicy):
     statements = [
         {
-            "action": ["create", "destroy"],
+            "action": ["create"],
             "principal": "*",
             "effect": "allow",
-            "condition": ["(is_super_user or is_owner)"]
+            "condition": ["(is_super_user or is_owner_create)"]
+        },
+        {
+            "action" : ["destroy"],
+            "principal" : "*",
+            "effect" : "allow",
+            "condition" : ["(is_super_user or is_owner_destroy)"]
         },
         {
             "action": "get_all_managers",
@@ -179,7 +185,14 @@ class OrgManagerAccessPolicy(AccessPolicy):
     def is_super_user(self, request, view, action) -> bool:
         return isinstance(request.user, SuperAdmin)
 
-    def is_owner(self, request, view, action) -> bool:
+    def is_owner_create(self, request, view, action) -> bool:
+        if not isinstance(request.user, WXUser):
+            return False
+        org_id = request.data.get('org')
+        org = Organization.objects.get(id=org_id)
+        return org.owner == request.user
+
+    def is_owner_destroy(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
             return False
         org_id = request.query_params.get('org')
