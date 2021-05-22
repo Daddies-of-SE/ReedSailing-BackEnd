@@ -1,4 +1,4 @@
-from .models import SuperAdmin, OrgManager, Organization
+from .models import SuperAdmin, OrgManager, Organization, Activity
 from .views import *
 from rest_access_policy import AccessPolicy
 
@@ -60,7 +60,7 @@ class OrgAppAccessPolicy(AccessPolicy):
             "effect": "allow",
         },
         {
-            "action": ["list", "destroy", "retrieve", "verity"],
+            "action": ["list", "destroy", "retrieve", "verify"],
             "principal": "*",
             "effect": "allow",
             "condition": "is_super_user",
