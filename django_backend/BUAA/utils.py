@@ -38,6 +38,8 @@ def get_notif_content(type_, **kwargs):
             content = f"您创建\'{org}\'组织的申请被拒绝了"
     elif type_ == NOTIF.BecomeOwner:
         content = f"您被转让成为\'{org}\'组织的负责人"
+    elif type_ == NOTIF.BecomeAdmin:
+        content = f"您成为\'{org}\'组织的管理员"
     elif type_ == NOTIF.RemovalFromAdmin:
         content = f"您被\'{org}\'组织的负责人移除了管理员身份"
 

@@ -588,6 +588,16 @@ class OrgManageViewSet(ModelViewSet):
         serializer = self.get_serializer(objects, many=True)
         return Response(serializer.data)
 
+    def create_wrapper(self, request):
+        res = self.create(request)
+        user_id = request.data['person']
+        org_id = request.data['org']
+        content = utils.get_notif_content(NOTIF.BecomeAdmin, org_name=_org_id2org_name(org_id))
+        notif = new_notification(NOTIF.BecomeAdmin, content, org_id=org_id)
+        _send_notif(user_id, notif)
+
+        return res
+
     def destroy(self, request, *args, **kwargs):
         user_id = request.query_params.get('user')
         org_id = request.query_params.get('org')

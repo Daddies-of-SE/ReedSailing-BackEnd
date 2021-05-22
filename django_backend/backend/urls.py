@@ -82,7 +82,7 @@ urlpatterns = [
 
         # 组织管理
         url(r'^organizations/managers/$',
-            OrgManageViewSet.as_view({"post": "create", "delete": "destroy", })),
+            OrgManageViewSet.as_view({"post": "create_wrapper", "delete": "destroy", })),
         url(r'^organizations/managers/(?P<pk>\d+)/$',
             OrgManageViewSet.as_view({"get": "get_all_managers"})),
         url(r'^users/managed_organizations/(?P<pk>\d+)/$',
