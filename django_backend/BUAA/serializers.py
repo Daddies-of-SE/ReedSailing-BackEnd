@@ -38,7 +38,7 @@ class WXUserSerializer(ModelSerializer):
 class WXUserUpdateSerializer(ModelSerializer):
     class Meta:
         model = WXUser
-        fields = ['name', 'sign', 'contact']
+        fields = ['name', 'sign', 'contact', 'follow_boya']
 
 
 # 版块
@@ -209,6 +209,12 @@ class UserFeedbackSerializer(ModelSerializer):
         model = UserFeedback
         fields = "__all__"
 
+class FeedbackDetailSerializer(ModelSerializer):
+    user = WXUserSerializer(read_only=True)
+    class Meta:
+        model = UserFeedback
+        fields = "__all__"
+
 
 # 活动
 class ActivitySerializer(ModelSerializer):
@@ -311,6 +317,13 @@ class CommentUpdateSerializer(ModelSerializer):
 
 class CommentListSerializer(ModelSerializer):
     user = WXUserSerializer(read_only=True)
+    act = ActivitySerializer(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = "__all__"
+
+class CommentActDetailSerializer(ModelSerializer):
     act = ActivitySerializer(read_only=True)
 
     class Meta:

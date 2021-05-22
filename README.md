@@ -65,6 +65,7 @@
 * 输入`nginx`启动nginx
 * 在`~/ReedSailing-BackEnd/django_backend`下输入`uwsgi uwsgi.ini`启动uwsgi，配置文件为uwsgi.ini
 * 在`~/ReedSailing-BackEnd/django_backend`下输入`daphne -p 8001 backend.asgi:application`启动daphne
+* 修改django代码后`ps -ef | grep daphne`,获取daphne进程pid，`kill -9 pid`杀死正在运行的daphne进程。然后按照上一条重启daphne。
 * 修改nginx配置文件后要输入`nreload`使nginx重新加载配置文件
 * 修改django代码后要输入`ureload`
 * 前端调试：在自己的电脑上（首先要保证后端已经在运行上述命令）

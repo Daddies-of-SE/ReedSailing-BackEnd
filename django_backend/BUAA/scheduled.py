@@ -2,7 +2,11 @@ import requests
 from django.core.cache import cache
 import backend.settings as settings
 import datetime
+import json
+import os
 from .serializers import *
+
+BOYA_PATH = os.path.expanduser('~/boya/')
 
 
 def get_access_token():
@@ -16,19 +20,24 @@ def get_access_token():
 
 
 def get_boya():
-    with open("/root/ReedSailing-BackEnd/boya.log", "w+"):
-        print(str(datetime.datetime.now()) + " get_boya")
-        
-        
-        add_to_activities("test_boya", "test_description", 100, "2021-9-9T20:00:00", "2021-9-9T21:00:00", "test_address")
+    print(str(datetime.datetime.now()) + " get_boya")
+    files = os.listdir(BOYA_PATH)
+    for file in files:
+        if not file.endswith('.json'):
+            continue
+        with open(BOYA_PATH+file, 'r') as f:
+            content = f.read()
+        content = json.loads(content)
+        add_to_activities(description='无', **content)
+        os.remove(BOYA_PATH+file)
 
 
-
-def add_to_activities(name, description, contain, begin_time, end_time, location):
+def add_to_activities(name, description, contain, begin_time, end_time, location, **kwargs):
     if Address.objects.filter(name=location).exists():
         address = Address.objects.get(name=location).id
     else:
-        serializer = AddressSerializer(data={"name": location, "longitude": 1.0, "latitude": 1.0})
+        serializer = AddressSerializer(
+            data={"name": location, "longitude": 1.0, "latitude": 1.0})
         serializer.is_valid()
         serializer.save()
         address = serializer.data.get("id")

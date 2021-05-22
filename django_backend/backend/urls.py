@@ -35,6 +35,7 @@ urlpatterns = [
         path('userOrgRelation/', user_org_relation),
         path('userActRelation/', user_act_relation),
         path('qrcode/', get_page_qrcode),
+#        path('boyaFollowers/', get_boya_followers),
 
         # 自动生成接口文档
         url(r'^docs/', include_docs_urls(title='一苇以航API接口')),
@@ -49,14 +50,16 @@ urlpatterns = [
         url(r'^users/$', WXUserViewSet.as_view({"get": "list"})),
         url(r'^users/(?P<pk>\d+)/$', WXUserViewSet.as_view(
             {"get": "retrieve", "delete": "destroy", "put": "update"})),
+        url(r'^users/boya_followers/', WXUserViewSet.as_view({"get": "get_boya_followers"})),
+        
 
         # 组织申请
         url(r'^organizations/applications/$',
             OrgApplicationViewSet.as_view({"post": "create", "get": "list"})),
         url(r'^organizations/applications/(?P<pk>\d+)/$',
             OrgApplicationViewSet.as_view({"delete": "destroy", "get": "retrieve"})),
-        url(r'^users/organizations/applications/(?P<user_id>\d+)/$',
-            OrgApplicationViewSet.as_view({"get": "user_get_all"})),
+        # url(r'^users/organizations/applications/(?P<user_id>\d+)/$',
+        #     OrgApplicationViewSet.as_view({"get": "user_get_all"})),
         url(r'^organizations/applications/verifications/(?P<pk>\d+)/$',
             OrgApplicationViewSet.as_view({"put": "verify"})),
 
@@ -107,6 +110,10 @@ urlpatterns = [
             UserFeedbackViewSet.as_view({"get": "list", "post": "create"})),
         url(r'^feedbacks/(?P<pk>\d+)/$',
             UserFeedbackViewSet.as_view({"get": "retrieve", "delete": "destroy"})),
+        url(r'^feedbacks/search/$',
+            UserFeedbackViewSet.as_view({"get":"search_all_feedback"})),
+        url(r'^feedbacks/user/(?P<user_id>\d+)/search/$',
+            UserFeedbackViewSet.as_view({"get":"search_user_feedback"})),
 
         # 活动
         url(r'^activities/$',
@@ -156,6 +163,12 @@ urlpatterns = [
             CommentViewSet.as_view({"get": "get_user_comment"})),
         url(r'activities/comments/(?P<pk>\d+)/$', CommentViewSet.as_view(
             {"delete": "destroy", "put": "update", "get": "retrieve"})),
+        url(r'activities/comments/search/$',
+            CommentViewSet.as_view({"get":"search_all_comment"})),
+        url(r'activities/(?P<act_id>\d+)/comments/search/$',
+            CommentViewSet.as_view({"get":"search_by_act"})),
+        url(r'activities/users/(?P<user_id>\d+)/comments/search/$',
+            CommentViewSet.as_view({"get":"search_by_user"})),
 
         # 个性化推荐
         url(r'recommended/activities/(?P<user_id>\d+)/$',
@@ -194,5 +207,6 @@ urlpatterns = [
 # router = SimpleRouter()
 # router.register('activities/join_applications', JoinActApplicationViewSet)
 # urlpatterns += router.urls
+        
         
         

@@ -7,22 +7,26 @@ import hashlib
 import backend.settings as settings
 from django.core.cache import cache
 import requests
-from rest_framework.decorators import api_view, authentication_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from .serializers import *
 from rest_framework.response import Response
 from rest_framework.viewsets import *
 from rest_framework import status
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from django_redis import get_redis_connection
+from .authentication import *
 import datetime
 from BUAA.const import NOTIF, BLOCKID
 import time
 import os
+from .const import NOTIF_TYPE_DICT
+from .accessPolicy import *
 
 base_dir = '/root/ReedSailing-Web/server_files/'
 #base_dir = '/Users/wzk/Desktop/'
 web_dir = 'https://www.reedsailing.xyz/server_files/'
 
+sender = utils.MailSender()
 
 def get_random_str():
     uuid_val = uuid.uuid4()
@@ -35,6 +39,8 @@ def get_random_str():
 def _send_notif(p_id, notif):
     """revoke when user keeps online"""
     p_id = int(p_id)
+    
+    #sender.send_mail('【一苇以航】' + NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
     if p_id in notification.clients :
         p_ws = notification.clients[p_id]
         p_ws.send(str([notif]))
@@ -54,6 +60,9 @@ def _user_id2user_name(pk):
     pk = int(pk)
     return BUAA.models.WXUser.objects.get(id=pk).name
 
+def _user_id2user_email(pk):
+    pk = int(pk)
+    return BUAA.models.WXUser.objects.get(id=pk).email
 
 
 """
@@ -102,39 +111,16 @@ def new_send_notification(notif_id, user_id):
     serializer.is_valid()
     serializer.save()
     return serializer.data
-
-
-
-def get_access_token():
-    def get_from_wx_api():
-        appid = settings.APPID
-        secret = settings.SECRET
-        url = 'https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=' + appid + '&secret=' + secret
-        response = json.loads(requests.get(url).content)
-        with open("./access_token.txt", "w") as f:
-            print(response["access_token"], file=f)
-            print(time.time(), file=f)
-            print(response["expires_in"], file=f)
-        return response["access_token"]
-    
-    if not os.path.exists("../access_token.txt"):
-        return get_from_wx_api()
-        
-    with open("../access_token.txt") as f:
-        lines = f.readlines()
-        if time.time() - int(lines[1].strip()) > int(lines[2].strip()):
-            return get_from_wx_api()
-        return lines[0].strip()
             
 
 @api_view(['POST'])
-@authentication_classes([])
+@authentication_classes([UserAuthentication, SuperAdminAuthentication, ErrorAuthentication])
 def get_page_qrcode(request):
     body = {
         "path" : request.data["path"],
         "width" : request.data["width"],
     }
-    r = requests.post(url="https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=" + get_access_token(), data=json.dumps(body), headers={"Content-Type": "application/json"})
+    r = requests.post(url="https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=" + utils.get_access_token(), data=json.dumps(body), headers={"Content-Type": "application/json"})
     
     path = "qrcode/" + get_random_str() + '.png'
     with open(base_dir + path, 'wb') as f:
@@ -147,13 +133,13 @@ def get_page_qrcode(request):
     return Response(data=res, status=200)
 
 
-@api_view(['POST'])
-@authentication_classes([])  # 添加
-def send_email(request):
+def _get_boya_followers():
+    return WXUser.objects.filter(follow_boya=True)
 
-    sender = utils.MailSender()
-#
-#    print("request is", request.POST)
+
+@api_view(['POST'])
+@authentication_classes([UserAuthentication, ErrorAuthentication])
+def send_email(request):
     email_address = request.data['email']
     if not email_address.endswith("@buaa.edu.cn"):
         res = {
@@ -163,7 +149,7 @@ def send_email(request):
         return Response(data=res, status=400)
 
     random_str = get_random_str()[:6]
-    sender.send_mail('BUAA Certification', 'Your verify code is {}, valid in 5 minutes'.format(random_str),
+    sender.send_mail('【一苇以航】邮箱验证码', '您的验证码为 {}, 5分钟内有效'.format(random_str),
                      email_address)
     
     cache.set(random_str, email_address, 300)  # 验证码时效5分钟
@@ -181,7 +167,8 @@ def send_email(request):
 
 
 @api_view(['POST'])
-@authentication_classes([])  # 添加
+@authentication_classes([UserAuthentication, ErrorAuthentication])
+@permission_classes((OtherAccessPolicy,))
 def verify_email(request):
     verifyCode = request.data['verifyCode']
     config_email = request.data['email']
@@ -227,7 +214,6 @@ def verify_email(request):
 
 
 @api_view(['POST'])
-@authentication_classes([])
 def user_login(request):
     #raise Exception
     # 取出数据
@@ -269,7 +255,8 @@ def user_login(request):
         "avatar": user.avatar,
         "sign": user.sign,
         "name": user.name,
-        "contact" : user.contact
+        "contact" : user.contact,
+        "follow_boya" : user.follow_boya
     }
     return Response(data=res, status=200)
     
@@ -291,6 +278,8 @@ def user_register(request):
 
 
 @api_view(['POST'])
+@authentication_classes([UserAuthentication, SuperAdminAuthentication, ErrorAuthentication])
+@permission_classes((OtherAccessPolicy,))
 def user_org_relation(request):
     user_id = request.data['user']
     org_id = request.data['org']
@@ -324,6 +313,8 @@ def user_org_relation(request):
     return Response(res)
 
 @api_view(['POST'])
+@authentication_classes([UserAuthentication, SuperAdminAuthentication, ErrorAuthentication])
+@permission_classes((OtherAccessPolicy,))
 def user_act_relation(request):
     user_id = request.data['user']
     act_id = request.data['act']
@@ -381,22 +372,34 @@ class JoinActApplicationViewSet(ModelViewSet):
 
 # 用户
 class WXUserViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (WXUserAccessPolicy,)
+
     queryset = WXUser.objects.all()
 
     def get_serializer_class(self):
         if self.action == 'create':
             return TestUserSerializer
         return WXUserSerializer
+    
+    def get_boya_followers(self, request):
+        users = _get_boya_followers()
+        serializer = self.get_serializer(users, many=True)
+        return Response(serializer.data)
 
 
 # 版块
 class BlockViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (BlockAccessPolicy,)
     queryset = Block.objects.all()
     serializer_class = BlockSerializer
 
 
 # 组织申请
 class OrgApplicationViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (OrgAppAccessPolicy,)
     queryset = OrgApplication.objects.all()
 
     def get_serializer_class(self):
@@ -476,6 +479,8 @@ class OrgApplicationViewSet(ModelViewSet):
 
 # 组织
 class OrganizationModelViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (OrgAccessPolicy,)
     queryset = Organization.objects.all()
 
     def get_serializer_class(self):
@@ -542,6 +547,8 @@ class OrganizationModelViewSet(ModelViewSet):
 
 # 关注组织
 class FollowedOrgViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (FollowedOrgAccessPolicy,)
     queryset = FollowedOrg.objects.all()
 
     def get_serializer_class(self):
@@ -571,6 +578,8 @@ class FollowedOrgViewSet(ModelViewSet):
 
 # 组织管理
 class OrgManageViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (OrgManagerAccessPolicy,)
     queryset = OrgManager.objects.all()
 
     def get_serializer_class(self):
@@ -628,32 +637,57 @@ class OrgManageViewSet(ModelViewSet):
 
 # 活动分类
 class CategoryViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (CategoryAccessPolicy,)
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
 # 活动地址
 class AddressViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (AddressAccessPolicy,)
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
 
 
 # 用户反馈
 class UserFeedbackViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (FeedbackAccessPolicy,)
     queryset = UserFeedback.objects.all()
     serializer_class = UserFeedbackSerializer
+
+    def get_serializer_class(self):
+        if self.action == "search_all_feedback":
+            return FeedbackDetailSerializer
+        return UserFeedbackSerializer
+
+    def search_all_feedback(self,request):
+        content = request.data.get("content")
+        feedbacks = UserFeedback.objects.filter(content__contains=content)
+        serializer = self.get_serializer(feedbacks,many=True)
+        return Response(serializer.data)
+
+    def search_user_feedback(self,request,user_id):
+        content = request.data.get("content")
+        feedbacks = UserFeedback.objects.filter(content__contains=content,user=user_id)
+        serializer = self.get_serializer(feedbacks,many=True)
+        return Response(serializer.data)
 
 
 # 活动
 class ActivityViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (ActAccessPolicy,)
     queryset = Activity.objects.all()
 
     def get_serializer_class(self):
         if self.action == "create":
             return ActivitySerializer
-        if self.action == "destroy":
+        if self.action == ["destroy", "destroy_wrapper"]:
             return ActivitySerializer
-        if self.action == "update":
+        if self.action in ["update", "update_wrapper"]:
             return ActUpdateSerializer
         return ActDetailSerializer
 
@@ -680,12 +714,13 @@ class ActivityViewSet(ModelViewSet):
 
     def destroy_wrapper(self, request, pk):
         pk = int(pk)
-        res = self.destroy(request)
+        #res = self.destroy(request)
         content = utils.get_notif_content(NOTIF.ActCancel, act_name=_act_id2act_name(pk))
         notif = new_notification(NOTIF.ActCancel, content, act_id=pk, org_id=None)
         persons = JoinedAct.objects.filter(act=pk)
         for p in persons:
             _send_notif(p.person_id, notif)
+        res = self.destroy(request)
         return res
 
 
@@ -744,7 +779,7 @@ class ActivityViewSet(ModelViewSet):
         now = datetime.datetime.now()
         ret = {
         'unstart': self.get_serializer(Activity.objects.filter(block = block_id,begin_time__gt=now), many=True).data,
-        'cur': self.get_serializer(Activity.objects.filter(block = block_id,begin_time__gt=now), many=True).data,
+        'cur': self.get_serializer(Activity.objects.filter(block = block_id, end_time__gte=now, begin_time__lte=now) , many=True).data,
         'end': self.get_serializer(Activity.objects.filter(block = block_id, end_time__lt=now), many=True).data
         }
         return Response(ret, 200)
@@ -791,11 +826,10 @@ class ActivityViewSet(ModelViewSet):
         return self.paginate(activities)
 
 
-
-
-
 # 活动参与
 class JoinedActViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (JoinedActAccessPolicy,)
     queryset = JoinedAct.objects.all()
 
     def get_serializer_class(self):
@@ -840,10 +874,11 @@ class JoinedActViewSet(ModelViewSet):
     def destroy_wrapper(self, request) :
         user_id = request.query_params.get('person')
         act_id = request.query_params.get('act')
-        self.destroy(request)
+        #self.destroy(request)
         content = utils.get_notif_content(NOTIF.RemovalFromAct, act_name=_act_id2act_name(act_id))
         notif = new_notification(NOTIF.RemovalFromAct, content, act_id=act_id, org_id=None)
         _send_notif(user_id, notif)
+        self.destroy(request)
         return Response('')
 
     # 获取活动的参与人数
@@ -895,10 +930,12 @@ class JoinedActViewSet(ModelViewSet):
 
 # 活动评价
 class CommentViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (CommentAccessPolicy,)
     queryset = Comment.objects.all()
 
     def get_serializer_class(self):
-        if self.action == "get_act_comments":
+        if self.action == "get_act_comments" or self.action == "search_by_act":
             return CommentDetailSerializer
         if self.action == "list":
             return CommentListSerializer
@@ -908,6 +945,11 @@ class CommentViewSet(ModelViewSet):
             return CommentUpdateSerializer
         if self.action == "retrieve":
             return CommentUpdateSerializer
+        if self.action == "search_all_comment":
+            return CommentListSerializer
+        if self.action == "search_by_user":
+            return CommentActDetailSerializer
+
         return CommentSerializer
 
     def paginate(self, objects):
@@ -930,6 +972,21 @@ class CommentViewSet(ModelViewSet):
             serializer = self.get_serializer(instance=comment)
             return Response(serializer.data)
         return Response({"id": -1}, 404)
+
+    def search_all_comment(self,request):
+        content = request.data.get("query")
+        comments = Comment.objects.filter(content__contains=content)
+        return self.paginate(comments)
+
+    def search_by_user(self,request,user_id):
+        content = request.data.get("query")
+        comments = Comment.objects.filter(user=user_id,content__contains=content)
+        return self.paginate(comments)
+
+    def search_by_act(self, request, act_id):
+        content = request.data.get("query")
+        comments = Comment.objects.filter(act=act_id,content__contains=content)
+        return self.paginate(comments)
 
     def create_wrapper(self, request):
         res = self.create(request)
@@ -974,6 +1031,8 @@ class NotificationViewSet(ModelViewSet):
 
 
 class ImageUploadViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (ImageAccessPolicy,)
     parser_classes = [JSONParser, FormParser, MultiPartParser, ]
     serializer_class = ImageUploadSerializer
     def remove_act_avatar(self,request,act_id):
@@ -1081,5 +1140,7 @@ def lines(request):
 
 
 if __name__=="__main__":
-    print(get_access_token())
+    print(utils.get_access_token())
+    
+    
     
