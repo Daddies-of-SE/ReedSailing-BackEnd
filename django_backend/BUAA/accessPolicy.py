@@ -60,7 +60,7 @@ class OrgAppAccessPolicy(AccessPolicy):
             "effect": "allow",
         },
         {
-            "action": ["list", "destroy", "retrieve", "verity"],
+            "action": ["list", "destroy", "retrieve", "verify"],
             "principal": "*",
             "effect": "allow",
             "condition": "is_super_user",
