@@ -7,7 +7,7 @@ import hashlib
 import backend.settings as settings
 from django.core.cache import cache
 import requests
-from rest_framework.decorators import api_view, authentication_classes
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from .serializers import *
 from rest_framework.response import Response
 from rest_framework.viewsets import *
@@ -168,6 +168,7 @@ def send_email(request):
 
 @api_view(['POST'])
 @authentication_classes([UserAuthentication, ErrorAuthentication])
+@permission_classes((OtherAccessPolicy,))
 def verify_email(request):
     verifyCode = request.data['verifyCode']
     config_email = request.data['email']
@@ -278,6 +279,7 @@ def user_register(request):
 
 @api_view(['POST'])
 @authentication_classes([UserAuthentication, SuperAdminAuthentication, ErrorAuthentication])
+@permission_classes((OtherAccessPolicy,))
 def user_org_relation(request):
     user_id = request.data['user']
     org_id = request.data['org']
@@ -312,6 +314,7 @@ def user_org_relation(request):
 
 @api_view(['POST'])
 @authentication_classes([UserAuthentication, SuperAdminAuthentication, ErrorAuthentication])
+@permission_classes((OtherAccessPolicy,))
 def user_act_relation(request):
     user_id = request.data['user']
     act_id = request.data['act']

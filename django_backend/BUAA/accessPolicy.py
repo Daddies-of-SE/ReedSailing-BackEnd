@@ -1,4 +1,4 @@
-from .models import SuperAdmin, OrgManager
+from .models import SuperAdmin, OrgManager, Organization
 from .views import *
 from rest_access_policy import AccessPolicy
 
@@ -470,3 +470,28 @@ class ImageAccessPolicy(AccessPolicy):
         return OrgManager.objects.filter(org=org_id, person=request.user.id).exists()
 
 
+class OtherAccessPolicy(AccessPolicy):
+    statements = [
+        {
+            "action": "verify_email",
+            "principal": "*",
+            "effect": "allow",
+            "condition": "is_self"
+        },
+        {
+            "action": ["user_org_relation", "user_act_relation"],
+            "principal": "*",
+            "effect": "allow",
+            "condition": "is_self_user"
+        }
+    ]
+
+    def is_self(self, request, view, action) -> bool:
+        if not isinstance(request.user, WXUser):
+            return False
+        return request.data.get('id') == request.user.id
+
+    def is_self_user(self, request, view, action) -> bool:
+        if not isinstance(request.user, WXUser):
+            return False
+        return request.data.get('user') == request.user.id
