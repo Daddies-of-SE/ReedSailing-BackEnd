@@ -73,4 +73,14 @@ def test3():
 	r = requests.delete(url)
 	print(r.status_code)
 
-test3()
+def test4():
+	body = {
+		'org':1,
+		'person':1,
+	}
+	url = 'http://localhost:8000/api/organizations/managers/?user=1&org=1'
+
+	r = requests.delete(url, data=json.dumps(body))
+	print(r.status_code)
+
+test4()
