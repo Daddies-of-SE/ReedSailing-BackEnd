@@ -1019,7 +1019,7 @@ class NotificationViewSet(ModelViewSet):
 
 class ImageUploadViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
-    permission_classes = (ImageAccessPolicy,)
+    # permission_classes = (ImageAccessPolicy,)
     parser_classes = [JSONParser, FormParser, MultiPartParser, ]
     serializer_class = ImageUploadSerializer
     def remove_act_avatar(self,request,act_id):
