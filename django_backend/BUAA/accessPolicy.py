@@ -1,4 +1,4 @@
-from .models import SuperAdmin
+from .models import SuperAdmin, OrgManager
 from .views import *
 from rest_access_policy import AccessPolicy
 
@@ -260,13 +260,13 @@ class ActAccessPolicy(AccessPolicy):
             "action": ["create"],
             "principal": "*",
             "effect": "allow",
-            "condition": ["(is_super_user or is_vaild_create)"],
+            "condition": ["(is_super_user or is_valid_create)"],
         },
         {
             "action": ["update_wrapper", "destroy_wrapper"],
             "principal": "*",
             "effect": "allow",
-            "condition": ["(is_super_user or is_vaild_update)"],
+            "condition": ["(is_super_user or is_valid_update)"],
         },
         {
             "action": ["get_user_act_status", "get_user_act", "get_user_unstart_act", "get_user_ing_act", "get_user_finish_act", "get_followed_org_act", "search_user_released_act"],
@@ -279,7 +279,7 @@ class ActAccessPolicy(AccessPolicy):
     def is_super_user(self, request, view, action) -> bool:
         return isinstance(request.user, SuperAdmin)
 
-    def is_vaild_create(self, request, view, action) -> bool:
+    def is_valid_create(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
             return False
         block_id = request.data.get('block')
@@ -297,7 +297,7 @@ class ActAccessPolicy(AccessPolicy):
         org_id = request.data.get('org')
         return OrgManager.objects.filter(org=org_id, person=request.user.id).exists()
 
-    def is_vaild_update(self, request, view, action) -> bool:
+    def is_valid_update(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
             return False
         act_id = eval(view.kwargs['pk'])
@@ -323,19 +323,25 @@ class JoinedActAccessPolicy(AccessPolicy):
             "action": ["create"],
             "principal": "*",
             "effect": "allow",
-            "condition": ["(is_super_user or is_self)"],
+            "condition": ["(is_super_user or is_self_create)"],
         },
         {
             "action": ["destroy_wrapper"],
             "principal": "*",
             "effect": "allow",
-            "condition": ["(is_super_user or is_self)"],
+            "condition": ["(is_super_user or is_valid_destroy)"],
         },
         {
-            "action": [],
+            "action": ["get_act_participants"],
             "principal": "*",
             "effect": "allow",
-            "condition": "is_super_user",
+            "condition": ["(is_super_user or is_valid_get)"],
+        },
+        {
+            "action": ["get_user_joined_act", "search_user_joined_act", "get_user_joined_act_status", "get_user_joined_act_begin_order"],
+            "principal": "*",
+            "effect": "allow",
+            "condition": ["(is_super_user or is_self)"],
         },
         {
             "action": ["get_act_participants_number"],
@@ -348,8 +354,119 @@ class JoinedActAccessPolicy(AccessPolicy):
     def is_super_user(self, request, view, action) -> bool:
         return isinstance(request.user, SuperAdmin)
 
-    def is_self(self, request, view, action) -> bool:
+    def is_self_create(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
             return False
         return request.user.id == request.data.get('person')
+
+    def is_self(self, request, view, action) -> bool:
+        if not isinstance(request.user, WXUser):
+            return False
+        return request.user.id == eval(view.kwargs['user_id'])
+
+    def is_valid_destroy(self, request, view, action) -> bool:
+        if not isinstance(request.user, WXUser):
+            return False
+        # 本人退出
+        if request.user.id == request.query_params.get('person'):
+            return True
+        # 管理员移除
+        act_id = request.query_params.get('act')
+        act = Activity.objects.get(id=act_id)
+        if act.org is not None:
+            return OrgManager.objects.filter(org=act.org.id, person=request.user.id).exists()
+        return False
+
+    def is_valid_get(self, request, view, action) -> bool:
+        if not isinstance(request.user, WXUser):
+            return False
+        # 活动负责人
+        act_id = view.kwargs['act_id']
+        act = Activity.objects.get(id=act_id)
+        if request.user == act.owner:
+            return True
+        # 活动管理员
+        if act.org is not None:
+            return OrgManager.objects.filter(org=act.org.id, person=request.user.id).exists()
+        return False
+
+class CommentAccessPolicy(AccessPolicy):
+    statements = [
+        {
+            "action": ["list", "create_wrapper", "get_act_comments", "retrieve", "search_by_act", "search_by_user", "get_user_comment"],
+            "principal": "*",
+            "effect": "allow",
+        },
+        {
+            "action": ["update", "destroy"],
+            "principal": "*",
+            "effect": "allow",
+            "condition": "(is_super_user or is_valid)"
+        },
+        {
+            "action": ["search_all_comment"],
+            "principal": "*",
+            "effect": "allow",
+            "condition": "is_super_user"
+        }
+    ]
+
+    def is_super_user(self, request, view, action) -> bool:
+        return isinstance(request.user, SuperAdmin)
+
+    def is_valid(self, request, view, action) -> bool:
+        if not isinstance(request.user, WXUser):
+            return False
+        comment = view.get_object()
+        # 本人
+        if comment.user == request.user:
+            return True
+        # 活动负责人
+        if comment.act.owner == request.user:
+            return True
+        # 组织管理员
+        if comment.act.org is not None:
+            return OrgManager.objects.filter(org=comment.act.org.id, person=request.user.id).exists()
+        return False
+
+
+class ImageAccessPolicy(AccessPolicy):
+    statements = [
+        {
+            "action": ["remove_act_avatar", "upload_act_avatar"],
+            "principal": "*",
+            "effect": "allow",
+            "condition": "(is_super_user or is_act_owner_or_manager)"
+        },
+        {
+            "action": ["upload_org_avatar"],
+            "principal": "*",
+            "effect": "allow",
+            "condition": "(is_super_user or is_manager)"
+        }
+    ]
+
+    def is_super_user(self, request, view, action) -> bool:
+        return isinstance(request.user, SuperAdmin)
+
+    def is_act_owner_or_manager(self, request, view, action) -> bool:
+        if not isinstance(request.user, WXUser):
+            return False
+        act_id = view.kwargs['act_id']
+        act = Activity.objects.get(id=act_id)
+        # 活动拥有者
+        if act.owner == request.user:
+            return True
+        # 组织下的活动，管理员
+        if act.block.name != "个人":
+            return OrgManager.objects.filter(org=act.org.id, person=request.user.id).exists()
+        # 其余情况均为非法
+        return False
+
+    def is_manager(self, request, view, action) -> bool:
+        if not isinstance(request.user, WXUser):
+            return False
+        org_id = view.kwargs['org_id']
+        return OrgManager.objects.filter(org=org_id, person=request.user.id).exists()
+
 

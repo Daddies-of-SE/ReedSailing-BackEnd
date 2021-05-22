@@ -816,7 +816,7 @@ class ActivityViewSet(ModelViewSet):
 # 活动参与
 class JoinedActViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
-    # permission_classes = (JoinedActAccessPolicy,)
+    permission_classes = (JoinedActAccessPolicy,)
     queryset = JoinedAct.objects.all()
 
     def get_serializer_class(self):
@@ -918,6 +918,7 @@ class JoinedActViewSet(ModelViewSet):
 # 活动评价
 class CommentViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (CommentAccessPolicy,)
     queryset = Comment.objects.all()
 
     def get_serializer_class(self):
@@ -1017,6 +1018,8 @@ class NotificationViewSet(ModelViewSet):
 
 
 class ImageUploadViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (ImageAccessPolicy,)
     parser_classes = [JSONParser, FormParser, MultiPartParser, ]
     serializer_class = ImageUploadSerializer
     def remove_act_avatar(self,request,act_id):
