@@ -152,7 +152,7 @@ class FollowedOrgAccessPolicy(AccessPolicy):
     def is_self_destroy(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
             return False
-        return request.user.id == request.query_params.get('user')
+        return request.user.id == eval(request.query_params.get('user'))
 
 
 class OrgManagerAccessPolicy(AccessPolicy):
