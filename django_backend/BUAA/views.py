@@ -44,8 +44,8 @@ def _send_notif(p_id, notif):
     new_send_notification(notif['id'], p_id)
     if p_id in notification.clients :
         p_ws = notification.clients[p_id]
-        p_ws.send(json.dumps([notif], ensure_ascii=False))
-
+        # p_ws.send(json.dumps([notif], ensure_ascii=False))
+        utils.push_all_notif(p_id, p_ws)
 
 
 def _act_id2act_name(pk):
@@ -1018,10 +1018,11 @@ class CommentViewSet(ModelViewSet):
                 _send_notif(m.id, notif)
         return res
 
-    def update_wrapper(self, request):
+    def update_wrapper(self, request, pk):
         res = self.update(request)
-        act_id = int(request.data['act'])
-        user_id = int(request.data['user'])
+        comment_obj = BUAA.models.Comment.objects.get(id=pk)
+        act_id = comment_obj.act.id
+        user_id = comment_obj.user.id
         comment = request.data['content']
         content = utils.get_notif_content(NOTIF.ActCommentModified, user_name=_user_id2user_name(user_id),
                                           act_name=_act_id2act_name(act_id), comment=comment)
