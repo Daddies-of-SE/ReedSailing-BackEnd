@@ -1,2 +1,7 @@
 In NOtificationConsumer disconnect, online client is dict_keys([])
 In NOtificationConsumer disconnect, online client is dict_keys([700])
+In NOtificationConsumer disconnect, online client is dict_keys([])
+send_botif function: online clients:dict_keys([])
+In NOtificationConsumer disconnect, online client is dict_keys([])
+In NOtificationConsumer connect, online client is dict_keys([1])
+send_botif function: online clients:dict_keys([1])

@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
-from BUAA import utils, global_var
+from BUAA import utils, notification
+# from BUAA.global_var import OnlineClientPool
 import BUAA.models
 import json
 import uuid
@@ -39,15 +40,14 @@ def _send_notif(p_id, notif):
     """revoke when user keeps online"""
     p_id = int(p_id)
 
-    with open('log', 'a') as f :
-        f.write('send_botif function: online clients:' + str(global_var.GlobalVar.clients.keys()) + '\n')
+    # clients = OnlineClientPool.get()
+
+    # with open('log', 'a') as f :
+    #     f.write('send_botif function: online clients:' + str(clients.keys()) + '\n')
 
     #sender.send_mail('【一苇以航】' + NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
     new_send_notification(notif['id'], p_id)
-    if p_id in global_var.GlobalVar.clients :
-        p_ws = global_var.GlobalVar.clients[p_id]
-        # p_ws.send(json.dumps([notif], ensure_ascii=False))
-        utils.push_all_notif(p_id, p_ws)
+    notification.send_notif(p_id)
 
 
 def _act_id2act_name(pk):
