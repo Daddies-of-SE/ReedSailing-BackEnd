@@ -952,7 +952,7 @@ class CommentViewSet(ModelViewSet):
             return CommentListSerializer
         if self.action == "get_user_comment":
             return CommentDetailSerializer
-        if self.action == "update":
+        if self.action == "update" or "update" in self.action:
             return CommentUpdateSerializer
         if self.action == "retrieve":
             return CommentUpdateSerializer

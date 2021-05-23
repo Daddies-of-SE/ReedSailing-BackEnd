@@ -411,7 +411,7 @@ class CommentAccessPolicy(AccessPolicy):
             "effect": "allow",
         },
         {
-            "action": ["update", "destroy"],
+            "action": ["update", "update_wrapper", "destroy"],
             "principal": "*",
             "effect": "allow",
             "condition": "(is_super_user or is_valid)"
