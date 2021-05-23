@@ -40,7 +40,7 @@ def _send_notif(p_id, notif):
     """revoke when user keeps online"""
     p_id = int(p_id)
 
-    with open('/log/log_new.txt', 'a') as f :
+    with open('log', 'a') as f :
         f.write('enter send_botif function')
         f.write('online clients:' + str(notification.clients.keys()))
 
