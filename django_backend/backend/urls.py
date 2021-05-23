@@ -162,7 +162,7 @@ urlpatterns = [
         url(r'activities/(?P<act_id>\d+)/users/(?P<user_id>\d+)/comments',
             CommentViewSet.as_view({"get": "get_user_comment"})),
         url(r'activities/comments/(?P<pk>\d+)/$', CommentViewSet.as_view(
-            {"delete": "destroy", "put": "update", "get": "retrieve"})),
+            {"delete": "destroy", "put": "update_wrapper", "get": "retrieve"})),
         url(r'activities/comments/search/$',
             CommentViewSet.as_view({"get":"search_all_comment"})),
         url(r'activities/(?P<act_id>\d+)/comments/search/$',

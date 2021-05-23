@@ -44,7 +44,7 @@ def _send_notif(p_id, notif):
     new_send_notification(notif['id'], p_id)
     if p_id in notification.clients :
         p_ws = notification.clients[p_id]
-        p_ws.send(str([notif]))
+        p_ws.send(json.dumps([notif], ensure_ascii=False))
 
 
 
@@ -1016,9 +1016,28 @@ class CommentViewSet(ModelViewSet):
             manegers = BUAA.models.OrgManager.objects.filter(org_id=act.org.pk).values('person')
             for m in manegers:
                 _send_notif(m.id, notif)
-
-
         return res
+
+    def update_wrapper(self, request):
+        res = self.update(request)
+        act_id = int(request.data['act'])
+        user_id = int(request.data['user'])
+        comment = request.data['content']
+        content = utils.get_notif_content(NOTIF.ActCommentModified, user_name=_user_id2user_name(user_id),
+                                          act_name=_act_id2act_name(act_id), comment=comment)
+        notif = new_notification(NOTIF.ActCommentModified, content, act_id=act_id)
+        act = BUAA.models.Activity.objects.get(id=act_id)
+        if act.block_id == BLOCKID.PERSONAL:
+            _send_notif(act.owner.pk, notif)
+        elif act.block_id == BLOCKID.BOYA:
+            pass
+        else:
+            manegers = BUAA.models.OrgManager.objects.filter(org_id=act.org.pk).values('person')
+            for m in manegers:
+                _send_notif(m.id, notif)
+        return res
+
+
 
 
 

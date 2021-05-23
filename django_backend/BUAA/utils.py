@@ -63,6 +63,8 @@ def get_notif_content(type_, **kwargs):
         content = f"有新的博雅\'{act}\', 如有需要请及时报名"
     elif type_ == NOTIF.ActCommented:
         content = f"用户\'{user}\'评论了您管理的活动\'{act}\'：\n{comment}"
+    elif type_ == NOTIF.ActCommentModified:
+        content = f"用户\'{user}\'在您管理的活动\'{act}\'中修改了评论：\n{comment}"
     elif type_ == NOTIF.OrgApplyRes:
         if status:
             content = f"您创建\'{org}\'组织的申请已经通过"
@@ -82,7 +84,7 @@ def push_all_notif(user_id, ws):
     """revoke when user gets online"""
     unread_send_notifs = models.SentNotif.objects.filter(person=user_id, already_read=False)
     unread_notifs = list(map(lambda x: serializers.NotificationSerializer(x.notif).data ,unread_send_notifs))
-    ws.send(str(unread_notifs))
+    ws.send(json.dumps(unread_notifs, ensure_ascii=False))
     # unread_send_notifs.update(already_read = True)
 
 
