@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+from backend.settings import GlobalVar
 from BUAA import utils, notification
 # from BUAA.global_var import OnlineClientPool
 import BUAA.models
@@ -41,14 +42,18 @@ def _send_notif(p_id, notif):
     p_id = int(p_id)
 
     # clients = OnlineClientPool.get()
+    clients = GlobalVar.clients
 
-    # with open('log', 'a') as f :
-    #     f.write('send_botif function: online clients:' + str(clients.keys()) + '\n')
+    with open('log', 'a') as f :
+        f.write('send_botif function: online clients:' + str(clients.keys()) + '\n')
 
     #sender.send_mail('【一苇以航】' + NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
     new_send_notification(notif['id'], p_id)
-    notification.send_notif(p_id)
 
+    if p_id in clients :
+        p_ws = clients[p_id]
+        # p_ws.send(json.dumps([notif], ensure_ascii=False))
+        utils.push_all_notif(p_id, p_ws)
 
 def _act_id2act_name(pk):
     pk = int(pk)
