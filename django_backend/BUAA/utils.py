@@ -78,15 +78,13 @@ def get_notif_content(type_, **kwargs):
     return content+'\n'
 
 
-
-
-
 def push_all_notif(user_id, ws):
     """revoke when user gets online"""
     unread_send_notifs = models.SentNotif.objects.filter(person=user_id, already_read=False)
     unread_notifs = list(map(lambda x: serializers.NotificationSerializer(x.notif).data ,unread_send_notifs))
     ws.send(str(unread_notifs))
-    unread_send_notifs.update(already_read = True)
+    # unread_send_notifs.update(already_read = True)
+
 
 class MailSender:
     def __init__(self):

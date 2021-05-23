@@ -41,11 +41,11 @@ def _send_notif(p_id, notif):
     p_id = int(p_id)
     
     #sender.send_mail('【一苇以航】' + NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
+    new_send_notification(notif['id'], p_id)
     if p_id in notification.clients :
         p_ws = notification.clients[p_id]
         p_ws.send(str([notif]))
-    else :
-        new_send_notification(notif['id'], p_id)
+
 
 
 def _act_id2act_name(pk):
