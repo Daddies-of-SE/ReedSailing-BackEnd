@@ -39,7 +39,11 @@ def get_random_str():
 def _send_notif(p_id, notif):
     """revoke when user keeps online"""
     p_id = int(p_id)
-    
+
+    with open('/log/log_new.txt', 'a') as f :
+        f.write('enter send_botif function')
+        f.write('online clients:' + str(notification.clients.keys()))
+
     #sender.send_mail('【一苇以航】' + NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
     new_send_notification(notif['id'], p_id)
     if p_id in notification.clients :

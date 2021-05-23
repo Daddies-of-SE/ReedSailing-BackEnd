@@ -25,7 +25,6 @@ class NotificationConsumer(WebsocketConsumer):
     def websocket_receive(self, message) :
         """
         客户端浏览器发送消息来的时候自动触发
-        :param message: 消息数据  {'type': 'websocket.receive', 'text': '你好啊 美女'}
         """
         print(message['text'])
         # for test
