@@ -15,11 +15,18 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
 from BUAA import notification
 
+
+from django.core.asgi import get_asgi_application
+django_asgi_app = get_asgi_application()
+
 application = ProtocolTypeRouter({
+    "http": django_asgi_app,
+
     'websocket' : AllowedHostsOriginValidator(
         AuthMiddlewareStack(
             URLRouter([
                 url(r'^ws/link/(?P<user_id>\d+)/$', notification.NotificationConsumer),
+
                 # url(r'^ws/link/1/$', notification.NotificationConsumer),
             ])
         )
