@@ -4,7 +4,8 @@ import backend.settings as settings
 import datetime
 import json
 import os
-from .serializers import *
+from BUAA.serializers import *
+import BUAA.views
 
 BOYA_PATH = os.path.expanduser('~/boya/')
 
@@ -51,11 +52,26 @@ def add_to_activities(name, description, contain, begin_time, end_time, location
         "block": 2,
         "location": address,
     }
+
     print(data)
     serializer = ActivitySerializer(data=data)
     serializer.is_valid()
     serializer.save()
 
+    # send notif
+    data['act'] = serializer.data['id']
+    BUAA.views.send_new_boya_notf(data)
+
 
 if __name__ == "__main__":
-    get_boya()
+    data = {
+        "name" : 'boya_test',
+        "begin_time" : str(datetime.datetime.now()),
+        "end_time" : str(datetime.datetime.now()),
+        "contain" : 100,
+        "description" : str(datetime.datetime.now()),
+        "owner" : 1,
+        "block" : 2,
+        "location" : 1,
+    }
+    add_to_activities(description='无' ,**data)

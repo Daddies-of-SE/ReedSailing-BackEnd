@@ -65,6 +65,14 @@ def _user_id2user_email(pk):
     return BUAA.models.WXUser.objects.get(id=pk).email
 
 
+def send_new_boya_notf(data):
+    """interface for external boya creating function"""
+    content = utils.get_notif_content(NOTIF.NewBoya, act_name=data['name'])
+    notif = new_notification(NOTIF.NewBoya, content, act_id=data['act'], org_id=None)
+    followers = _get_boya_followers()
+    for f in followers :
+        _send_notif(f.id, notif)
+
 """
 新建通知
 
@@ -699,6 +707,9 @@ class ActivityViewSet(ModelViewSet):
         serializer = self.get_serializer(objects, many=True)
         return Response(serializer.data)
 
+
+
+
     # update_wrapper
     def update_wrapper(self, request, pk):
         pk = int(pk)
@@ -999,10 +1010,14 @@ class CommentViewSet(ModelViewSet):
         act = BUAA.models.Activity.objects.get(id=act_id)
         if act.block_id == BLOCKID.PERSONAL:
             _send_notif(act.owner.pk, notif)
-        elif act.block_id != BLOCKID.BOYA:
+        elif act.block_id == BLOCKID.BOYA:
+            pass
+        else:
             manegers = BUAA.models.OrgManager.objects.filter(org_id=act.org.pk).values('person')
             for m in manegers:
                 _send_notif(m.id, notif)
+
+
         return res
 
 
