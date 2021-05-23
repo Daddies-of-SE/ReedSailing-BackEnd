@@ -20,6 +20,9 @@ class NotificationConsumer(WebsocketConsumer):
         # 客户登录时无条件push新通知
         utils.push_all_notif(self.user_id, self)
 
+        with open('log', 'a') as f :
+            f.write('In NOtificationConsumer connect, online client is ' + str(BUAA.global_var.GolbalVar.clients.keys()) + '\n')
+
 
     def websocket_receive(self, message) :
         """
@@ -33,6 +36,9 @@ class NotificationConsumer(WebsocketConsumer):
         #     self.send(text_data=text)
         #     time.sleep(INTERVAL)
 
+        with open('log', 'a') as f :
+            f.write('In NOtificationConsumer receive, online client is ' + str(BUAA.global_var.GolbalVar.clients.keys()) + '\n')
+
 
     def websocket_disconnect(self, message) :
         """
@@ -40,5 +46,8 @@ class NotificationConsumer(WebsocketConsumer):
         :param message:
         """
         # 客户端断开链接之后 应该将当前客户端对象从列表中移除
-        clients.pop(self.user_id)
+        BUAA.global_var.GolbalVar.clients.pop(self.user_id)
         raise StopConsumer()  # 主动报异常 无需做处理 内部自动捕获
+
+    with open('log', 'a') as f :
+        f.write('In NOtificationConsumer disconnect, online client is ' + str(BUAA.global_var.GolbalVar.clients.keys()) + '\n')

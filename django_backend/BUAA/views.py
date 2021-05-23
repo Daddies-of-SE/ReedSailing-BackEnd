@@ -40,7 +40,7 @@ def _send_notif(p_id, notif):
     p_id = int(p_id)
 
     with open('log', 'a') as f :
-        f.write('send_botif function: online clients:' + str(notification.clients.keys()) + '\n')
+        f.write('send_botif function: online clients:' + str(global_var.GolbalVar.clients.keys()) + '\n')
 
     #sender.send_mail('【一苇以航】' + NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
     new_send_notification(notif['id'], p_id)
