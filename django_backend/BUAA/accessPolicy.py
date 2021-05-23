@@ -152,7 +152,7 @@ class FollowedOrgAccessPolicy(AccessPolicy):
     def is_self_destroy(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
             return False
-        return request.user.id == request.query_params.get('user')
+        return request.user.id == eval(request.query_params.get('user'))
 
 
 class OrgManagerAccessPolicy(AccessPolicy):
@@ -195,7 +195,7 @@ class OrgManagerAccessPolicy(AccessPolicy):
     def is_owner_destroy(self, request, view, action) -> bool:
         if not isinstance(request.user, WXUser):
             return False
-        org_id = request.query_params.get('org')
+        org_id = eval(request.query_params.get('org'))
         org = Organization.objects.get(id=org_id)
         return org.owner == request.user
 
@@ -381,10 +381,10 @@ class JoinedActAccessPolicy(AccessPolicy):
         if not isinstance(request.user, WXUser):
             return False
         # 本人退出
-        if request.user.id == request.query_params.get('person'):
+        if request.user.id == eval(request.query_params.get('person')):
             return True
         # 管理员移除
-        act_id = request.query_params.get('act')
+        act_id = eval(request.query_params.get('act'))
         act = Activity.objects.get(id=act_id)
         if act.org is not None:
             return OrgManager.objects.filter(org=act.org.id, person=request.user.id).exists()
