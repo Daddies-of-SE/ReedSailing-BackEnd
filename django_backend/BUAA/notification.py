@@ -1,13 +1,13 @@
-from asgiref.sync import async_to_sync
 from channels.exceptions import StopConsumer
 from channels.generic.websocket import WebsocketConsumer
 import json
 import time
 import BUAA.utils as utils
 # from BUAA.global_var import OnlineClientPool
+from backend.settings import GlobalVar
 
 # clients = OnlineClientPool()
-clients = {}
+clients = GlobalVar.clients
 
 def send_notif(p_id):
     with open('log', 'a') as f :
@@ -63,7 +63,7 @@ class NotificationConsumer(WebsocketConsumer):
         with open('log', 'a') as f :
             f.write('In NOtificationConsumer disconnect, online client is '
                     + str(clients.keys()) + '\n')
-        
+
         # 客户端断开链接之后 应该将当前客户端对象从列表中移除
         # clients.remove(self.user_id)
         clients.pop(self.user_id)
