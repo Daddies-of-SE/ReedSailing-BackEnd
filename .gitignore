@@ -11,4 +11,5 @@ django_backend/static/
 *.swp
 access_token.txt
 django_backend/BUAA/rank.py
+django_backend/shared_data/*
 

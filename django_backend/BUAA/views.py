@@ -40,12 +40,12 @@ def _send_notif(p_id, notif):
     p_id = int(p_id)
 
     with open('log', 'a') as f :
-        f.write('send_botif function: online clients:' + str(global_var.GolbalVar.clients.keys()) + '\n')
+        f.write('send_botif function: online clients:' + str(global_var.GlobalVar.clients.keys()) + '\n')
 
     #sender.send_mail('【一苇以航】' + NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
     new_send_notification(notif['id'], p_id)
-    if p_id in global_var.GolbalVar.clients :
-        p_ws = global_var.GolbalVar.clients[p_id]
+    if p_id in global_var.GlobalVar.clients :
+        p_ws = global_var.GlobalVar.clients[p_id]
         # p_ws.send(json.dumps([notif], ensure_ascii=False))
         utils.push_all_notif(p_id, p_ws)
 
