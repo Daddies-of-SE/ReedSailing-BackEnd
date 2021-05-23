@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-from BUAA import utils, notification
+from BUAA import utils, global_var
 import BUAA.models
 import json
 import uuid
@@ -14,13 +14,12 @@ from rest_framework.viewsets import *
 from rest_framework import status
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from django_redis import get_redis_connection
-from .authentication import *
+from BUAA.authentication import *
 import datetime
-from BUAA.const import NOTIF, BLOCKID
+from BUAA.const import NOTIF, BLOCKID, NOTIF_TYPE_DICT
 import time
 import os
-from .const import NOTIF_TYPE_DICT
-from .accessPolicy import *
+from BUAA.accessPolicy import *
 
 base_dir = '/root/ReedSailing-Web/server_files/'
 #base_dir = '/Users/wzk/Desktop/'
@@ -41,13 +40,12 @@ def _send_notif(p_id, notif):
     p_id = int(p_id)
 
     with open('log', 'a') as f :
-        f.write('enter send_botif function')
-        f.write('online clients:' + str(notification.clients.keys()))
+        f.write('send_botif function: online clients:' + str(notification.clients.keys()) + '\n')
 
     #sender.send_mail('【一苇以航】' + NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
     new_send_notification(notif['id'], p_id)
-    if p_id in notification.clients :
-        p_ws = notification.clients[p_id]
+    if p_id in global_var.GolbalVar.clients :
+        p_ws = global_var.GolbalVar.clients[p_id]
         # p_ws.send(json.dumps([notif], ensure_ascii=False))
         utils.push_all_notif(p_id, p_ws)
 
@@ -1019,7 +1017,8 @@ class CommentViewSet(ModelViewSet):
         else:
             manegers = BUAA.models.OrgManager.objects.filter(org_id=act.org.pk).values('person')
             for m in manegers:
-                _send_notif(m.id, notif)
+                # _send_notif(m.id, notif)
+                _send_notif(m['person'], notif)
         return res
 
     def update_wrapper(self, request, pk):
@@ -1039,7 +1038,9 @@ class CommentViewSet(ModelViewSet):
         else:
             manegers = BUAA.models.OrgManager.objects.filter(org_id=act.org.pk).values('person')
             for m in manegers:
-                _send_notif(m.id, notif)
+                # _send_notif(m.id, notif)
+                # m is dict which has key list ['person']
+                _send_notif(m['person'], notif)
         return res
 
 

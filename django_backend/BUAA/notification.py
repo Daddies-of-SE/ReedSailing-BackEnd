@@ -4,8 +4,7 @@ from channels.generic.websocket import WebsocketConsumer
 import json
 import time
 import BUAA.utils as utils
-
-clients = {}
+import BUAA.global_var
 
 class NotificationConsumer(WebsocketConsumer):
     def websocket_connect(self, message) :
@@ -17,7 +16,7 @@ class NotificationConsumer(WebsocketConsumer):
         self.accept()  # 建立链接
         self.user_id = int(self.scope["url_route"]["kwargs"]["user_id"])
         # print(f'client user id is {self.user_id}')
-        clients[self.user_id] = self
+        BUAA.global_var.GolbalVar.clients[self.user_id] = self
         # 客户登录时无条件push新通知
         utils.push_all_notif(self.user_id, self)
 
@@ -33,7 +32,7 @@ class NotificationConsumer(WebsocketConsumer):
         #     text = f'The {i+1}th notification from server'
         #     self.send(text_data=text)
         #     time.sleep(INTERVAL)
-        pass
+
 
     def websocket_disconnect(self, message) :
         """
