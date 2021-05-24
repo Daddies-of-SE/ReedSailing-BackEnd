@@ -743,6 +743,7 @@ class ActivityViewSet(ModelViewSet):
         if res.data is None:
             res.data = {}
         res.data['__receivers__'] = receivers
+
         return res
 
 
