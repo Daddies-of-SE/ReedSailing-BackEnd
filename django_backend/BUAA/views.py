@@ -38,7 +38,7 @@ def get_random_str():
 # 仅供文件内部调用
 def _create_notif_for_all(user_id_list, notif, add_receivers = None):
     """revoke when user keeps online"""
-    if add_receivers:
+    if add_receivers is not None:
         add_receivers['__receivers__'] = user_id_list
     for p_id in user_id_list:
         p_id = int(p_id)
@@ -159,6 +159,7 @@ def send_email(request):
         return Response(data=res, status=400)
 
     random_str = get_random_str()[:6]
+    print('【一苇以航】邮箱验证码', '您的验证码为 {}, 5分钟内有效'.format(random_str))
     sender.send_mail('【一苇以航】邮箱验证码', '您的验证码为 {}, 5分钟内有效'.format(random_str),
                      email_address)
     
@@ -470,9 +471,11 @@ class OrgApplicationViewSet(ModelViewSet):
             # notification
             content = utils.get_notif_content(NOTIF.OrgApplyRes, org_name=org_name, status=True)
             notif = new_notification(NOTIF.OrgApplyRes, content, org_id=org_id)
-            _create_notif_for_all([owner_id], notif, serializer.data)
 
-            return Response(serializer.data, 201)
+            data = serializer.data
+            _create_notif_for_all([owner_id], notif, data)
+
+            return Response(data, 201)
 
         else:
             serializer = self.get_serializer(instance=application, data=request.data)
@@ -482,9 +485,10 @@ class OrgApplicationViewSet(ModelViewSet):
             # notification
             content = utils.get_notif_content(NOTIF.OrgApplyRes, org_name=org_name, status=False)
             notif = new_notification(NOTIF.OrgApplyRes, content, org_id=None)
-            _create_notif_for_all([application.user.id], notif, serializer.data)
+            data = serializer.data
+            _create_notif_for_all([application.user.id], notif, data)
 
-            return Response(serializer.data, 200)
+            return Response(data, 200)
 
 
 # 组织
@@ -526,10 +530,12 @@ class OrganizationModelViewSet(ModelViewSet):
 
         content = utils.get_notif_content(NOTIF.BecomeOwner, org_name=_org_id2org_name(pk))
         notif = new_notification(NOTIF.BecomeOwner, content, org_id=pk)
-        _create_notif_for_all([request.data['owner']], notif, serializer.data)
+
+        data = serializer.data
+        _create_notif_for_all([request.data['owner']], notif, data)
 
 
-        return Response(serializer.data, 200)
+        return Response(data, 200)
 
     # 推荐组织
     def get_recommended_org(self, request, *args, **kwargs):
@@ -626,8 +632,7 @@ class OrgManageViewSet(ModelViewSet):
         notif = new_notification(NOTIF.RemovalFromAdmin, content, org_id=org_id)
         data = {}
         _create_notif_for_all([user_id], notif, data)
-
-        return Response(data, status=204)
+        return Response(data, status=200)
 
     # 获取用户管理的组织
     def get_managed_org(self, request, pk):
@@ -722,8 +727,7 @@ class ActivityViewSet(ModelViewSet):
         notif = new_notification(NOTIF.ActContent, content, act_id=pk, org_id=None)
         # send notification
         persons = JoinedAct.objects.filter(act=pk)
-        for p in persons:
-            _create_notif_for_all([p.person_id], notif, res.data)
+        _create_notif_for_all([p.person_id for p in persons], notif, res.data)
         return res
 
     def destroy_wrapper(self, request, pk):
@@ -732,9 +736,11 @@ class ActivityViewSet(ModelViewSet):
         content = utils.get_notif_content(NOTIF.ActCancel, act_name=_act_id2act_name(pk))
         notif = new_notification(NOTIF.ActCancel, content, act_id=pk, org_id=None)
         persons = JoinedAct.objects.filter(act=pk)
-        for p in persons:
-            _create_notif_for_all([p.person_id], notif, res.data)
+        receivers = [p.person_id for p in persons]
+        _create_notif_for_all(receivers, notif)
         res = self.destroy(request)
+        res.status_code = 200
+        res.data['__receivers__'] = receivers
         return res
 
 
@@ -894,7 +900,7 @@ class JoinedActViewSet(ModelViewSet):
         data = {}
         _create_notif_for_all([user_id], notif, data)
         self.destroy(request)
-        return Response(data)
+        return Response(data, 200)
 
     # 获取活动的参与人数
     def get_act_participants_number(self, request, act_id):
