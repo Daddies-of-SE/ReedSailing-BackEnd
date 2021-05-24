@@ -740,6 +740,8 @@ class ActivityViewSet(ModelViewSet):
         _create_notif_for_all(receivers, notif)
         res = self.destroy(request)
         res.status_code = 200
+        if res.data is None:
+            res.data = {}
         res.data['__receivers__'] = receivers
         return res
 
