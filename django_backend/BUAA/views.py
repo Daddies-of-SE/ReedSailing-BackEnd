@@ -38,6 +38,7 @@ def get_random_str():
 # 仅供文件内部调用
 def _create_notif_for_all(user_id_list, notif, add_receivers = None):
     """revoke when user keeps online"""
+    user_id_list = [int(x) for x in user_id_list]
     if add_receivers is not None:
         add_receivers['__receivers__'] = user_id_list
     for p_id in user_id_list:
