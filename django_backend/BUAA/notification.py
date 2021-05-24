@@ -10,6 +10,7 @@ import BUAA.utils as utils
 clients = {}
 
 
+
 class NotificationConsumer(WebsocketConsumer):
     def websocket_connect(self, message) :
         """
@@ -26,16 +27,21 @@ class NotificationConsumer(WebsocketConsumer):
         # 客户登录时无条件push新通知
         utils.push_all_notif(self.user_id, self)
 
-        with open('log', 'a') as f :
-            f.write('In NOtificationConsumer connect, online client is '
-                    + str(clients.keys()) + '\n')
 
 
     def websocket_receive(self, message) :
         """
         客户端浏览器发送消息来的时候自动触发
         """
-        print(message['text'])
+        try:
+            receivers = set(map(int, message['text'].split(',')))
+        except:
+            print(message['text'])
+            return
+        
+        for r in receivers:
+            if r in clients:
+                utils.push_all_notif(r, clients[r])
         # for test
         # INTERVAL = 5
         # for i in range(3):
@@ -43,9 +49,9 @@ class NotificationConsumer(WebsocketConsumer):
         #     self.send(text_data=text)
         #     time.sleep(INTERVAL)
 
-        with open('log', 'a') as f :
-            f.write('In NOtificationConsumer receive, online client is ' +
-                    str(clients.keys()) + '\n')
+        # with open('log', 'a') as f :
+        #     f.write('In NOtificationConsumer receive, online client is ' +
+        #             str(clients.keys()) + '\n')
 
 
     def websocket_disconnect(self, message) :
@@ -53,12 +59,13 @@ class NotificationConsumer(WebsocketConsumer):
         客户端断开链接之后自动触发
         :param message:
         """
-        with open('log', 'a') as f :
-            f.write('In NOtificationConsumer disconnect, online client is '
-                    + str(clients.keys()) + '\n')
+        # with open('log', 'a') as f :
+        #     f.write('In NOtificationConsumer disconnect, online client is '
+        #             + str(clients.keys()) + '\n')
 
         # 客户端断开链接之后 应该将当前客户端对象从列表中移除
         # clients.remove(self.user_id)
         clients.pop(self.user_id)
         raise StopConsumer()  # 主动报异常 无需做处理 内部自动捕获
+
 

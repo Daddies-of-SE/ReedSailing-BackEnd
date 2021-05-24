@@ -87,6 +87,11 @@ def push_all_notif(user_id, ws):
     ws.send(json.dumps(unread_notifs, ensure_ascii=False))
     # unread_send_notifs.update(already_read = True)
 
+def get_all_user_with_notif():
+    """return a id list where the user corresponding with the id has unread notification"""
+    unread_send_notifs = models.SentNotif.objects.filter(already_read=False)
+    unread_user = set(map(lambda x : int(x.person.id), unread_send_notifs))
+    return unread_user
 
 class MailSender:
     def __init__(self):

@@ -1,8 +1,6 @@
 from __future__ import unicode_literals
-from backend.settings import GlobalVar
-from BUAA import utils, notification
-# from BUAA.global_var import OnlineClientPool
 import BUAA.models
+import BUAA.utils as utils
 import json
 import uuid
 import hashlib
@@ -27,6 +25,7 @@ base_dir = '/root/ReedSailing-Web/server_files/'
 #base_dir = '/Users/wzk/Desktop/'
 web_dir = 'https://www.reedsailing.xyz/server_files/'
 
+
 sender = utils.MailSender()
 
 def get_random_str():
@@ -37,23 +36,18 @@ def get_random_str():
     return md5.hexdigest()
 
 # 仅供文件内部调用
-def _send_notif(p_id, notif):
+def _create_notif_for_all(user_id_list, notif, add_receivers = None):
     """revoke when user keeps online"""
-    p_id = int(p_id)
+    if add_receivers:
+        add_receivers['__receivers__'] = user_id_list
+    for p_id in user_id_list:
+        p_id = int(p_id)
+        #sender.send_mail('【一苇以航】' + NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
+        new_send_notification(notif['id'], p_id)
 
-    # clients = OnlineClientPool.get()
-    clients = GlobalVar.clients
-
-    with open('log', 'a') as f :
-        f.write('send_notif function: online clients:' + str(clients.keys()) + '\n')
-
-    #sender.send_mail('【一苇以航】' + NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
-    new_send_notification(notif['id'], p_id)
-
-    if p_id in clients :
-        p_ws = clients[p_id]
-        # p_ws.send(json.dumps([notif], ensure_ascii=False))
-        utils.push_all_notif(p_id, p_ws)
+        # if p_id in clients :
+        #     p_ws = clients[p_id]
+        #     utils.push_all_notif(p_id, p_ws)
 
 def _act_id2act_name(pk):
     pk = int(pk)
@@ -77,8 +71,9 @@ def send_new_boya_notf(data):
     content = utils.get_notif_content(NOTIF.NewBoya, act_name=data['name'])
     notif = new_notification(NOTIF.NewBoya, content, act_id=data['act'], org_id=None)
     followers = _get_boya_followers()
-    for f in followers :
-        _send_notif(f.id, notif)
+    receivers = [f.id for f in followers]
+    _create_notif_for_all(receivers, notif)
+    # return receivers
 
 """
 新建通知
@@ -475,7 +470,7 @@ class OrgApplicationViewSet(ModelViewSet):
             # notification
             content = utils.get_notif_content(NOTIF.OrgApplyRes, org_name=org_name, status=True)
             notif = new_notification(NOTIF.OrgApplyRes, content, org_id=org_id)
-            _send_notif(owner_id, notif)
+            _create_notif_for_all([owner_id], notif)
 
             return Response(serializer.data, 201)
 
@@ -487,7 +482,7 @@ class OrgApplicationViewSet(ModelViewSet):
             # notification
             content = utils.get_notif_content(NOTIF.OrgApplyRes, org_name=org_name, status=False)
             notif = new_notification(NOTIF.OrgApplyRes, content, org_id=None)
-            _send_notif(application.user.id, notif)
+            _create_notif_for_all([application.user.id], notif)
 
             return Response(serializer.data, 200)
 
@@ -531,7 +526,7 @@ class OrganizationModelViewSet(ModelViewSet):
 
         content = utils.get_notif_content(NOTIF.BecomeOwner, org_name=_org_id2org_name(pk))
         notif = new_notification(NOTIF.BecomeOwner, content, org_id=pk)
-        _send_notif(request.data['owner'], notif)
+        _create_notif_for_all([request.data['owner']], notif)
 
 
         return Response(serializer.data, 200)
@@ -618,7 +613,7 @@ class OrgManageViewSet(ModelViewSet):
         org_id = request.data['org']
         content = utils.get_notif_content(NOTIF.BecomeAdmin, org_name=_org_id2org_name(org_id))
         notif = new_notification(NOTIF.BecomeAdmin, content, org_id=org_id)
-        _send_notif(user_id, notif)
+        _create_notif_for_all([user_id], notif)
 
         return res
 
@@ -629,7 +624,7 @@ class OrgManageViewSet(ModelViewSet):
 
         content = utils.get_notif_content(NOTIF.RemovalFromAdmin, org_name=_org_id2org_name(org_id))
         notif = new_notification(NOTIF.RemovalFromAdmin, content, org_id=org_id)
-        _send_notif(user_id, notif)
+        _create_notif_for_all([user_id], notif)
 
         return Response(status=204)
 
@@ -727,7 +722,7 @@ class ActivityViewSet(ModelViewSet):
         # send notification
         persons = JoinedAct.objects.filter(act=pk)
         for p in persons:
-            _send_notif(p.person_id, notif)
+            _create_notif_for_all([p.person_id], notif)
         return res
 
     def destroy_wrapper(self, request, pk):
@@ -737,7 +732,7 @@ class ActivityViewSet(ModelViewSet):
         notif = new_notification(NOTIF.ActCancel, content, act_id=pk, org_id=None)
         persons = JoinedAct.objects.filter(act=pk)
         for p in persons:
-            _send_notif(p.person_id, notif)
+            _create_notif_for_all([p.person_id], notif)
         res = self.destroy(request)
         return res
 
@@ -895,7 +890,7 @@ class JoinedActViewSet(ModelViewSet):
         #self.destroy(request)
         content = utils.get_notif_content(NOTIF.RemovalFromAct, act_name=_act_id2act_name(act_id))
         notif = new_notification(NOTIF.RemovalFromAct, content, act_id=act_id, org_id=None)
-        _send_notif(user_id, notif)
+        _create_notif_for_all([user_id], notif)
         self.destroy(request)
         return Response('')
 
@@ -1016,14 +1011,12 @@ class CommentViewSet(ModelViewSet):
         notif = new_notification(NOTIF.ActCommented, content, act_id=act_id)
         act = BUAA.models.Activity.objects.get(id=act_id)
         if act.block_id == BLOCKID.PERSONAL:
-            _send_notif(act.owner.pk, notif)
+            _create_notif_for_all([act.owner.pk], notif, res.data)
         elif act.block_id == BLOCKID.BOYA:
             pass
         else:
             manegers = BUAA.models.OrgManager.objects.filter(org_id=act.org.pk).values('person')
-            for m in manegers:
-                # _send_notif(m.id, notif)
-                _send_notif(m['person'], notif)
+            _create_notif_for_all([m['person'] for m in manegers], notif, res.data)
         return res
 
     def update_wrapper(self, request, pk):
@@ -1037,15 +1030,15 @@ class CommentViewSet(ModelViewSet):
         notif = new_notification(NOTIF.ActCommentModified, content, act_id=act_id)
         act = BUAA.models.Activity.objects.get(id=act_id)
         if act.block_id == BLOCKID.PERSONAL:
-            _send_notif(act.owner.pk, notif)
+            _create_notif_for_all([act.owner.pk], notif, res.data)
         elif act.block_id == BLOCKID.BOYA:
             pass
         else:
             manegers = BUAA.models.OrgManager.objects.filter(org_id=act.org.pk).values('person')
-            for m in manegers:
-                # _send_notif(m.id, notif)
-                # m is dict which has key list ['person']
-                _send_notif(m['person'], notif)
+            # _send_notif(m.id, notif)
+            # m is dict which has key list ['person']
+            receivers = [m['person'] for m in manegers]
+            _create_notif_for_all(receivers, notif, res.data)
         return res
 
 
