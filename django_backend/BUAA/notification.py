@@ -34,7 +34,7 @@ class NotificationConsumer(WebsocketConsumer):
         客户端浏览器发送消息来的时候自动触发
         """
         try:
-            receivers = set(map(int, message['text'].split(',')))
+            receivers = json.loads(message['text'])
             print(f'message from the {self.user_id}th client: '+ message['text'])
         except:
             print(f'message from the {self.user_id}th client: '+ message['text'])
