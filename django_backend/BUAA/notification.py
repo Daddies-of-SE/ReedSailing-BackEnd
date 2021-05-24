@@ -35,8 +35,9 @@ class NotificationConsumer(WebsocketConsumer):
         """
         try:
             receivers = set(map(int, message['text'].split(',')))
+            print(f'message from the {self.user_id}th client: '+ message['text'])
         except:
-            print(message['text'])
+            print(f'message from the {self.user_id}th client: '+ message['text'])
             return
 
         for r in receivers:
@@ -65,7 +66,8 @@ class NotificationConsumer(WebsocketConsumer):
 
         # 客户端断开链接之后 应该将当前客户端对象从列表中移除
         # clients.remove(self.user_id)
-        clients.pop(self.user_id)
+        if self.user_id in clients:
+            clients.pop(self.user_id)
         raise StopConsumer()  # 主动报异常 无需做处理 内部自动捕获
 
 
