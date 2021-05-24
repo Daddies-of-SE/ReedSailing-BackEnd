@@ -38,7 +38,7 @@ class NotificationConsumer(WebsocketConsumer):
         except:
             print(message['text'])
             return
-        
+
         for r in receivers:
             if r in clients:
                 utils.push_all_notif(r, clients[r])

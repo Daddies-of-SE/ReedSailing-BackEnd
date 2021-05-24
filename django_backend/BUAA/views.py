@@ -470,7 +470,7 @@ class OrgApplicationViewSet(ModelViewSet):
             # notification
             content = utils.get_notif_content(NOTIF.OrgApplyRes, org_name=org_name, status=True)
             notif = new_notification(NOTIF.OrgApplyRes, content, org_id=org_id)
-            _create_notif_for_all([owner_id], notif)
+            _create_notif_for_all([owner_id], notif, serializer.data)
 
             return Response(serializer.data, 201)
 
@@ -482,7 +482,7 @@ class OrgApplicationViewSet(ModelViewSet):
             # notification
             content = utils.get_notif_content(NOTIF.OrgApplyRes, org_name=org_name, status=False)
             notif = new_notification(NOTIF.OrgApplyRes, content, org_id=None)
-            _create_notif_for_all([application.user.id], notif)
+            _create_notif_for_all([application.user.id], notif, serializer.data)
 
             return Response(serializer.data, 200)
 
@@ -526,7 +526,7 @@ class OrganizationModelViewSet(ModelViewSet):
 
         content = utils.get_notif_content(NOTIF.BecomeOwner, org_name=_org_id2org_name(pk))
         notif = new_notification(NOTIF.BecomeOwner, content, org_id=pk)
-        _create_notif_for_all([request.data['owner']], notif)
+        _create_notif_for_all([request.data['owner']], notif, serializer.data)
 
 
         return Response(serializer.data, 200)
@@ -613,7 +613,7 @@ class OrgManageViewSet(ModelViewSet):
         org_id = request.data['org']
         content = utils.get_notif_content(NOTIF.BecomeAdmin, org_name=_org_id2org_name(org_id))
         notif = new_notification(NOTIF.BecomeAdmin, content, org_id=org_id)
-        _create_notif_for_all([user_id], notif)
+        _create_notif_for_all([user_id], notif, res.data)
 
         return res
 
@@ -624,9 +624,10 @@ class OrgManageViewSet(ModelViewSet):
 
         content = utils.get_notif_content(NOTIF.RemovalFromAdmin, org_name=_org_id2org_name(org_id))
         notif = new_notification(NOTIF.RemovalFromAdmin, content, org_id=org_id)
-        _create_notif_for_all([user_id], notif)
+        data = {}
+        _create_notif_for_all([user_id], notif, data)
 
-        return Response(status=204)
+        return Response(data, status=204)
 
     # 获取用户管理的组织
     def get_managed_org(self, request, pk):
@@ -722,7 +723,7 @@ class ActivityViewSet(ModelViewSet):
         # send notification
         persons = JoinedAct.objects.filter(act=pk)
         for p in persons:
-            _create_notif_for_all([p.person_id], notif)
+            _create_notif_for_all([p.person_id], notif, res.data)
         return res
 
     def destroy_wrapper(self, request, pk):
@@ -732,7 +733,7 @@ class ActivityViewSet(ModelViewSet):
         notif = new_notification(NOTIF.ActCancel, content, act_id=pk, org_id=None)
         persons = JoinedAct.objects.filter(act=pk)
         for p in persons:
-            _create_notif_for_all([p.person_id], notif)
+            _create_notif_for_all([p.person_id], notif, res.data)
         res = self.destroy(request)
         return res
 
@@ -890,9 +891,10 @@ class JoinedActViewSet(ModelViewSet):
         #self.destroy(request)
         content = utils.get_notif_content(NOTIF.RemovalFromAct, act_name=_act_id2act_name(act_id))
         notif = new_notification(NOTIF.RemovalFromAct, content, act_id=act_id, org_id=None)
-        _create_notif_for_all([user_id], notif)
+        data = {}
+        _create_notif_for_all([user_id], notif, data)
         self.destroy(request)
-        return Response('')
+        return Response(data)
 
     # 获取活动的参与人数
     def get_act_participants_number(self, request, act_id):
