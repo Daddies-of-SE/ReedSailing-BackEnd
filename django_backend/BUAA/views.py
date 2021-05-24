@@ -739,8 +739,8 @@ class ActivityViewSet(ModelViewSet):
         receivers = [p.person_id for p in persons]
         _create_notif_for_all(receivers, notif)
         res = self.destroy(request)
-        res.status_code = 200
-        res.data['__receivers__'] = receivers
+        # res.status_code = 200
+        # res.data['__receivers__'] = receivers
         return res
 
 
