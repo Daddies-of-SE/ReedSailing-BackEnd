@@ -122,7 +122,18 @@ def new_send_notification(notif_id, user_id):
     serializer.is_valid()
     serializer.save()
     return serializer.data
-            
+
+
+@api_view(['POST'])
+def web_token_identify(request):
+    token = request.data['token']
+    username = cache.get(token)
+    if not username:
+        res = {'status': 0, 'name': ''}
+    else:
+        res = {'status': 1, 'name': username}
+    return Response(res, 200)
+
 
 @api_view(['POST'])
 @authentication_classes([UserAuthentication, SuperAdminAuthentication, ErrorAuthentication])

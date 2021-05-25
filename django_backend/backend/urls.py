@@ -37,6 +37,9 @@ urlpatterns = [
         path('qrcode/', get_page_qrcode),
 #        path('boyaFollowers/', get_boya_followers),
 
+        # 管理端
+        path('identify/', web_token_identify),
+
         # 自动生成接口文档
         url(r'^docs/', include_docs_urls(title='一苇以航API接口')),
 
