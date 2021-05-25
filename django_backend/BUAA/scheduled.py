@@ -31,7 +31,7 @@ def get_boya():
             with open(BOYA_PATH+file, 'r') as f:
                 content = f.read()
             content = json.loads(content)
-            add_to_activities(description='无', **content)
+            add_to_activities(description='', **content)
             os.remove(BOYA_PATH+file)
     except:
         print('ERROR in get_boya:')
