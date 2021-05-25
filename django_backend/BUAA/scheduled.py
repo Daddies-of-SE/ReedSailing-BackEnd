@@ -4,6 +4,7 @@ import backend.settings as settings
 import datetime
 import json
 import os
+import traceback
 from BUAA.serializers import *
 import BUAA.views
 
@@ -21,16 +22,20 @@ def get_access_token():
 
 
 def get_boya():
-    print(str(datetime.datetime.now()) + " get_boya")
-    files = os.listdir(BOYA_PATH)
-    for file in files:
-        if not file.endswith('.json'):
-            continue
-        with open(BOYA_PATH+file, 'r') as f:
-            content = f.read()
-        content = json.loads(content)
-        add_to_activities(description='无', **content)
-        os.remove(BOYA_PATH+file)
+    try:
+        print(str(datetime.datetime.now()) + " get_boya")
+        files = os.listdir(BOYA_PATH)
+        for file in files:
+            if not file.endswith('.json'):
+                continue
+            with open(BOYA_PATH+file, 'r') as f:
+                content = f.read()
+            content = json.loads(content)
+            add_to_activities(description='无', **content)
+            os.remove(BOYA_PATH+file)
+    except:
+        print('ERROR in get_boya:')
+        print(traceback.format_exc())
 
 
 def add_to_activities(name, description, contain, begin_time, end_time, location, **kwargs):
@@ -65,13 +70,13 @@ def add_to_activities(name, description, contain, begin_time, end_time, location
 
 if __name__ == "__main__":
     data = {
-        "name" : 'boya_test',
-        "begin_time" : str(datetime.datetime.now()),
-        "end_time" : str(datetime.datetime.now()),
-        "contain" : 100,
-        "description" : str(datetime.datetime.now()),
-        "owner" : 1,
-        "block" : 2,
-        "location" : 1,
+        "name": 'boya_test',
+        "begin_time": str(datetime.datetime.now()),
+        "end_time": str(datetime.datetime.now()),
+        "contain": 100,
+        "description": str(datetime.datetime.now()),
+        "owner": 1,
+        "block": 2,
+        "location": 1,
     }
-    add_to_activities(description='无' ,**data)
+    add_to_activities(description='无', **data)
