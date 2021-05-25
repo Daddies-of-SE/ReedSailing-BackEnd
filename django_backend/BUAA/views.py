@@ -863,6 +863,8 @@ class JoinedActViewSet(ModelViewSet):
             return UserJoinedActSerializer
         if self.action == "get_user_joined_act_status":
             return UserJoinedActSerializer
+        if self.action == "search_user_joined_act":
+            return UserJoinedActSerializer
         if self.action == "get_act_participants":
             return JoinedActParticipants
         return JoinedActSerializer
