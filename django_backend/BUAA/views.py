@@ -132,6 +132,7 @@ def web_token_identify(request):
         res = {'status': 0, 'name': ''}
     else:
         res = {'status': 1, 'name': username}
+        cache.set(token, username, 24*60*60)
     return Response(res, 200)
 
 
