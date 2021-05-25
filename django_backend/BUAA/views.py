@@ -913,12 +913,14 @@ class JoinedActViewSet(ModelViewSet):
         user_id = request.query_params.get('person')
         act_id = request.query_params.get('act')
         operator_id = request.query_params.get('operator')
-
-        #self.destroy(request)
-        content = utils.get_notif_content(NOTIF.RemovalFromAct, act_name=_act_id2act_name(act_id))
-        notif = new_notification(NOTIF.RemovalFromAct, content, act_id=act_id, org_id=None)
+        
+        
         data = {}
-        _create_notif_for_all([user_id], notif, data)
+        #self.destroy(request)
+        if operator_id != user_id:
+            content = utils.get_notif_content(NOTIF.RemovalFromAct, act_name=_act_id2act_name(act_id))
+            notif = new_notification(NOTIF.RemovalFromAct, content, act_id=act_id, org_id=None)
+            _create_notif_for_all([user_id], notif, data)
         self.destroy(request)
         return Response(data, 200)
 
