@@ -191,6 +191,7 @@ def time_convert(t):
 
 
 def info_convert(info):
+    #print("info", info)
     data = {
         'name': info['courseName'],
         'contain': info['courseMaxCount'],

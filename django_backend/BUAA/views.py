@@ -898,6 +898,8 @@ class JoinedActViewSet(ModelViewSet):
     def destroy_wrapper(self, request) :
         user_id = request.query_params.get('person')
         act_id = request.query_params.get('act')
+        operator_id = request.query_params.get('operator')
+
         #self.destroy(request)
         content = utils.get_notif_content(NOTIF.RemovalFromAct, act_name=_act_id2act_name(act_id))
         notif = new_notification(NOTIF.RemovalFromAct, content, act_id=act_id, org_id=None)
