@@ -131,7 +131,7 @@ def web_token_identify(request):
     if not username:
         res = {'status': 0, 'name': ''}
     else:
-        res = {'status': 1, 'name': username}
+        res = {'status': 1, 'name': username if len(username) <= 15 else "regular user"}
         cache.set(token, username, 24*60*60)
     return Response(res, 200)
 

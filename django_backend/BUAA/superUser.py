@@ -24,7 +24,13 @@ def sudo_register(request):
     passwd1 = data.get('password')
     email = data.get('email')
     name_exist = SuperAdmin.objects.filter(username=name)
-    if name_exist:
+    if len(name) > 15:
+        res = {
+            'success' : "false",
+            'mess' : 'Name too long'
+        } 
+        return HttpResponse(json.dumps(res), content_type='application/json')
+    elif name_exist:
         res = {
             'success': "false",
             'mess': 'Name exist'
