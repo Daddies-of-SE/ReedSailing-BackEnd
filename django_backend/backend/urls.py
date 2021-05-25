@@ -54,6 +54,7 @@ urlpatterns = [
         url(r'^users/(?P<pk>\d+)/$', WXUserViewSet.as_view(
             {"get": "retrieve", "delete": "destroy", "put": "update"})),
         url(r'^users/boya_followers/', WXUserViewSet.as_view({"get": "get_boya_followers"})),
+        url(r'^users/search/$',WXUserViewSet.as_view({"get": "search_user"})),
         
 
         # 组织申请

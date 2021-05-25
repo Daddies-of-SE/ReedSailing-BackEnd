@@ -411,7 +411,18 @@ class WXUserViewSet(ModelViewSet):
         serializer = self.get_serializer(users, many=True)
         return Response(serializer.data)
 
+    def paginate(self, objects):
+        page = self.paginate_queryset(objects)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(objects, many=True)
+        return Response(serializer.data)
 
+    def search_user(self, request):
+        name = request.data.get("name")
+        users = WXUser.objects.filter(name__contains=name)
+        return self.paginate(users)
 # 版块
 class BlockViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
