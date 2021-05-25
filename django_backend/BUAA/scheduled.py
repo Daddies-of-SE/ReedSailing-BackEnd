@@ -39,14 +39,11 @@ def get_boya():
 
 
 def add_to_activities(name, description, contain, begin_time, end_time, location, **kwargs):
-    if Address.objects.filter(name=location).exists():
-        address = Address.objects.get(name=location).id
-    else:
-        serializer = AddressSerializer(
-            data={"name": location, "longitude": 1.0, "latitude": 1.0})
-        serializer.is_valid()
-        serializer.save()
-        address = serializer.data.get("id")
+    serializer = AddressSerializer(
+        data={"name": location, "longitude": 1.0, "latitude": 1.0})
+    serializer.is_valid()
+    serializer.save()
+    address = serializer.data.get("id")
     data = {
         "name": name,
         "begin_time": begin_time,
