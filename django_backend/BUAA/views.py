@@ -124,7 +124,7 @@ def new_send_notification(notif_id, user_id):
     return serializer.data
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 def web_token_identify(request):
     token = request.data['token']
     username = cache.get(token)
