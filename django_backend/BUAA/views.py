@@ -21,10 +21,15 @@ import time
 import os
 from BUAA.accessPolicy import *
 import random
+import traceback
 
 base_dir = '/root/ReedSailing-Web/server_files/'
 #base_dir = '/Users/wzk/Desktop/'
 web_dir = 'https://www.reedsailing.xyz/server_files/'
+portrait_dir = '/root/portraits/'
+
+if not os.path.exists(portrait_dir):
+    os.mkdir(portrait_dir)
 
 
 sender = utils.MailSender()
@@ -290,16 +295,24 @@ def user_login(request):
 @authentication_classes([])  # 用户认证
 def user_register(request):
     # 取出数据
-    id_ = request.data['id']
-    user_info = request.data['userInfo']
-    WXUser.objects.filter(id=id_).update(name=user_info.get("nickName"), avatar=user_info.get("avatarUrl"))
+    try:
+        id_ = request.data['id']
+        user_info = request.data['userInfo']
+        portrait = portrait_dir+str(id_)+".json"
+        
+        WXUser.objects.filter(id=id_).update(name=user_info.get("nickName"), avatar=user_info.get("avatarUrl"), user_portrait=portrait)
+        with open(portrait, "w") as f:
+            data = {} #TODO
+            json.dump(data, f)
+        
+        # print("register user", WXUser.objects.get_or_create(id=id_))
     
-    # print("register user", WXUser.objects.get_or_create(id=id_))
-
-    res = {
-        "status": 0
-    }
-    return Response(data=res, status=200)
+        res = {
+            "status": 0
+        }
+        return Response(data=res, status=200)
+    except:
+        return Response({"errMsg" : traceback.format_exc()}, 400)
 
 
 @api_view(['POST'])
@@ -412,18 +425,7 @@ class WXUserViewSet(ModelViewSet):
         serializer = self.get_serializer(users, many=True)
         return Response(serializer.data)
 
-    def paginate(self, objects):
-        page = self.paginate_queryset(objects)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(objects, many=True)
-        return Response(serializer.data)
 
-    def search_user(self, request):
-        name = request.data.get("name")
-        users = WXUser.objects.filter(name__contains=name)
-        return self.paginate(users)
 # 版块
 class BlockViewSet(ModelViewSet):
     authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
@@ -848,7 +850,6 @@ class ActivityViewSet(ModelViewSet):
         return self.paginate(random_acts)
     
 #        except:
-#            import traceback
 #            return Response({"errMsg" : traceback.format_exc(), "debug" : f"{type(not_end_acts)}"}, 400)
         
         
