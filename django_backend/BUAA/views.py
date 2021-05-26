@@ -22,22 +22,12 @@ import os
 from BUAA.accessPolicy import *
 import random
 import traceback
+from BUAA.recommend import update_keyword, add_keyword, delete_keyword, get_keyword, get_accept_list
 
 base_dir = '/root/ReedSailing-Web/server_files/'
 #base_dir = '/Users/wzk/Desktop/'
 web_dir = 'https://www.reedsailing.xyz/server_files/'
-portrait_dir = '/root/portraits/'
 
-if not os.path.exists(portrait_dir):
-    os.mkdir(portrait_dir)
-
-def get_portrait_path(id_):
-    path = portrait_dir+str(id_)+".json"
-    if not os.path.exists(path):
-        with open(path, "w") as f:
-            #todo
-            json.dump({"info" : "none"}, f)
-    return path
 
 sender = utils.MailSender()
 
@@ -307,9 +297,6 @@ def user_register(request):
         user_info = request.data['userInfo']
         
         WXUser.objects.filter(id=id_).update(name=user_info.get("nickName"), avatar=user_info.get("avatarUrl"), user_portrait=portrait)
-        with open(get_portrait_path(id_), "w") as f:
-            data = {} #TODO
-            json.dump(data, f)
         
         # print("register user", WXUser.objects.get_or_create(id=id_))
     
@@ -770,8 +757,7 @@ class ActivityViewSet(ModelViewSet):
             res = self.create(request)
             
             act = Activity.objects.get(id=res.data['id'])
-            
-            act.keywords = act.name + "  " + act.description  #todo
+            act.keywords = get_keyword(act.name+' '+act.description)
             act.save()
             return res
         except:
@@ -783,15 +769,18 @@ class ActivityViewSet(ModelViewSet):
         res = self.update(request)
 
         act = Activity.objects.get(id=pk)
-        act.keywords = act.name + "  " + act.description  #todo
+        old_keys = act.keywords
+        act.keywords = get_keyword(act.name+' '+act.description)
+        new_keys = act.keywords
         act.save()
-        
         
         # create notif
         content = utils.get_notif_content(NOTIF.ActContent, act_name=_act_id2act_name(pk))
         notif = new_notification(NOTIF.ActContent, content, act_id=pk, org_id=None)
         # send notification
         persons = JoinedAct.objects.filter(act=pk)
+        for p in persons:
+            update_keyword(p.person_id, old_keys, new_keys)
         _create_notif_for_all([p.person_id for p in persons], notif, res.data)
         return res
 
@@ -808,12 +797,10 @@ class ActivityViewSet(ModelViewSet):
         if res.data is None:
             res.data = {}
         res.data['__receivers__'] = receivers
+        act = Activity.objects.get(id=pk)
+        kwds = act.keywords
         for id_ in receivers:
-            with open(get_portrait_path(id_)) as f:
-                data = json.load(f)
-            with open(get_portrait_path(id_), "w") as f:
-                data = {} #TODO
-                json.dump(data, f)
+            delete_keyword(id_, kwds)
         return res
 
 
@@ -950,16 +937,14 @@ class JoinedActViewSet(ModelViewSet):
             serializer.is_valid(raise_exception=True)
             act_id = request.data.get("act")
             current_number = JoinedAct.objects.filter(act=act_id).count()
-            limit_number = Activity.objects.get(id=act_id).contain
+            act = Activity.objects.get(id=act_id)
+            limit_number = act.contain
+            kwds = act.keywords
             if current_number < limit_number:
                 self.perform_create(serializer)
                 headers = self.get_success_headers(serializer.data)
                 user = request.data.get("person")
-                with open(get_portrait_path(user)) as f:
-                    data = json.load(f)
-                with open(get_portrait_path(user), "w") as f:
-                    data = {} #TODO
-                    json.dump(data, f)
+                add_keyword(user, kwds)
                 return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
             else:
                 return Response({"detail": "活动人数已满。"}, 400)
@@ -971,12 +956,14 @@ class JoinedActViewSet(ModelViewSet):
         user_id = request.query_params.get('person')
         act_id = request.query_params.get('act')
         JoinedAct.objects.filter(act=act_id, person=user_id).delete()
+        act = Activity.objects.get(id=act_id)
+        kwds = act.keywords
+        delete_keyword(user_id, kwds)
 
     def destroy_wrapper(self, request) :
         user_id = request.query_params.get('person')
         act_id = request.query_params.get('act')
         operator_id = request.query_params.get('operator')
-        
         
         data = {}
         #self.destroy(request)
@@ -985,12 +972,6 @@ class JoinedActViewSet(ModelViewSet):
             notif = new_notification(NOTIF.RemovalFromAct, content, act_id=act_id, org_id=None)
             _create_notif_for_all([user_id], notif, data)
         self.destroy(request)
-        
-        with open(get_portrait_path(user_id)) as f:
-            data = json.load(f)
-        with open(get_portrait_path(user_id), "w") as f:
-            data = {} #TODO
-            json.dump(data, f)
             
         return Response(data, 200)
 
