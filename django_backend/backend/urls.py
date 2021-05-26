@@ -121,7 +121,7 @@ urlpatterns = [
 
         # 活动
         url(r'^activities/$',
-            ActivityViewSet.as_view({"post": "create", "get": "list"})),
+            ActivityViewSet.as_view({"post": "create_wrapper", "get": "list"})),
         url(r'^activities/(?P<pk>\d+)/$', ActivityViewSet.as_view(
             {"get": "retrieve", "delete": "destroy_wrapper", "put": "update_wrapper"})),
 #         url(r'^activities/(?P<pk>\d+)/$', ActivityViewSet.as_view(

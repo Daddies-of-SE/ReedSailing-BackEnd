@@ -270,7 +270,7 @@ class ActAccessPolicy(AccessPolicy):
             "effect": "allow",
         },
         {
-            "action": ["create"],
+            "action": ["create", "create_wrapper"],
             "principal": "*",
             "effect": "allow",
             "condition": ["(is_super_user or is_valid_create)"],

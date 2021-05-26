@@ -732,9 +732,9 @@ class ActivityViewSet(ModelViewSet):
     queryset = Activity.objects.all()
 
     def get_serializer_class(self):
-        if self.action == "create":
+        if self.action in ["create", "create_wrapper"]:
             return ActivitySerializer
-        if self.action == ["destroy", "destroy_wrapper"]:
+        if self.action in ["destroy", "destroy_wrapper"]:
             return ActivitySerializer
         if self.action in ["update", "update_wrapper"]:
             return ActUpdateSerializer
@@ -749,12 +749,28 @@ class ActivityViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-
+    def create_wrapper(self, request):
+        try:
+            res = self.create(request)
+            
+            act = Activity.objects.get(id=res.data['id'])
+            
+            act.keywords = act.name + "  " + act.description  #todo
+            act.save()
+            return res
+        except:
+            return Response({"errMsg" : traceback.format_exc()}, 400)
 
     # update_wrapper
     def update_wrapper(self, request, pk):
         pk = int(pk)
         res = self.update(request)
+
+        act = Activity.objects.get(id=pk)
+        act.keywords = act.name + "  " + act.description  #todo
+        act.save()
+        
+        
         # create notif
         content = utils.get_notif_content(NOTIF.ActContent, act_name=_act_id2act_name(pk))
         notif = new_notification(NOTIF.ActContent, content, act_id=pk, org_id=None)

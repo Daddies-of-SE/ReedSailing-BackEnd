@@ -34,6 +34,9 @@ class Activity(models.Model):
     location = models.ForeignKey('Address', on_delete=models.CASCADE, verbose_name="活动地点")
     block = models.ForeignKey('Block', on_delete=models.CASCADE, verbose_name="所属版块")  # 组织需要与组织模块保证一致
     avatar = models.CharField(max_length=500, null=True, blank=True, verbose_name="活动图片")
+    
+    keywords = models.CharField(max_length=500, null=True, blank=True, verbose_name="关键词")
+    
     # person = models.ManyToManyField('WXUser', verbose_name="报名人员")
 
 
@@ -158,3 +161,4 @@ class SentNotif(models.Model):
     notif = models.ForeignKey('Notification', on_delete=models.CASCADE, verbose_name='通知')
     person = models.ForeignKey('WXUser', verbose_name="接收人员", on_delete=models.CASCADE)
     already_read = models.BooleanField(verbose_name="是否已读", default=False)
+    
