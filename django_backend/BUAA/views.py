@@ -425,11 +425,27 @@ class WXUserViewSet(ModelViewSet):
         if self.action == 'create':
             return TestUserSerializer
         return WXUserSerializer
-    
+
     def get_boya_followers(self, request):
         users = _get_boya_followers()
         serializer = self.get_serializer(users, many=True)
+
+    def paginate(self, objects):
+        page = self.paginate_queryset(objects)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(objects, many=True)
         return Response(serializer.data)
+
+    def search_user(self,request):
+        try:
+            name = request.data.get("name")
+            users = WXUser.objects.filter(name__contains=name)
+        except:
+            import traceback
+            return Response({"errMsg":traceback.format_exc()},400)
+        return self.paginate(users)
 
 
 # 版块
@@ -869,17 +885,11 @@ class ActivityViewSet(ModelViewSet):
 
     # 推荐活动
     def get_recommended_act(self, request, *args, **kwargs):
-#        try:
         now = datetime.datetime.now()
         not_end_acts = list(Activity.objects.filter(end_time__gte=now))
         k =  min(len(not_end_acts), 1000)
         random_acts = random.sample(not_end_acts,k)
         return self.paginate(random_acts)
-    
-#        except:
-#            return Response({"errMsg" : traceback.format_exc(), "debug" : f"{type(not_end_acts)}"}, 400)
-        
-        
 
     #搜索活动
     def search_all(self,request):
