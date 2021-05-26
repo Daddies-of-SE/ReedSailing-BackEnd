@@ -576,15 +576,15 @@ class OrganizationModelViewSet(ModelViewSet):
         return Response(data, 200)
 
     # 推荐组织
-    def get_recommended_org(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+#    def get_recommended_org(self, request, *args, **kwargs):
+#        queryset = self.filter_queryset(self.get_queryset())
+#        page = self.paginate_queryset(queryset)
+#        if page is not None:
+#            serializer = self.get_serializer(page, many=True)
+#            return self.get_paginated_response(serializer.data)
+#
+#        serializer = self.get_serializer(queryset, many=True)
+#        return Response(serializer.data)
 
     #搜索组织
     def search_all(self,request):
@@ -873,17 +873,23 @@ class ActivityViewSet(ModelViewSet):
         return self.paginate(acts)
 
     # 推荐活动
-    def get_recommended_act(self, request, *args, **kwargs):
+    def get_recommended_act(self, request, user_id):
         try:
-            user_id = request.query_params.get('user')
             now = datetime.datetime.now()
             not_end_acts = list(Activity.objects.filter(end_time__gte=now))
             k = min(len(not_end_acts), 1000)
             random_acts = random.sample(not_end_acts, k)
-            recommend_acts = get_accept_list(random_acts, user_id)
+            #recommend_acts = get_accept_list(random_acts, user_id)
+            recommend_acts = random_acts
+            recommend_orgs = [act.org for act in recommend_acts if act.org is not None] #todo
+            
+            ret = {
+                'acts' : self.get_serializer(recommend_acts, many=True).data,
+                'orgs' : OrgDetailSerializer(recommend_orgs, many=True).data
+            }
         except:
             return Response({"errMsg": traceback.format_exc()}, 400)
-        return self.paginate(recommend_acts)
+        return Response(ret, 200)
 
     #搜索活动
     def search_all(self,request):
