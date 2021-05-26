@@ -32,7 +32,12 @@ if not os.path.exists(portrait_dir):
     os.mkdir(portrait_dir)
 
 def get_portrait_path(id_):
-    return portrait_dir+str(id_)+".json"
+    path = portrait_dir+str(id_)+".json"
+    if not os.path.exists(path):
+        with open(path, "w") as f:
+            #todo
+            json.dump({"info" : "none"}, f)
+    return path
 
 sender = utils.MailSender()
 
@@ -771,7 +776,12 @@ class ActivityViewSet(ModelViewSet):
         if res.data is None:
             res.data = {}
         res.data['__receivers__'] = receivers
-
+        for id_ in receivers:
+            with open(get_portrait_path(id_)) as f:
+                data = json.load(f)
+            with open(get_portrait_path(id_), "w") as f:
+                data = {} #TODO
+                json.dump(data, f)
         return res
 
 
@@ -909,24 +919,27 @@ class JoinedActViewSet(ModelViewSet):
 
     # 加入活动
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        act_id = request.data.get("act")
-        current_number = JoinedAct.objects.filter(act=act_id).count()
-        limit_number = Activity.objects.get(id=act_id).contain
-        if current_number < limit_number:
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            user = data.get("person")
-            with open(get_portrait_path(user)) as f:
-                data = json.load(f)
-            with open(get_portrait_path(user), "w") as f:
-                data = {} #TODO
-                json.dump(data, f)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        else:
-            return Response({"detail": "活动人数已满。"}, 400)
-
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            act_id = request.data.get("act")
+            current_number = JoinedAct.objects.filter(act=act_id).count()
+            limit_number = Activity.objects.get(id=act_id).contain
+            if current_number < limit_number:
+                self.perform_create(serializer)
+                headers = self.get_success_headers(serializer.data)
+                user = request.data.get("person")
+                with open(get_portrait_path(user)) as f:
+                    data = json.load(f)
+                with open(get_portrait_path(user), "w") as f:
+                    data = {} #TODO
+                    json.dump(data, f)
+                return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            else:
+                return Response({"detail": "活动人数已满。"}, 400)
+        except:
+            return Response({"errMsg" : traceback.format_exc()}, 400)
+    
     # 退出活动
     def destroy(self, request, *args, **kwargs):
         user_id = request.query_params.get('person')
