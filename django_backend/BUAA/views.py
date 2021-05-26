@@ -872,11 +872,16 @@ class ActivityViewSet(ModelViewSet):
 
     # 推荐活动
     def get_recommended_act(self, request, *args, **kwargs):
-        now = datetime.datetime.now()
-        not_end_acts = list(Activity.objects.filter(end_time__gte=now))
-        k =  min(len(not_end_acts), 1000)
-        random_acts = random.sample(not_end_acts,k)
-        return self.paginate(random_acts)
+        try:
+            user_id = request.query_params.get('user')
+            now = datetime.datetime.now()
+            not_end_acts = list(Activity.objects.filter(end_time__gte=now))
+            k = min(len(not_end_acts), 1000)
+            random_acts = random.sample(not_end_acts, k)
+            recommend_acts = get_accept_list(random_acts, user_id)
+        except:
+            return Response({"errMsg": traceback.format_exc()}, 400)
+        return self.paginate(recommend_acts)
 
     #搜索活动
     def search_all(self,request):

@@ -97,6 +97,9 @@ def take_suit(elem):
 
 
 def get_accept_list(act_list, user_id):
+    if not user_id:
+        # user not verified yet
+        return act_list
     user_pic = load_portrait(user_id)
     accept_list = []
     accept_cnt = 0
