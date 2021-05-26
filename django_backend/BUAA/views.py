@@ -31,6 +31,8 @@ portrait_dir = '/root/portraits/'
 if not os.path.exists(portrait_dir):
     os.mkdir(portrait_dir)
 
+def get_portrait_path(id_):
+    return portrait_dir+str(id_)+".json"
 
 sender = utils.MailSender()
 
@@ -298,10 +300,9 @@ def user_register(request):
     try:
         id_ = request.data['id']
         user_info = request.data['userInfo']
-        portrait = portrait_dir+str(id_)+".json"
         
         WXUser.objects.filter(id=id_).update(name=user_info.get("nickName"), avatar=user_info.get("avatarUrl"), user_portrait=portrait)
-        with open(portrait, "w") as f:
+        with open(get_portrait_path(id_), "w") as f:
             data = {} #TODO
             json.dump(data, f)
         
@@ -916,6 +917,12 @@ class JoinedActViewSet(ModelViewSet):
         if current_number < limit_number:
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
+            user = data.get("person")
+            with open(get_portrait_path(user)) as f:
+                data = json.load(f)
+            with open(get_portrait_path(user), "w") as f:
+                data = {} #TODO
+                json.dump(data, f)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         else:
             return Response({"detail": "活动人数已满。"}, 400)
@@ -939,6 +946,13 @@ class JoinedActViewSet(ModelViewSet):
             notif = new_notification(NOTIF.RemovalFromAct, content, act_id=act_id, org_id=None)
             _create_notif_for_all([user_id], notif, data)
         self.destroy(request)
+        
+        with open(get_portrait_path(user_id)) as f:
+            data = json.load(f)
+        with open(get_portrait_path(user_id), "w") as f:
+            data = {} #TODO
+            json.dump(data, f)
+            
         return Response(data, 200)
 
     # 获取活动的参与人数
