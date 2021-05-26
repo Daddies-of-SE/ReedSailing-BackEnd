@@ -76,6 +76,51 @@
   * 确认`app.js`中的`server`为`http://reedsailing.xyz/api/`
   * 此时尝试编译运行，点击首页登录并查看调试器，或者直接在浏览器中输入`reedsailing.xyz/api/users/`，可以看到返回结果；后端（即服务器python运行窗口）可以看到收到的请求
 
+### 日志文件位置
+
+nginx的访问日志：`/var/log/nginx/access.log`
+
+nginx的报错日志：`/var/log/nginx/error.log`
+
+uwsgi的日志：`~/ReedSailing-Backend/django_backend/buaa.log`
+
+django的日志：`~/ReedSailing-Backend/django_backend/logs/all.log`
+
+### 服务器重启后恢复服务的流程
+
+```shell
+#启动nginx
+nginx
+#启动uwsgi
+uwsgi --ini ~/ReedSailing-Backend/django_backend/uwsgi.ini
+
+#启动mysql
+#建议在tmux中做，执行完后kill-session，不会导致mysql被关闭
+#因为启动完会阻塞命令行而且按Ctrl+C不能退出
+tmux new
+mysqld --user=root
+#按Ctrl+B,然后按X,之后输入y
+
+#启动daphne
+cd ~/ReedSailing-BackEnd/django_backend/
+tmux new -s daphne
+daphne -p 8001 backend.asgi:application
+#按Ctrl+B，然后按D，脱离tmux会话（tmux会话会后台运行，不会被杀死）
+
+#在tmux中启动博雅爬取脚本
+tmux new -s boya
+#启动博雅脚本，记得输入用户名和密码
+python ~/ReedSailing-Backend/liberal_query/bykc.py
+#按下Ctrl+B，然后按%（要按Shift+5）
+#在新打开的空格中启动定时任务
+python ~/ReedSailing-Backend/django_backend/manage.py crontab add
+#跟踪输出的日志
+tail -f /home/get_boya.log
+#按下Ctrl+B，然后按D，脱离tmux会话
+```
+
+
+
 ### 说明
 
 以后尽可能都直接用这个服务器上的后端，首先可以避免每个人都反复pull、migrate（理想情况下后端代码只存在于服务器上），其次可以保证数据库一致便于测试
