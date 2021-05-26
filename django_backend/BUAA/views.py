@@ -439,8 +439,12 @@ class WXUserViewSet(ModelViewSet):
         return Response(serializer.data)
 
     def search_user(self,request):
-        name = request.data.get("name")
-        users = WXUser.objects.filter(name__contains=name)
+        try:
+            name = request.data.get("name")
+            users = WXUser.objects.filter(name__contains=name)
+        except:
+            import traceback
+            return Response({"errMsg":traceback.format_exc()},400)
         return self.paginate(users)
 
 
