@@ -166,30 +166,32 @@ def _get_boya_followers():
 @api_view(['POST'])
 @authentication_classes([UserAuthentication, ErrorAuthentication])
 def send_email(request):
-    email_address = request.data['email']
-    if not email_address.endswith("@buaa.edu.cn"):
+    try:
+        email_address = request.data['email']
+        if not email_address.endswith("@buaa.edu.cn"):
+            res = {
+                'status' : 1,
+                'msg' : 'Email address not belong to BUAA'
+            }
+            return Response(data=res, status=400)
+    
+        random_str = get_random_str()[:6]
+        sender.send_mail('ReedSailing Certification', 'Your verify code is {}, valid in 5 minutes.'.format(random_str),
+                        email_address)
+        
+        cache.set(random_str, email_address, 300)  # 验证码时效5分钟
+        # # 用redis代替
+        # redis_conn = get_redis_connection("code")
+        # redis_conn.set("sms_code_%s" % email_address, random_str, 300)
+        
         res = {
-            'status' : 1,
-            'msg' : 'Email address not belong to BUAA'
+            'status': 0,
+            'msg': 'Email send'
         }
-        return Response(data=res, status=400)
-
-    random_str = get_random_str()[:6]
-    print('【一苇以航】邮箱验证码', '您的验证码为 {}, 5分钟内有效'.format(random_str))
-    sender.send_mail('【一苇以航】邮箱验证码', '您的验证码为 {}, 5分钟内有效'.format(random_str),
-                     email_address)
-    
-    cache.set(random_str, email_address, 300)  # 验证码时效5分钟
-    # # 用redis代替
-    # redis_conn = get_redis_connection("code")
-    # redis_conn.set("sms_code_%s" % email_address, random_str, 300)
-    
-    res = {
-        'status': 0,
-        'msg': 'Email send'
-    }
-    # print("successfully send email to", email_address)
-    return Response(data=res, status=200)
+        # print("successfully send email to", email_address)
+        return Response(data=res, status=200)
+    except:
+        return Response({"errMsg" : traceback.format_exc()}, 400)
     # return my_response(res)
 
 
@@ -296,7 +298,7 @@ def user_register(request):
         id_ = request.data['id']
         user_info = request.data['userInfo']
         
-        WXUser.objects.filter(id=id_).update(name=user_info.get("nickName"), avatar=user_info.get("avatarUrl"), user_portrait=portrait)
+        WXUser.objects.filter(id=id_).update(name=user_info.get("nickName"), avatar=user_info.get("avatarUrl"))
         
         # print("register user", WXUser.objects.get_or_create(id=id_))
     
