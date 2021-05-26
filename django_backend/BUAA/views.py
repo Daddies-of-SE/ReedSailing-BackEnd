@@ -416,12 +416,19 @@ class JoinActApplicationViewSet(ModelViewSet):
 
 # 用户
 class WXUserViewSet(ModelViewSet):
+    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    permission_classes = (WXUserAccessPolicy,)
+
     queryset = WXUser.objects.all()
 
     def get_serializer_class(self):
         if self.action == 'create':
             return TestUserSerializer
         return WXUserSerializer
+
+    def get_boya_followers(self, request):
+        users = _get_boya_followers()
+        serializer = self.get_serializer(users, many=True)
 
     def paginate(self, objects):
         page = self.paginate_queryset(objects)
