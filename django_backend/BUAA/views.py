@@ -20,6 +20,7 @@ from BUAA.const import NOTIF, BLOCKID, NOTIF_TYPE_DICT
 import time
 import os
 from BUAA.accessPolicy import *
+import random
 
 base_dir = '/root/ReedSailing-Web/server_files/'
 #base_dir = '/Users/wzk/Desktop/'
@@ -839,14 +840,18 @@ class ActivityViewSet(ModelViewSet):
 
     # 推荐活动
     def get_recommended_act(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+#        try:
+        now = datetime.datetime.now()
+        not_end_acts = list(Activity.objects.filter(end_time__gte=now))
+        k =  min(len(not_end_acts), 1000)
+        random_acts = random.sample(not_end_acts,k)
+        return self.paginate(random_acts)
+    
+#        except:
+#            import traceback
+#            return Response({"errMsg" : traceback.format_exc(), "debug" : f"{type(not_end_acts)}"}, 400)
+        
+        
 
     #搜索活动
     def search_all(self,request):
@@ -1220,6 +1225,7 @@ def lines(request):
 
 if __name__=="__main__":
     print(utils.get_access_token())
+    
     
     
     
