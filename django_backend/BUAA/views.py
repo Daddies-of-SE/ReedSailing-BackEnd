@@ -22,7 +22,7 @@ import os
 from BUAA.accessPolicy import *
 import random
 import traceback
-from BUAA.recommend import update_keyword, add_keyword, delete_keyword, get_keyword, get_accept_list
+from BUAA.recommend import update_keyword, add_keyword, delete_keyword, get_keyword, get_recommend
 
 base_dir = '/root/ReedSailing-Web/server_files/'
 #base_dir = '/Users/wzk/Desktop/'
@@ -875,14 +875,12 @@ class ActivityViewSet(ModelViewSet):
     # 推荐活动
     def get_recommended_act(self, request, user_id):
         try:
+            user = WXUser.objects.filter(id=user_id)
             now = datetime.datetime.now()
             not_end_acts = list(Activity.objects.filter(end_time__gte=now))
             k = min(len(not_end_acts), 1000)
             random_acts = random.sample(not_end_acts, k)
-            #recommend_acts = get_accept_list(random_acts, user_id)
-            recommend_acts = random_acts
-            recommend_orgs = [act.org for act in recommend_acts if act.org is not None] #todo
-            
+            recommend_acts, recommend_orgs = get_recommend(user, random_acts)
             ret = {
                 'acts' : self.get_serializer(recommend_acts, many=True).data,
                 'orgs' : OrgDetailSerializer(recommend_orgs, many=True).data

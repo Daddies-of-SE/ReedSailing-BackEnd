@@ -34,26 +34,28 @@ def load_portrait(id_):
 
 
 def save_portrait(id_, port):
-    with open(get_portrait_path(id_), 'r') as f:
+    with open(get_portrait_path(id_), 'w') as f:
         json.dump(port, f)
 
 
 def portrait_add_keyword(port, kwds):
     d = port['keyword']
-    kwds = kwds.split(' ')
-    for kwd in kwds:
-        if not d.get(kwd):
-            d[kwd] = 1
-        else:
-            d[kwd] += 1
+    if kwds:
+        kwds = kwds.split(' ')
+        for kwd in kwds:
+            if not d.get(kwd):
+                d[kwd] = 1
+            else:
+                d[kwd] += 1
 
 
 def portrait_del_keyword(port, kwds):
     d = port['keyword']
-    kwds = kwds.split(' ')
-    for kwd in kwds:
-        if d.get(kwd, 0) > 0:
-            d[kwd] -= 1
+    if kwds:
+        kwds = kwds.split(' ')
+        for kwd in kwds:
+            if d.get(kwd, 0) > 0:
+                d[kwd] -= 1
 
 
 def update_keyword(id_, old_kwds, new_kwds):
@@ -84,10 +86,11 @@ def get_keyword(text):
 def cal_suitability(act, user_pic):
     suit = 0
     kwds = act.keywords
-    kwds = kwds.split()
-    kwd_dict = user_pic['keyword']
-    for kwd in kwds:
-        suit += kwd_dict.get(kwd, 0)
+    if kwds:
+        kwds = kwds.split()
+        kwd_dict = user_pic['keyword']
+        for kwd in kwds:
+            suit += kwd_dict.get(kwd, 0)
     return suit
 
 
@@ -97,9 +100,6 @@ def take_suit(elem):
 
 
 def get_accept_list(act_list, user_id):
-    if not user_id:
-        # user not verified yet
-        return act_list
     user_pic = load_portrait(user_id)
     accept_list = []
     accept_cnt = 0
@@ -115,5 +115,33 @@ def get_accept_list(act_list, user_id):
     return accept_list
 
 
+def take_count(elem):
+    return elem['count']
+
+
 def getgroup(accept_list):
-    raise NotImplementedError
+    group_cnt = {}
+    for act in accept_list:
+        if act.org:
+            # exclude activities from boya and individual block
+            org_id = act.org.id
+            if org_id not in group_cnt:
+                act.org['count'] = 1
+                group_cnt[org_id] = act.org
+            else:
+                group_cnt[org_id]['count'] += 1
+    groups = list(group_cnt.values())
+    groups.sort(key=take_count, reverse=True)
+    return groups
+
+
+def get_recommend(user, init_list):
+    user_id = user.id
+    if not user.email:
+        # user is not verified yet, return a list sorted by heat
+        # TODO
+        pass
+    else:
+        act_list = get_accept_list(init_list, user_id)
+        group_list = getgroup(act_list)
+        return act_list, group_list
