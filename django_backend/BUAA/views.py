@@ -1027,8 +1027,9 @@ class CommentViewSet(ModelViewSet):
         elif act.block_id == BLOCKID.BOYA:
             pass
         else:
-            manegers = BUAA.models.OrgManager.objects.filter(org_id=act.org.pk).values('person')
-            _create_notif_for_all([m['person'] for m in manegers], notif, res.data)
+            # manegers = BUAA.models.OrgManager.objects.filter(org_id=act.org.pk).values('person')
+            # _create_notif_for_all([m['person'] for m in manegers], notif, res.data)
+            _create_notif_for_all([act.owner.pk], notif, res.data)
         return res
 
     def update_wrapper(self, request, pk):
@@ -1046,11 +1047,12 @@ class CommentViewSet(ModelViewSet):
         elif act.block_id == BLOCKID.BOYA:
             pass
         else:
-            manegers = BUAA.models.OrgManager.objects.filter(org_id=act.org.pk).values('person')
+            # manegers = BUAA.models.OrgManager.objects.filter(org_id=act.org.pk).values('person')
             # _send_notif(m.id, notif)
             # m is dict which has key list ['person']
-            receivers = [m['person'] for m in manegers]
-            _create_notif_for_all(receivers, notif, res.data)
+            # receivers = [m['person'] for m in manegers]
+            # _create_notif_for_all(receivers, notif, res.data)
+            _create_notif_for_all([act.owner.pk], notif, res.data)
         return res
 
 
