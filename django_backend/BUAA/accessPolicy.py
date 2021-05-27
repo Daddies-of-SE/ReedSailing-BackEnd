@@ -6,7 +6,7 @@ from rest_access_policy import AccessPolicy
 class WXUserAccessPolicy(AccessPolicy):
     statements = [
         {
-            "action": ["list", "destroy"],
+            "action": ["list", "destroy", "search_user"],
             "principal": "*",
             "effect": "allow",
             "condition": "is_super_user"
@@ -270,7 +270,7 @@ class ActAccessPolicy(AccessPolicy):
             "effect": "allow",
         },
         {
-            "action": ["create"],
+            "action": ["create", "create_wrapper"],
             "principal": "*",
             "effect": "allow",
             "condition": ["(is_super_user or is_valid_create)"],

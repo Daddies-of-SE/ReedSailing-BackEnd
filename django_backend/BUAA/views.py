@@ -20,6 +20,9 @@ from BUAA.const import NOTIF, BLOCKID, NOTIF_TYPE_DICT
 import time
 import os
 from BUAA.accessPolicy import *
+import random
+import traceback
+from BUAA.recommend import update_keyword, add_keyword, delete_keyword, get_keyword, get_accept_list
 
 base_dir = '/root/ReedSailing-Web/server_files/'
 #base_dir = '/Users/wzk/Desktop/'
@@ -122,7 +125,19 @@ def new_send_notification(notif_id, user_id):
     serializer.is_valid()
     serializer.save()
     return serializer.data
-            
+
+
+@api_view(['POST'])
+def web_token_identify(request):
+    token = request.data['token']
+    username = cache.get(token)
+    if not username:
+        res = {'status': 0, 'name': ''}
+    else:
+        res = {'status': 1, 'name': username if len(username) <= 15 else "regular user"}
+        cache.set(token, username, 24*60*60)
+    return Response(res, 200)
+
 
 @api_view(['POST'])
 @authentication_classes([UserAuthentication, SuperAdminAuthentication, ErrorAuthentication])
@@ -151,30 +166,32 @@ def _get_boya_followers():
 @api_view(['POST'])
 @authentication_classes([UserAuthentication, ErrorAuthentication])
 def send_email(request):
-    email_address = request.data['email']
-    if not email_address.endswith("@buaa.edu.cn"):
+    try:
+        email_address = request.data['email']
+        if not email_address.endswith("@buaa.edu.cn"):
+            res = {
+                'status' : 1,
+                'msg' : 'Email address not belong to BUAA'
+            }
+            return Response(data=res, status=400)
+    
+        random_str = get_random_str()[:6]
+        sender.send_mail('ReedSailing Certification', 'Your verify code is {}, valid in 5 minutes.'.format(random_str),
+                        email_address)
+        
+        cache.set(random_str, email_address, 300)  # 验证码时效5分钟
+        # # 用redis代替
+        # redis_conn = get_redis_connection("code")
+        # redis_conn.set("sms_code_%s" % email_address, random_str, 300)
+        
         res = {
-            'status' : 1,
-            'msg' : 'Email address not belong to BUAA'
+            'status': 0,
+            'msg': 'Email send'
         }
-        return Response(data=res, status=400)
-
-    random_str = get_random_str()[:6]
-    print('【一苇以航】邮箱验证码', '您的验证码为 {}, 5分钟内有效'.format(random_str))
-    sender.send_mail('【一苇以航】邮箱验证码', '您的验证码为 {}, 5分钟内有效'.format(random_str),
-                     email_address)
-    
-    cache.set(random_str, email_address, 300)  # 验证码时效5分钟
-    # # 用redis代替
-    # redis_conn = get_redis_connection("code")
-    # redis_conn.set("sms_code_%s" % email_address, random_str, 300)
-    
-    res = {
-        'status': 0,
-        'msg': 'Email send'
-    }
-    # print("successfully send email to", email_address)
-    return Response(data=res, status=200)
+        # print("successfully send email to", email_address)
+        return Response(data=res, status=200)
+    except:
+        return Response({"errMsg" : traceback.format_exc()}, 400)
     # return my_response(res)
 
 
@@ -277,16 +294,20 @@ def user_login(request):
 @authentication_classes([])  # 用户认证
 def user_register(request):
     # 取出数据
-    id_ = request.data['id']
-    user_info = request.data['userInfo']
-    WXUser.objects.filter(id=id_).update(name=user_info.get("nickName"), avatar=user_info.get("avatarUrl"))
+    try:
+        id_ = request.data['id']
+        user_info = request.data['userInfo']
+        
+        WXUser.objects.filter(id=id_).update(name=user_info.get("nickName"), avatar=user_info.get("avatarUrl"))
+        
+        # print("register user", WXUser.objects.get_or_create(id=id_))
     
-    # print("register user", WXUser.objects.get_or_create(id=id_))
-
-    res = {
-        "status": 0
-    }
-    return Response(data=res, status=200)
+        res = {
+            "status": 0
+        }
+        return Response(data=res, status=200)
+    except:
+        return Response({"errMsg" : traceback.format_exc()}, 400)
 
 
 @api_view(['POST'])
@@ -393,11 +414,27 @@ class WXUserViewSet(ModelViewSet):
         if self.action == 'create':
             return TestUserSerializer
         return WXUserSerializer
-    
+
     def get_boya_followers(self, request):
         users = _get_boya_followers()
         serializer = self.get_serializer(users, many=True)
+
+    def paginate(self, objects):
+        page = self.paginate_queryset(objects)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(objects, many=True)
         return Response(serializer.data)
+
+    def search_user(self,request):
+        try:
+            name = request.data.get("name")
+            users = WXUser.objects.filter(name__contains=name)
+        except:
+            import traceback
+            return Response({"errMsg":traceback.format_exc()},400)
+        return self.paginate(users)
 
 
 # 版块
@@ -539,15 +576,15 @@ class OrganizationModelViewSet(ModelViewSet):
         return Response(data, 200)
 
     # 推荐组织
-    def get_recommended_org(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+#    def get_recommended_org(self, request, *args, **kwargs):
+#        queryset = self.filter_queryset(self.get_queryset())
+#        page = self.paginate_queryset(queryset)
+#        if page is not None:
+#            serializer = self.get_serializer(page, many=True)
+#            return self.get_paginated_response(serializer.data)
+#
+#        serializer = self.get_serializer(queryset, many=True)
+#        return Response(serializer.data)
 
     #搜索组织
     def search_all(self,request):
@@ -700,9 +737,9 @@ class ActivityViewSet(ModelViewSet):
     queryset = Activity.objects.all()
 
     def get_serializer_class(self):
-        if self.action == "create":
+        if self.action in ["create", "create_wrapper"]:
             return ActivitySerializer
-        if self.action == ["destroy", "destroy_wrapper"]:
+        if self.action in ["destroy", "destroy_wrapper"]:
             return ActivitySerializer
         if self.action in ["update", "update_wrapper"]:
             return ActUpdateSerializer
@@ -717,17 +754,35 @@ class ActivityViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-
+    def create_wrapper(self, request):
+        try:
+            res = self.create(request)
+            
+            act = Activity.objects.get(id=res.data['id'])
+            act.keywords = get_keyword(act.name+' '+act.description)
+            act.save()
+            return res
+        except:
+            return Response({"errMsg" : traceback.format_exc()}, 400)
 
     # update_wrapper
     def update_wrapper(self, request, pk):
         pk = int(pk)
         res = self.update(request)
+
+        act = Activity.objects.get(id=pk)
+        old_keys = act.keywords
+        act.keywords = get_keyword(act.name+' '+act.description)
+        new_keys = act.keywords
+        act.save()
+        
         # create notif
         content = utils.get_notif_content(NOTIF.ActContent, act_name=_act_id2act_name(pk))
         notif = new_notification(NOTIF.ActContent, content, act_id=pk, org_id=None)
         # send notification
         persons = JoinedAct.objects.filter(act=pk)
+        for p in persons:
+            update_keyword(p.person_id, old_keys, new_keys)
         _create_notif_for_all([p.person_id for p in persons], notif, res.data)
         return res
 
@@ -744,7 +799,10 @@ class ActivityViewSet(ModelViewSet):
         if res.data is None:
             res.data = {}
         res.data['__receivers__'] = receivers
-
+        act = Activity.objects.get(id=pk)
+        kwds = act.keywords
+        for id_ in receivers:
+            delete_keyword(id_, kwds)
         return res
 
 
@@ -815,15 +873,23 @@ class ActivityViewSet(ModelViewSet):
         return self.paginate(acts)
 
     # 推荐活动
-    def get_recommended_act(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+    def get_recommended_act(self, request, user_id):
+        try:
+            now = datetime.datetime.now()
+            not_end_acts = list(Activity.objects.filter(end_time__gte=now))
+            k = min(len(not_end_acts), 1000)
+            random_acts = random.sample(not_end_acts, k)
+            #recommend_acts = get_accept_list(random_acts, user_id)
+            recommend_acts = random_acts
+            recommend_orgs = [act.org for act in recommend_acts if act.org is not None] #todo
+            
+            ret = {
+                'acts' : self.get_serializer(recommend_acts, many=True).data,
+                'orgs' : OrgDetailSerializer(recommend_orgs, many=True).data
+            }
+        except:
+            return Response({"errMsg": traceback.format_exc()}, 400)
+        return Response(ret, 200)
 
     #搜索活动
     def search_all(self,request):
@@ -863,6 +929,8 @@ class JoinedActViewSet(ModelViewSet):
             return UserJoinedActSerializer
         if self.action == "get_user_joined_act_status":
             return UserJoinedActSerializer
+        if self.action == "search_user_joined_act":
+            return UserJoinedActSerializer
         if self.action == "get_act_participants":
             return JoinedActParticipants
         return JoinedActSerializer
@@ -877,33 +945,47 @@ class JoinedActViewSet(ModelViewSet):
 
     # 加入活动
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        act_id = request.data.get("act")
-        current_number = JoinedAct.objects.filter(act=act_id).count()
-        limit_number = Activity.objects.get(id=act_id).contain
-        if current_number < limit_number:
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        else:
-            return Response({"detail": "活动人数已满。"}, 400)
-
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            act_id = request.data.get("act")
+            current_number = JoinedAct.objects.filter(act=act_id).count()
+            act = Activity.objects.get(id=act_id)
+            limit_number = act.contain
+            kwds = act.keywords
+            if current_number < limit_number:
+                self.perform_create(serializer)
+                headers = self.get_success_headers(serializer.data)
+                user = request.data.get("person")
+                add_keyword(user, kwds)
+                return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            else:
+                return Response({"detail": "活动人数已满。"}, 400)
+        except:
+            return Response({"errMsg" : traceback.format_exc()}, 400)
+    
     # 退出活动
     def destroy(self, request, *args, **kwargs):
         user_id = request.query_params.get('person')
         act_id = request.query_params.get('act')
         JoinedAct.objects.filter(act=act_id, person=user_id).delete()
+        act = Activity.objects.get(id=act_id)
+        kwds = act.keywords
+        delete_keyword(user_id, kwds)
 
     def destroy_wrapper(self, request) :
         user_id = request.query_params.get('person')
         act_id = request.query_params.get('act')
-        #self.destroy(request)
-        content = utils.get_notif_content(NOTIF.RemovalFromAct, act_name=_act_id2act_name(act_id))
-        notif = new_notification(NOTIF.RemovalFromAct, content, act_id=act_id, org_id=None)
+        operator_id = request.query_params.get('operator')
+        
         data = {}
-        _create_notif_for_all([user_id], notif, data)
+        #self.destroy(request)
+        if operator_id != user_id:
+            content = utils.get_notif_content(NOTIF.RemovalFromAct, act_name=_act_id2act_name(act_id))
+            notif = new_notification(NOTIF.RemovalFromAct, content, act_id=act_id, org_id=None)
+            _create_notif_for_all([user_id], notif, data)
         self.destroy(request)
+            
         return Response(data, 200)
 
     # 获取活动的参与人数
@@ -1193,6 +1275,7 @@ def lines(request):
 
 if __name__=="__main__":
     print(utils.get_access_token())
+    
     
     
     

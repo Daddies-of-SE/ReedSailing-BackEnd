@@ -31,11 +31,14 @@ urlpatterns = [
         path('userLogin/', user_login),
         path('userRegister/', user_register),
         path('adminLogIn/', sudo_login),
-        path('register/', sudo_register),
+        #path('register/', sudo_register),
         path('userOrgRelation/', user_org_relation),
         path('userActRelation/', user_act_relation),
         path('qrcode/', get_page_qrcode),
 #        path('boyaFollowers/', get_boya_followers),
+
+        # 管理端
+        path('identify/', web_token_identify),
 
         # 自动生成接口文档
         url(r'^docs/', include_docs_urls(title='一苇以航API接口')),
@@ -51,6 +54,7 @@ urlpatterns = [
         url(r'^users/(?P<pk>\d+)/$', WXUserViewSet.as_view(
             {"get": "retrieve", "delete": "destroy", "put": "update"})),
         url(r'^users/boya_followers/', WXUserViewSet.as_view({"get": "get_boya_followers"})),
+        url(r'^users/search/$',WXUserViewSet.as_view({"post": "search_user"})),
         
 
         # 组织申请
@@ -117,7 +121,7 @@ urlpatterns = [
 
         # 活动
         url(r'^activities/$',
-            ActivityViewSet.as_view({"post": "create", "get": "list"})),
+            ActivityViewSet.as_view({"post": "create_wrapper", "get": "list"})),
         url(r'^activities/(?P<pk>\d+)/$', ActivityViewSet.as_view(
             {"get": "retrieve", "delete": "destroy_wrapper", "put": "update_wrapper"})),
 #         url(r'^activities/(?P<pk>\d+)/$', ActivityViewSet.as_view(
@@ -171,10 +175,13 @@ urlpatterns = [
             CommentViewSet.as_view({"get":"search_by_user"})),
 
         # 个性化推荐
-        url(r'recommended/activities/(?P<user_id>\d+)/$',
+#        url(r'recommended/activities/(?P<user_id>\d+)/$',
+#            ActivityViewSet.as_view({"get": "get_recommended_act"})),
+#        url(r'recommended/organizations/(?P<user_id>\d+)/$',
+#            OrganizationModelViewSet.as_view({"get": "get_recommended_org"})),
+        
+        url(r'recommended/(?P<user_id>\d+)/$',
             ActivityViewSet.as_view({"get": "get_recommended_act"})),
-        url(r'recommended/organizations/(?P<user_id>\d+)/$',
-            OrganizationModelViewSet.as_view({"get": "get_recommended_org"})),
 
         # 关注组织发布的活动
         url(r'users/followed_organizations/activities/(?P<user_id>\d+)/$',
@@ -207,6 +214,7 @@ urlpatterns = [
 # router = SimpleRouter()
 # router.register('activities/join_applications', JoinActApplicationViewSet)
 # urlpatterns += router.urls
+        
         
         
         

@@ -12,34 +12,37 @@
 * 运行`mysql_secure_installation`设置root账号密码
   * 建议暂时设置为12345678，否则  请修改`backend/settings.py`中的`DATABASES['default']['password']`为实际设置的密码
 * 启动mysql：`mysql.server start`（每次重启电脑后需要运行）
-* 运行`mysql -u root -p`，输入密码后`create database BUAA`创建数据库
+* 运行`mysql -u root -p`，输入密码后`create database BUAA;`创建数据库
 
 ### 2、django配置
 
 * 克隆本仓库
 * 在仓库根目录下运行`pip install -r requirements.txt`
-* 进入`django_backend`目录，运行`python manage.py makemigrations BUAA`
+* 进入`django_backend`目录，运行`python manage.py makemigrations`
 * 运行`python manage.py migrate`
 
 ### 3、运行框架
 
 * 运行`python manage.py collectstatic`将静态文件复制到`django_backend/static`
 
-* 运行`python manage.py createcachetable`
+* 运行`python manage.py createcachetable`建立缓存表
 
 * 运行`python manage.py runserver`
+
   * 运行时不要在本地开vpn代理，会导致报错退出
   * 会在默认的`http://127.0.0.1:8000`部署服务器
-  
+
 * 检验运行是否成功：
 
   1. 打开小程序开发工具，进入”我的“——”我的账户“，输入邮箱地址点击”发送验证码“
 
   * 开发者工具中需要在”详情“——”本地配置“里勾选 ”不校验合法域名…“，否则request会无法访问
   * 此时后端console上显示”发送邮件成功“，邮箱里会收到验证码邮件
-  * 小程序的`utils/interact.js`里的`getAPIUrl`指定了服务器为`http://127.0.0.1:8000`，后续部署到云端并设置域名时需要修改
+  * 小程序的`app.js`里的server指定了服务器为`http://127.0.0.1:8000`续部署到云端并设置域名时需要修改
 
-  2. 打开`http://127.0.0.1:8000/docs/`，找到对应接口点击interact进行交互
+  2. 打开`http://127.0.0.1:8000/api/docs/`，找到对应接口点击interact进行交互
+
+
 
 
 
@@ -72,6 +75,51 @@
   * ~~小程序开发工具—右上角“详情”—本地设置—勾选“不校验合法域名”~~
   * 确认`app.js`中的`server`为`http://reedsailing.xyz/api/`
   * 此时尝试编译运行，点击首页登录并查看调试器，或者直接在浏览器中输入`reedsailing.xyz/api/users/`，可以看到返回结果；后端（即服务器python运行窗口）可以看到收到的请求
+
+### 日志文件位置
+
+nginx的访问日志：`/var/log/nginx/access.log`
+
+nginx的报错日志：`/var/log/nginx/error.log`
+
+uwsgi的日志：`~/ReedSailing-Backend/django_backend/buaa.log`
+
+django的日志：`~/ReedSailing-Backend/django_backend/logs/all.log`
+
+### 服务器重启后恢复服务的流程
+
+```shell
+#启动nginx
+nginx
+#启动uwsgi
+uwsgi --ini ~/ReedSailing-Backend/django_backend/uwsgi.ini
+
+#启动mysql
+#建议在tmux中做，执行完后kill-session，不会导致mysql被关闭
+#因为启动完会阻塞命令行而且按Ctrl+C不能退出
+tmux new
+mysqld --user=root
+#按Ctrl+B,然后按X,之后输入y
+
+#启动daphne
+cd ~/ReedSailing-BackEnd/django_backend/
+tmux new -s daphne
+daphne -p 8001 backend.asgi:application
+#按Ctrl+B，然后按D，脱离tmux会话（tmux会话会后台运行，不会被杀死）
+
+#在tmux中启动博雅爬取脚本
+tmux new -s boya
+#启动博雅脚本，记得输入用户名和密码
+python ~/ReedSailing-Backend/liberal_query/bykc.py
+#按下Ctrl+B，然后按%（要按Shift+5）
+#在新打开的空格中启动定时任务
+python ~/ReedSailing-Backend/django_backend/manage.py crontab add
+#跟踪输出的日志
+tail -f /home/get_boya.log
+#按下Ctrl+B，然后按D，脱离tmux会话
+```
+
+
 
 ### 说明
 
