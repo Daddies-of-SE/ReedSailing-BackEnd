@@ -383,9 +383,13 @@ class JoinedActAccessPolicy(AccessPolicy):
         # 本人退出
         if request.user.id == eval(request.query_params.get('person')):
             return True
-        # 管理员移除
+
         act_id = eval(request.query_params.get('act'))
         act = Activity.objects.get(id=act_id)
+        # 活动负责人
+        if request.user == act.owner:
+            return True
+        # 管理员移除
         if act.org is not None:
             return OrgManager.objects.filter(org=act.org.id, person=request.user.id).exists()
         return False
