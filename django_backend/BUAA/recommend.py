@@ -137,7 +137,6 @@ def get_heat(act):
     for comment in comments:
         total_score += comment.score
     avg_score = total_score/len(comments) if comments else 0
-    print(number, avg_score)
     return math.log(number)*math.exp(avg_score)
 
 
@@ -158,7 +157,7 @@ def get_accept_list(act_list, user):
     accept_list = []
     accept_cnt = 0
     for act in act_list:
-        suitability = get_heat(act)
+        suitability = get_heat(act)*WEIGHT_HEAT
         if user_pic:
             suitability += cal_suitability(act, user_pic)
         if suitability >= ACCEPT_THRESH:
