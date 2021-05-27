@@ -578,6 +578,23 @@ class OrganizationModelViewSet(ModelViewSet):
         serializer = self.get_serializer(objects, many=True)
         return Response(serializer.data)
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        ret_data = serializer.data
+        # 添加负责人为管理员
+        data = {
+            "org": serializer.data.id,
+            "person": request.data.get('owner')
+        }
+        serializer = OrgManagerSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(ret_data, status=status.HTTP_201_CREATED, headers=headers)
+
     # def create_wrapper(self, request):
     #     self.create(request)
     #     content = utils.get_notif_content(NOTIF.OrgApplyRes, )
