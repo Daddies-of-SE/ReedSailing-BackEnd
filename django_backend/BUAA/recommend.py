@@ -39,6 +39,8 @@ def save_portrait(id_, port):
 
 
 def portrait_add_keyword(port, kwds):
+    #todo
+    return
     d = port['keyword']
     if kwds:
         kwds = kwds.split(' ')
@@ -50,6 +52,8 @@ def portrait_add_keyword(port, kwds):
 
 
 def portrait_del_keyword(port, kwds):
+    #todo
+    return
     d = port['keyword']
     if kwds:
         kwds = kwds.split(' ')
@@ -67,7 +71,7 @@ def update_keyword(id_, old_kwds, new_kwds):
 
 def delete_keyword(id_, kwds):
     port = load_portrait(id_)
-    #todo portrait_del_keyword(port, kwds)
+    portrait_del_keyword(port, kwds)
     save_portrait(id_, port)
 
 
@@ -84,11 +88,13 @@ def get_keyword(text):
 
 
 def cal_suitability(act, user_pic):
+    #todo
+    return 0.5
     suit = 0
     kwds = act.keywords
     if kwds:
         kwds = kwds.split()
-        kwd_dict = user_pic['keyword']
+        kwd_dict = user_pic['keyword'] #todo
         for kwd in kwds:
             suit += kwd_dict.get(kwd, 0)
     return suit
@@ -105,8 +111,7 @@ def get_accept_list(act_list, user_id):
     accept_cnt = 0
     su_dic = {}
     for act in act_list:
-        #todo suitability = cal_suitability(act, user_pic)
-        suitability = 0.5
+        suitability = cal_suitability(act, user_pic)
         if suitability >= ACCEPT_THRESH:
             setattr(act, 'suitability', suitability)
             su_dic[act.id] = suitability
@@ -148,3 +153,4 @@ def get_recommend(user, init_list):
         act_list, act_su = get_accept_list(init_list, user_id)
         group_list = getgroup(act_list)
         return act_list, group_list, act_su
+    

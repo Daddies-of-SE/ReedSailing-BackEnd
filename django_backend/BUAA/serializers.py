@@ -266,7 +266,7 @@ class RecommendActSerializer(ModelSerializer):
 
 
 # 活动参与
-class JoinedActSersializer(ModelSerializer):
+class JoinedActSerializer(ModelSerializer):
 
     class Meta:
         model = JoinedAct

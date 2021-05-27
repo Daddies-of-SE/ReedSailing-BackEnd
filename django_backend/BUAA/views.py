@@ -46,7 +46,8 @@ def _create_notif_for_all(user_id_list, notif, add_receivers = None):
         add_receivers['__receivers__'] = user_id_list
     for p_id in user_id_list:
         p_id = int(p_id)
-        #sender.send_mail('【一苇以航】' + NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
+        if notif['type'] == NOTIF.NewBoya:
+            sender.send_mail('【一苇以航】' + NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
         new_send_notification(notif['id'], p_id)
 
         # if p_id in clients :
