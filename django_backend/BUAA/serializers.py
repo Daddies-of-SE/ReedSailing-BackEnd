@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer, SerializerMethodField
+from rest_framework.serializers import ModelSerializer, SerializerMethodField, FloatField
 from rest_framework.exceptions import ValidationError
 from BUAA.models import *
 from rest_framework import exceptions
@@ -254,9 +254,19 @@ class ActDetailSerializer(ModelSerializer):
         fields = "__all__"
         depth = 1
 
+class RecommendActSerializer(ModelSerializer):
+    owner = WXUserSerializer(read_only=True)
+    suitability = FloatField()
+
+    class Meta:
+        model = Activity
+        fields =  "__all__"
+        depth = 1
+        #extra_kwargs = {'suitability' : {'min_value' : 0, 'required' : True}}
+
 
 # 活动参与
-class JoinedActSerializer(ModelSerializer):
+class JoinedActSersializer(ModelSerializer):
 
     class Meta:
         model = JoinedAct

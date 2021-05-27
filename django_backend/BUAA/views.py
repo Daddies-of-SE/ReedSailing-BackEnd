@@ -743,6 +743,8 @@ class ActivityViewSet(ModelViewSet):
             return ActivitySerializer
         if self.action in ["update", "update_wrapper"]:
             return ActUpdateSerializer
+        if self.action == 'get_recommended_act':
+            return RecommendActSerializer
         return ActDetailSerializer
 
     def paginate(self, objects):
@@ -882,10 +884,11 @@ class ActivityViewSet(ModelViewSet):
             not_end_acts = list(Activity.objects.filter(end_time__gte=now))
             k = min(len(not_end_acts), 1000)
             random_acts = random.sample(not_end_acts, k)
-            recommend_acts, recommend_orgs = get_recommend(user, random_acts)
+            recommend_acts, recommend_orgs, act_su = get_recommend(user, random_acts)
             ret = {
                 'acts' : self.get_serializer(recommend_acts, many=True).data,
-                'orgs' : OrgDetailSerializer(recommend_orgs, many=True).data
+                'orgs' : OrgDetailSerializer(recommend_orgs, many=True).data,
+                #'act_suitability' : act_su
             }
         except:
             return Response({"errMsg": traceback.format_exc()}, 400)

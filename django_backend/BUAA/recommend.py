@@ -96,27 +96,30 @@ def cal_suitability(act, user_pic):
 
 def take_suit(elem):
     # this function is for sort method to take key from a element
-    return elem['suitability']
+    return elem.suitability
 
 
 def get_accept_list(act_list, user_id):
     user_pic = load_portrait(user_id)
     accept_list = []
     accept_cnt = 0
+    su_dic = {}
     for act in act_list:
-        suitability = cal_suitability(act, user_pic)
+        #todo suitability = cal_suitability(act, user_pic)
+        suitability = 0.5
         if suitability >= ACCEPT_THRESH:
-            act['suitability'] = suitability
+            setattr(act, 'suitability', suitability)
+            su_dic[act.id] = suitability
             accept_cnt += 1
             accept_list.append(act)
             if accept_cnt > MAX_ACCEPT:
                 break
     accept_list.sort(key=take_suit, reverse=True)
-    return accept_list
+    return accept_list, su_dic
 
 
 def take_count(elem):
-    return elem['count']
+    return elem.count
 
 
 def getgroup(accept_list):
@@ -126,10 +129,10 @@ def getgroup(accept_list):
             # exclude activities from boya and individual block
             org_id = act.org.id
             if org_id not in group_cnt:
-                act.org['count'] = 1
+                setattr(act.org, 'count', 1)
                 group_cnt[org_id] = act.org
             else:
-                group_cnt[org_id]['count'] += 1
+                group_cnt[org_id].count += 1
     groups = list(group_cnt.values())
     groups.sort(key=take_count, reverse=True)
     return groups
@@ -142,6 +145,6 @@ def get_recommend(user, init_list):
         # TODO
         pass
     else:
-        act_list = get_accept_list(init_list, user_id)
+        act_list, act_su = get_accept_list(init_list, user_id)
         group_list = getgroup(act_list)
-        return act_list, group_list
+        return act_list, group_list, act_su
