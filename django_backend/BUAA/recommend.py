@@ -131,12 +131,13 @@ def cal_suitability(act, user_pic):
 
 
 def get_heat(act):
-    number = JoinedAct.objects.filter(act=act.id).count()
-    comments = Comment.objects.filter(act=act.id, score__ge=0)
+    number = max(JoinedAct.objects.filter(act=act.id).count(),1)
+    comments = Comment.objects.filter(act=act.id, score__gt=0)
     total_score = 0
     for comment in comments:
         total_score += comment.score
-    avg_score = total_score/len(comments)
+    avg_score = total_score/len(comments) if comments else 0
+    print(number,avg_score)
     return math.log(number)*math.exp(avg_score)
 
 
