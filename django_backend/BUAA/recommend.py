@@ -5,6 +5,7 @@ import jieba.analyse
 import math
 import sys
 from functools import cmp_to_key
+from BUAA.models import *
 
 MAX_ACCEPT = 100
 ACCEPT_THRESH = 0
@@ -83,10 +84,12 @@ def portrait_del_type(port, typ):
             d[typ] -= 1
 
 
-def update_kwd_typ(id_, old_kwds, new_kwds):
+def update_kwd_typ(id_, old_kwds, new_kwds, old_typ, new_typ):
     port = load_portrait(id_)
     portrait_del_keyword(port, old_kwds)
+    portrait_del_type(port, old_typ)
     portrait_add_keyword(port, new_kwds)
+    portrait_add_type(port, new_typ)
     save_portrait(id_, port)
 
 

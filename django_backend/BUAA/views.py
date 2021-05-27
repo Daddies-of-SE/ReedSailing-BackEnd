@@ -576,17 +576,6 @@ class OrganizationModelViewSet(ModelViewSet):
 
         return Response(data, 200)
 
-    # 推荐组织
-#    def get_recommended_org(self, request, *args, **kwargs):
-#        queryset = self.filter_queryset(self.get_queryset())
-#        page = self.paginate_queryset(queryset)
-#        if page is not None:
-#            serializer = self.get_serializer(page, many=True)
-#            return self.get_paginated_response(serializer.data)
-#
-#        serializer = self.get_serializer(queryset, many=True)
-#        return Response(serializer.data)
-
     #搜索组织
     def search_all(self,request):
         org_name = request.data.get('name')
@@ -771,11 +760,13 @@ class ActivityViewSet(ModelViewSet):
     # update_wrapper
     def update_wrapper(self, request, pk):
         pk = int(pk)
+        act = Activity.objects.get(id=pk)
+        old_typ = act.type.name.lower() if act.type else None
         res = self.update(request)
 
         act = Activity.objects.get(id=pk)
         old_keys = act.keywords 
-        old_typ = act.type.name.lower() if act.type else None #TODO
+        new_typ = act.type.name.lower() if act.type else None
         act.keywords = get_keyword(act.name+' '+act.description)
         new_keys = act.keywords
         act.save()
@@ -786,7 +777,7 @@ class ActivityViewSet(ModelViewSet):
         # send notification
         persons = JoinedAct.objects.filter(act=pk)
         for p in persons:
-            update_kwd_typ(p.person_id, old_keys, new_keys) #TODO
+            update_kwd_typ(p.person_id, old_keys, new_keys, old_typ, new_typ)
         _create_notif_for_all([p.person_id for p in persons], notif, res.data)
         return res
 
@@ -887,20 +878,17 @@ class ActivityViewSet(ModelViewSet):
 
     # 推荐活动
     def get_recommended_act(self, request, user_id):
-        try:
-            user = WXUser.objects.get(id=user_id)
-            now = datetime.datetime.now()
-            not_end_acts = list(Activity.objects.filter(end_time__gte=now))
-            k = min(len(not_end_acts), 1000)
-            random_acts = random.sample(not_end_acts, k)
-            recommend_acts, recommend_orgs, act_su = get_recommend(user, random_acts)
-            ret = {
-                'acts' : self.get_serializer(recommend_acts, many=True).data,
-                'orgs' : OrgDetailSerializer(recommend_orgs, many=True).data,
-                'act_suitability' : act_su
-            }
-        except:
-            return Response({"errMsg": traceback.format_exc()}, 400)
+        user = WXUser.objects.get(id=user_id)
+        now = datetime.datetime.now()
+        not_end_acts = list(Activity.objects.filter(end_time__gte=now))
+        k = min(len(not_end_acts), 1000)
+        random_acts = random.sample(not_end_acts, k)
+        recommend_acts, recommend_orgs, act_su = get_recommend(user, random_acts)
+        ret = {
+            'acts' : self.get_serializer(recommend_acts, many=True).data,
+            'orgs' : OrgDetailSerializer(recommend_orgs, many=True).data,
+            'act_suitability' : act_su
+        }
         return Response(ret, 200)
 
     #搜索活动
