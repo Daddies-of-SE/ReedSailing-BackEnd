@@ -82,7 +82,7 @@ def portrait_del_type(port, typ):
             d[typ] -= 1
 
 
-def update_keyword(id_, old_kwds, new_kwds):
+def update_kwd_typ(id_, old_kwds, new_kwds):
     port = load_portrait(id_)
     portrait_del_keyword(port, old_kwds)
     portrait_add_keyword(port, new_kwds)
