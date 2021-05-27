@@ -897,7 +897,7 @@ class ActivityViewSet(ModelViewSet):
             ret = {
                 'acts' : self.get_serializer(recommend_acts, many=True).data,
                 'orgs' : OrgDetailSerializer(recommend_orgs, many=True).data,
-                #'act_suitability' : act_su
+                'act_suitability' : act_su
             }
         except:
             return Response({"errMsg": traceback.format_exc()}, 400)

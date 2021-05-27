@@ -4,6 +4,7 @@ import json
 import jieba.analyse
 import math
 import sys
+from functools import cmp_to_key
 
 MAX_ACCEPT = 100
 ACCEPT_THRESH = 0
@@ -106,7 +107,7 @@ def add_kwd_typ(id_, kwds, typ):
 def get_keyword(text):
     K = min(5, math.floor(len(text)/20))
     kwds = jieba.analyse.extract_tags(text, topK=K)
-    kwds=set(map(lambda x:x.lower(),kwds))
+    kwds = set(map(lambda x: x.lower(), kwds))
     return ' '.join(kwds)
 
 
@@ -116,29 +117,47 @@ def cal_suitability(act, user_pic):
     kwds = act.keywords
     typ = act.type.name.lower() if act.type else None
     if typ:
-        type_dict=user_pic['type']
-        suit+=type_dict.get(typ,0)*WEIGHT_TYPE
+        type_dict = user_pic['type']
+        suit += type_dict.get(typ, 0)*WEIGHT_TYPE
     if kwds:
         kwds = kwds.split()
-        kwd_dict = user_pic['keyword']  # todo
+        kwd_dict = user_pic['keyword']
         for kwd in kwds:
             suit += kwd_dict.get(kwd, 0)*WEIGHT_KEYWORD
     return suit
 
 
-def take_suit(elem):
-    # this function is for sort method to take key from a element
-    return elem.suitability
+def get_heat(act):
+    number = JoinedAct.objects.filter(act=act.id).count()
+    comments = Comment.objects.filter(act=act.id, score__ge=0)
+    total_score = 0
+    for comment in comments:
+        total_score += comment.score
+    avg_score = total_score/len(comments)
+    return math.log(number)*math.exp(avg_score)
 
 
-def get_accept_list(act_list, user_id):
-    #TODO:take heat into account
-    user_pic = load_portrait(user_id)
+def act_cmp(a, b):
+    if a.suitability > b.suitability:
+        return -1
+    if a.suitability < b.suitability:
+        return 1
+    if a.name < b.name:
+        return -1
+    if a.name > b.name:
+        return 1
+    return 0
+
+
+def get_accept_list(act_list, user):
+    user_pic = load_portrait(user.id) if user.email else None
     accept_list = []
     accept_cnt = 0
     su_dic = {}
     for act in act_list:
-        suitability = cal_suitability(act, user_pic)
+        suitability = get_heat(act)
+        if user_pic:
+            suitability += cal_suitability(act, user_pic)
         if suitability >= ACCEPT_THRESH:
             setattr(act, 'suitability', suitability)
             su_dic[act.id] = suitability
@@ -146,13 +165,24 @@ def get_accept_list(act_list, user_id):
             accept_list.append(act)
             if accept_cnt > MAX_ACCEPT:
                 break
-    #TODO:sort in a suitability-first and alphabetical order-second way
-    accept_list.sort(key=take_suit, reverse=True)
+    accept_list.sort(key=cmp_to_key(act_cmp))
     return accept_list, su_dic
 
 
 def take_count(elem):
     return elem.count
+
+
+def group_cmp(a, b):
+    if a.count > b.count:
+        return -1
+    if a.count < b.count:
+        return 1
+    if a.name < b.name:
+        return -1
+    if a.name > b.name:
+        return 1
+    return 0
 
 
 def getgroup(accept_list):
@@ -167,19 +197,12 @@ def getgroup(accept_list):
             else:
                 group_cnt[org_id].count += 1
     groups = list(group_cnt.values())
-    #TODO:sort in a count-first and alphabetical order-second way
-    groups.sort(key=take_count, reverse=True)
+    groups.sort(key=cmp_to_key(group_cmp))
     return groups
 
 
 def get_recommend(user, init_list):
-    user_id = user.id
-    assert isinstance(user_id, int)
-    if not user.email:
-        # user is not verified yet, return a list sorted by heat
-        # TODO
-        pass
-    else:
-        act_list, act_su = get_accept_list(init_list, user_id)
-        group_list = getgroup(act_list)
-        return act_list, group_list, act_su
+    assert isinstance(user.id, int)
+    act_list, act_su = get_accept_list(init_list, user)
+    group_list = getgroup(act_list)
+    return act_list, group_list, act_su
