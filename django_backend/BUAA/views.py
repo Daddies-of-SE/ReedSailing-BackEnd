@@ -586,7 +586,7 @@ class OrganizationModelViewSet(ModelViewSet):
         ret_data = serializer.data
         # 添加负责人为管理员
         data = {
-            "org": serializer.data.id,
+            "org": serializer.data.get('id'),
             "person": request.data.get('owner')
         }
         serializer = OrgManagerSerializer(data=data)
