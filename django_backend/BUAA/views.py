@@ -789,25 +789,28 @@ class ActivityViewSet(ModelViewSet):
         return res
 
     def destroy_wrapper(self, request, pk):
-        pk = int(pk)
-        #res = self.destroy(request)
-        content = utils.get_notif_content(NOTIF.ActCancel, act_name=_act_id2act_name(pk))
-        notif = new_notification(NOTIF.ActCancel, content, act_id=pk, org_id=None)
-        persons = JoinedAct.objects.filter(act=pk)
-        receivers = [p.person_id for p in persons]
-        _create_notif_for_all(receivers, notif)
-
-        act = Activity.objects.get(id=pk)
-        kwds = act.keywords
-        for id_ in receivers:
-            delete_keyword(id_, kwds)
-            
-        res = self.destroy(request)
-        res.status_code = 200
-        if res.data is None:
-            res.data = {}
-        res.data['__receivers__'] = receivers
-        return res
+        try:
+            pk = int(pk)
+            #res = self.destroy(request)
+            content = utils.get_notif_content(NOTIF.ActCancel, act_name=_act_id2act_name(pk))
+            notif = new_notification(NOTIF.ActCancel, content, act_id=pk, org_id=None)
+            persons = JoinedAct.objects.filter(act=pk)
+            receivers = [p.person_id for p in persons]
+            _create_notif_for_all(receivers, notif)
+    
+            act = Activity.objects.get(id=pk)
+            kwds = act.keywords
+            for id_ in receivers:
+                delete_keyword(id_, kwds)
+                
+            res = self.destroy(request)
+            res.status_code = 200
+            if res.data is None:
+                res.data = {}
+            res.data['__receivers__'] = receivers
+            return res
+        except:
+            return Response({"errMsg" : traceback.format_exc()}, 400)
 
 
     # 获取组织下的活动

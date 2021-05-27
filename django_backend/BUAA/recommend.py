@@ -67,7 +67,7 @@ def update_keyword(id_, old_kwds, new_kwds):
 
 def delete_keyword(id_, kwds):
     port = load_portrait(id_)
-    portrait_del_keyword(port, kwds)
+    #todo portrait_del_keyword(port, kwds)
     save_portrait(id_, port)
 
 
