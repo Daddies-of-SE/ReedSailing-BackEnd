@@ -794,15 +794,17 @@ class ActivityViewSet(ModelViewSet):
         persons = JoinedAct.objects.filter(act=pk)
         receivers = [p.person_id for p in persons]
         _create_notif_for_all(receivers, notif)
+
+        act = Activity.objects.get(id=pk)
+        kwds = act.keywords
+        for id_ in receivers:
+            delete_keyword(id_, kwds)
+            
         res = self.destroy(request)
         res.status_code = 200
         if res.data is None:
             res.data = {}
         res.data['__receivers__'] = receivers
-        act = Activity.objects.get(id=pk)
-        kwds = act.keywords
-        for id_ in receivers:
-            delete_keyword(id_, kwds)
         return res
 
 
@@ -875,7 +877,7 @@ class ActivityViewSet(ModelViewSet):
     # 推荐活动
     def get_recommended_act(self, request, user_id):
         try:
-            user = WXUser.objects.filter(id=user_id)
+            user = WXUser.objects.get(id=user_id)
             now = datetime.datetime.now()
             not_end_acts = list(Activity.objects.filter(end_time__gte=now))
             k = min(len(not_end_acts), 1000)
