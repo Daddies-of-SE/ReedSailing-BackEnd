@@ -22,7 +22,7 @@ import os
 from BUAA.accessPolicy import *
 import random
 import traceback
-from BUAA.recommend import update_keyword, add_keyword, delete_keyword, get_keyword, get_recommend
+from BUAA.recommend import update_kwd_typ, add_kwd_typ, delete_kwd_typ, get_keyword, get_recommend
 
 base_dir = '/root/ReedSailing-Web/server_files/'
 #base_dir = '/Users/wzk/Desktop/'
@@ -774,7 +774,8 @@ class ActivityViewSet(ModelViewSet):
         res = self.update(request)
 
         act = Activity.objects.get(id=pk)
-        old_keys = act.keywords
+        old_keys = act.keywords 
+        old_typ = act.type.name.lower() if act.type else None #TODO
         act.keywords = get_keyword(act.name+' '+act.description)
         new_keys = act.keywords
         act.save()
@@ -785,7 +786,7 @@ class ActivityViewSet(ModelViewSet):
         # send notification
         persons = JoinedAct.objects.filter(act=pk)
         for p in persons:
-            update_keyword(p.person_id, old_keys, new_keys)
+            update_kwd_typ(p.person_id, old_keys, new_keys) #TODO
         _create_notif_for_all([p.person_id for p in persons], notif, res.data)
         return res
 
@@ -804,8 +805,9 @@ class ActivityViewSet(ModelViewSet):
     
             act = Activity.objects.get(id=pk)
             kwds = act.keywords
+            typ = act.type.name.lower() if act.type else None
             for id_ in receivers:
-                delete_keyword(id_, kwds)
+                delete_kwd_typ(id_, kwds, typ)
                 
             res = self.destroy(request)
             res.status_code = 200
@@ -963,11 +965,12 @@ class JoinedActViewSet(ModelViewSet):
             act = Activity.objects.get(id=act_id)
             limit_number = act.contain
             kwds = act.keywords
+            typ = act.type.name.lower() if act.type else None
             if current_number < limit_number:
                 self.perform_create(serializer)
                 headers = self.get_success_headers(serializer.data)
                 user = request.data.get("person")
-                add_keyword(user, kwds)
+                add_kwd_typ(user, kwds, typ)
                 return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
             else:
                 return Response({"detail": "活动人数已满。"}, 400)
@@ -981,7 +984,8 @@ class JoinedActViewSet(ModelViewSet):
         JoinedAct.objects.filter(act=act_id, person=user_id).delete()
         act = Activity.objects.get(id=act_id)
         kwds = act.keywords
-        delete_keyword(user_id, kwds)
+        typ = act.type.name.lower() if act.type else None
+        delete_kwd_typ(user_id, kwds, typ)
 
     def destroy_wrapper(self, request) :
         user_id = request.query_params.get('person')
