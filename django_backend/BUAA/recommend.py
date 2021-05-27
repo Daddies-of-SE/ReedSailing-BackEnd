@@ -131,13 +131,13 @@ def cal_suitability(act, user_pic):
 
 
 def get_heat(act):
-    number = max(JoinedAct.objects.filter(act=act.id).count(),1)
+    number = max(JoinedAct.objects.filter(act=act.id).count(), 1)
     comments = Comment.objects.filter(act=act.id, score__gt=0)
     total_score = 0
     for comment in comments:
         total_score += comment.score
     avg_score = total_score/len(comments) if comments else 0
-    print(number,avg_score)
+    print(number, avg_score)
     return math.log(number)*math.exp(avg_score)
 
 
@@ -157,20 +157,18 @@ def get_accept_list(act_list, user):
     user_pic = load_portrait(user.id) if user.email else None
     accept_list = []
     accept_cnt = 0
-    su_dic = {}
     for act in act_list:
         suitability = get_heat(act)
         if user_pic:
             suitability += cal_suitability(act, user_pic)
         if suitability >= ACCEPT_THRESH:
             setattr(act, 'suitability', suitability)
-            su_dic[act.id] = suitability
             accept_cnt += 1
             accept_list.append(act)
             if accept_cnt > MAX_ACCEPT:
                 break
     accept_list.sort(key=cmp_to_key(act_cmp))
-    return accept_list, su_dic
+    return accept_list
 
 
 def take_count(elem):
@@ -207,6 +205,6 @@ def getgroup(accept_list):
 
 def get_recommend(user, init_list):
     assert isinstance(user.id, int)
-    act_list, act_su = get_accept_list(init_list, user)
+    act_list = get_accept_list(init_list, user)
     group_list = getgroup(act_list)
-    return act_list, group_list, act_su
+    return act_list, group_list

@@ -1,4 +1,11 @@
 from __future__ import unicode_literals
+import matplotlib.pyplot as plt
+import plotly.offline as opy
+import plotly.graph_objects as go
+from django.template import loader
+from django.http import HttpResponse
+import numpy as np
+import pandas as pd
 import BUAA.models
 import BUAA.utils as utils
 import json
@@ -31,6 +38,7 @@ web_dir = 'https://www.reedsailing.xyz/server_files/'
 
 sender = utils.MailSender()
 
+
 def get_random_str():
     uuid_val = uuid.uuid4()
     uuid_str = str(uuid_val).encode("utf-8")
@@ -39,7 +47,9 @@ def get_random_str():
     return md5.hexdigest()
 
 # 仅供文件内部调用
-def _create_notif_for_all(user_id_list, notif, add_receivers = None):
+
+
+def _create_notif_for_all(user_id_list, notif, add_receivers=None):
     """revoke when user keeps online"""
     user_id_list = [int(x) for x in user_id_list]
     if add_receivers is not None:
@@ -47,24 +57,29 @@ def _create_notif_for_all(user_id_list, notif, add_receivers = None):
     for p_id in user_id_list:
         p_id = int(p_id)
         if notif['type'] == NOTIF.NewBoya:
-            sender.send_mail('【一苇以航】' + NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
+            sender.send_mail(
+                '【一苇以航】' + NOTIF_TYPE_DICT[notif['type']], notif['content'], _user_id2user_email(p_id))
         new_send_notification(notif['id'], p_id)
 
         # if p_id in clients :
         #     p_ws = clients[p_id]
         #     utils.push_all_notif(p_id, p_ws)
 
+
 def _act_id2act_name(pk):
     pk = int(pk)
     return BUAA.models.Activity.objects.get(id=pk).name
+
 
 def _org_id2org_name(pk):
     pk = int(pk)
     return BUAA.models.Organization.objects.get(id=pk).name
 
+
 def _user_id2user_name(pk):
     pk = int(pk)
     return BUAA.models.WXUser.objects.get(id=pk).name
+
 
 def _user_id2user_email(pk):
     pk = int(pk)
@@ -74,11 +89,13 @@ def _user_id2user_email(pk):
 def send_new_boya_notf(data):
     """interface for external boya creating function"""
     content = utils.get_notif_content(NOTIF.NewBoya, act_name=data['name'])
-    notif = new_notification(NOTIF.NewBoya, content, act_id=data['act'], org_id=None)
+    notif = new_notification(NOTIF.NewBoya, content,
+                             act_id=data['act'], org_id=None)
     followers = _get_boya_followers()
     receivers = [f.id for f in followers]
     _create_notif_for_all(receivers, notif)
     # return receivers
+
 
 """
 新建通知
@@ -91,13 +108,17 @@ def send_new_boya_notf(data):
         time： 发布时间
         content： 通知内容
 """
-def new_notification(type, content, act_id = None, org_id = None):
+
+
+def new_notification(type, content, act_id=None, org_id=None):
     data = {
-        'type' : type,
+        'type': type,
         'content': content,
     }
-    if act_id: data['act'] = act_id
-    if org_id: data['org'] = org_id
+    if act_id:
+        data['act'] = act_id
+    if org_id:
+        data['org'] = org_id
     serializer = NotificationSerializer(data=data)
     serializer.is_valid()
     serializer.save()
@@ -117,6 +138,8 @@ def new_notification(type, content, act_id = None, org_id = None):
         person： 接收通知的用户的id
         already_read： 是否已读（为false）
 """
+
+
 def new_send_notification(notif_id, user_id):
     data = {
         'notif': notif_id,
@@ -135,7 +158,8 @@ def web_token_identify(request):
     if not username:
         res = {'status': 0, 'name': ''}
     else:
-        res = {'status': 1, 'name': username if len(username) <= 15 else "regular user"}
+        res = {'status': 1, 'name': username if len(
+            username) <= 15 else "regular user"}
         cache.set(token, username, 24*60*60)
     return Response(res, 200)
 
@@ -144,19 +168,20 @@ def web_token_identify(request):
 @authentication_classes([UserAuthentication, SuperAdminAuthentication, ErrorAuthentication])
 def get_page_qrcode(request):
     body = {
-        "path" : request.data["path"],
-        "width" : request.data["width"],
+        "path": request.data["path"],
+        "width": request.data["width"],
     }
-    r = requests.post(url="https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=" + utils.get_access_token(), data=json.dumps(body), headers={"Content-Type": "application/json"})
-    
+    r = requests.post(url="https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token=" +
+                      utils.get_access_token(), data=json.dumps(body), headers={"Content-Type": "application/json"})
+
     path = "qrcode/" + get_random_str() + '.png'
     with open(base_dir + path, 'wb') as f:
-            f.write(r.content)
-    
+        f.write(r.content)
+
     res = {
-        "img" : web_dir + path
+        "img": web_dir + path
     }
-    
+
     return Response(data=res, status=200)
 
 
@@ -171,20 +196,20 @@ def send_email(request):
         email_address = request.data['email']
         if not email_address.endswith("@buaa.edu.cn"):
             res = {
-                'status' : 1,
-                'msg' : 'Email address not belong to BUAA'
+                'status': 1,
+                'msg': 'Email address not belong to BUAA'
             }
             return Response(data=res, status=400)
-    
+
         random_str = get_random_str()[:6]
         sender.send_mail('ReedSailing Certification', 'Your verify code is {}, valid in 5 minutes.'.format(random_str),
-                        email_address)
-        
+                         email_address)
+
         cache.set(random_str, email_address, 300)  # 验证码时效5分钟
         # # 用redis代替
         # redis_conn = get_redis_connection("code")
         # redis_conn.set("sms_code_%s" % email_address, random_str, 300)
-        
+
         res = {
             'status': 0,
             'msg': 'Email send'
@@ -192,7 +217,7 @@ def send_email(request):
         # print("successfully send email to", email_address)
         return Response(data=res, status=200)
     except:
-        return Response({"errMsg" : traceback.format_exc()}, 400)
+        return Response({"errMsg": traceback.format_exc()}, 400)
     # return my_response(res)
 
 
@@ -249,33 +274,34 @@ def user_login(request):
     # 取出数据
     # print('login')
     js_code = request.data['code']
-    
+
     # 获取openid和session_key
     appid = settings.APPID
     secret = settings.SECRET
-    url = 'https://api.weixin.qq.com/sns/jscode2session' + '?appid=' + appid + '&secret=' + secret + '&js_code=' + js_code + '&grant_type=authorization_code'
+    url = 'https://api.weixin.qq.com/sns/jscode2session' + '?appid=' + appid + \
+        '&secret=' + secret + '&js_code=' + js_code + '&grant_type=authorization_code'
     response = json.loads(requests.get(url).content)  # 将json数据包转成字典
-    
+
     if 'errcode' in response:
         # 有错误码
         # print("err msg" + response['errmsg'])
         return Response(data={
-            'status': 1, 
-            'code': response['errcode'], 
+            'status': 1,
+            'code': response['errcode'],
             'msg': response['errmsg']
         }, status=400)
     # 登录成功
     openid = response['openid']
     session_key = response['session_key']
-    
+
     # 保存openid, name, avatar
     user, create = WXUser.objects.get_or_create(openid=openid)
-    
+
     # print(WXUser.objects.get_or_create(openid=openid))
-    
+
     token = utils.encode_openid(openid, 24*60*60)
     cache.set(token, openid, 24*60*60)
-    
+
     res = {
         "status": 0,
         "userExist": 0 if create else 1,
@@ -285,11 +311,11 @@ def user_login(request):
         "avatar": user.avatar,
         "sign": user.sign,
         "name": user.name,
-        "contact" : user.contact,
-        "follow_boya" : user.follow_boya
+        "contact": user.contact,
+        "follow_boya": user.follow_boya
     }
     return Response(data=res, status=200)
-    
+
 
 @api_view(['POST'])
 @authentication_classes([])  # 用户认证
@@ -298,17 +324,18 @@ def user_register(request):
     try:
         id_ = request.data['id']
         user_info = request.data['userInfo']
-        
-        WXUser.objects.filter(id=id_).update(name=user_info.get("nickName"), avatar=user_info.get("avatarUrl"))
-        
+
+        WXUser.objects.filter(id=id_).update(name=user_info.get(
+            "nickName"), avatar=user_info.get("avatarUrl"))
+
         # print("register user", WXUser.objects.get_or_create(id=id_))
-    
+
         res = {
             "status": 0
         }
         return Response(data=res, status=200)
     except:
-        return Response({"errMsg" : traceback.format_exc()}, 400)
+        return Response({"errMsg": traceback.format_exc()}, 400)
 
 
 @api_view(['POST'])
@@ -324,27 +351,28 @@ def user_org_relation(request):
             "detail": '未找到用户'
         }
         status = 404
-        return Response(res,status)
+        return Response(res, status)
     try:
-        org = Organization.objects.get(id = org_id)
+        org = Organization.objects.get(id=org_id)
     except:
         res = {
             "detail": '未找到组织'
         }
         status = 404
-        return Response(res,status)
+        return Response(res, status)
     res = {
-        "isFollower" : False,
-        "isOwner" : False,
-        "isManager" : False,
+        "isFollower": False,
+        "isOwner": False,
+        "isManager": False,
     }
-    if FollowedOrg.objects.filter(org=org_id,person=user_id):
-        res["isFollower"]=True
-    if Organization.objects.filter(id = org_id, owner=user_id):
-        res["isOwner"]=True
-    if OrgManager.objects.filter(org=org_id,person=user_id):
-        res["isManager"]=True
+    if FollowedOrg.objects.filter(org=org_id, person=user_id):
+        res["isFollower"] = True
+    if Organization.objects.filter(id=org_id, owner=user_id):
+        res["isOwner"] = True
+    if OrgManager.objects.filter(org=org_id, person=user_id):
+        res["isManager"] = True
     return Response(res)
+
 
 @api_view(['POST'])
 @authentication_classes([UserAuthentication, SuperAdminAuthentication, ErrorAuthentication])
@@ -359,7 +387,7 @@ def user_act_relation(request):
             "detail": '未找到用户'
         }
         status = 404
-        return Response(res,status)
+        return Response(res, status)
     try:
         act = Activity.objects.get(id=act_id)
     except:
@@ -367,33 +395,24 @@ def user_act_relation(request):
             "detail": '未找到活动'
         }
         status = 404
-        return Response(res,status)
+        return Response(res, status)
     res = {
-        "hasJoined" : False,
-        "underReview" : False,
-        "isOwner" : False,
-        "isManager" :False,
+        "hasJoined": False,
+        "underReview": False,
+        "isOwner": False,
+        "isManager": False,
     }
-    if JoinedAct.objects.filter(act=act_id,person=user_id):
+    if JoinedAct.objects.filter(act=act_id, person=user_id):
         res["hasJoined"] = True
-    if Activity.objects.filter(id=act_id,owner=user_id):
-        res["isOwner"]=True
+    if Activity.objects.filter(id=act_id, owner=user_id):
+        res["isOwner"] = True
         res["isManager"] = True
     org_id = act.org_id
-    if Organization.objects.filter(id = org_id,owner=user_id):
+    if Organization.objects.filter(id=org_id, owner=user_id):
         res["isManager"] = True
-    if OrgManager.objects.filter(org=org_id,person=user_id):
+    if OrgManager.objects.filter(org=org_id, person=user_id):
         res["isManager"] = True
     return Response(res)
-
-
-
-
-
-
-
-
-
 
 
 class JoinActApplicationViewSet(ModelViewSet):
@@ -406,7 +425,8 @@ class JoinActApplicationViewSet(ModelViewSet):
 
 # 用户
 class WXUserViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    authentication_classes = [UserAuthentication,
+                              SuperAdminAuthentication, ErrorAuthentication]
     permission_classes = (WXUserAccessPolicy,)
 
     queryset = WXUser.objects.all()
@@ -428,19 +448,20 @@ class WXUserViewSet(ModelViewSet):
         serializer = self.get_serializer(objects, many=True)
         return Response(serializer.data)
 
-    def search_user(self,request):
+    def search_user(self, request):
         try:
             name = request.data.get("name")
             users = WXUser.objects.filter(name__contains=name)
         except:
             import traceback
-            return Response({"errMsg":traceback.format_exc()},400)
+            return Response({"errMsg": traceback.format_exc()}, 400)
         return self.paginate(users)
 
 
 # 版块
 class BlockViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    authentication_classes = [UserAuthentication,
+                              SuperAdminAuthentication, ErrorAuthentication]
     permission_classes = (BlockAccessPolicy,)
     queryset = Block.objects.all()
     serializer_class = BlockSerializer
@@ -448,7 +469,8 @@ class BlockViewSet(ModelViewSet):
 
 # 组织申请
 class OrgApplicationViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    authentication_classes = [UserAuthentication,
+                              SuperAdminAuthentication, ErrorAuthentication]
     permission_classes = (OrgAppAccessPolicy,)
     queryset = OrgApplication.objects.all()
 
@@ -503,12 +525,14 @@ class OrgApplicationViewSet(ModelViewSet):
             serializer.save()
 
             # test
-            serializer = self.get_serializer(instance=application, data=request.data)
+            serializer = self.get_serializer(
+                instance=application, data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
             # notification
-            content = utils.get_notif_content(NOTIF.OrgApplyRes, org_name=org_name, status=True)
+            content = utils.get_notif_content(
+                NOTIF.OrgApplyRes, org_name=org_name, status=True)
             notif = new_notification(NOTIF.OrgApplyRes, content, org_id=org_id)
 
             data = serializer.data
@@ -517,12 +541,14 @@ class OrgApplicationViewSet(ModelViewSet):
             return Response(data, 201)
 
         else:
-            serializer = self.get_serializer(instance=application, data=request.data)
+            serializer = self.get_serializer(
+                instance=application, data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
 
             # notification
-            content = utils.get_notif_content(NOTIF.OrgApplyRes, org_name=org_name, status=False)
+            content = utils.get_notif_content(
+                NOTIF.OrgApplyRes, org_name=org_name, status=False)
             notif = new_notification(NOTIF.OrgApplyRes, content, org_id=None)
             data = serializer.data
             _create_notif_for_all([application.user.id], notif, data)
@@ -532,7 +558,8 @@ class OrgApplicationViewSet(ModelViewSet):
 
 # 组织
 class OrganizationModelViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    authentication_classes = [UserAuthentication,
+                              SuperAdminAuthentication, ErrorAuthentication]
     permission_classes = (OrgAccessPolicy,)
     queryset = Organization.objects.all()
 
@@ -563,35 +590,38 @@ class OrganizationModelViewSet(ModelViewSet):
     # 修改组织负责人
     def change_org_owner(self, request, pk):
         organization = self.get_object()
-        serializer = self.get_serializer(instance=organization, data=request.data)
+        serializer = self.get_serializer(
+            instance=organization, data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        content = utils.get_notif_content(NOTIF.BecomeOwner, org_name=_org_id2org_name(pk))
+        content = utils.get_notif_content(
+            NOTIF.BecomeOwner, org_name=_org_id2org_name(pk))
         notif = new_notification(NOTIF.BecomeOwner, content, org_id=pk)
 
         data = serializer.data
         _create_notif_for_all([request.data['owner']], notif, data)
 
-
         return Response(data, 200)
 
-    #搜索组织
-    def search_all(self,request):
+    # 搜索组织
+    def search_all(self, request):
         org_name = request.data.get('name')
         organizations = Organization.objects.filter(name__contains=org_name)
         return self.paginate(organizations)
 
-    #板块下搜索组织
+    # 板块下搜索组织
     def search_org_by_block(self, request, block_id):
         org_name = request.data.get('name')
-        organizations = Organization.objects.filter(name__contains=org_name,block=block_id)
+        organizations = Organization.objects.filter(
+            name__contains=org_name, block=block_id)
         return self.paginate(organizations)
 
 
 # 关注组织
 class FollowedOrgViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    authentication_classes = [UserAuthentication,
+                              SuperAdminAuthentication, ErrorAuthentication]
     permission_classes = (FollowedOrgAccessPolicy,)
     queryset = FollowedOrg.objects.all()
 
@@ -622,7 +652,8 @@ class FollowedOrgViewSet(ModelViewSet):
 
 # 组织管理
 class OrgManageViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    authentication_classes = [UserAuthentication,
+                              SuperAdminAuthentication, ErrorAuthentication]
     permission_classes = (OrgManagerAccessPolicy,)
     queryset = OrgManager.objects.all()
 
@@ -645,7 +676,8 @@ class OrgManageViewSet(ModelViewSet):
         res = self.create(request)
         user_id = request.data['person']
         org_id = request.data['org']
-        content = utils.get_notif_content(NOTIF.BecomeAdmin, org_name=_org_id2org_name(org_id))
+        content = utils.get_notif_content(
+            NOTIF.BecomeAdmin, org_name=_org_id2org_name(org_id))
         notif = new_notification(NOTIF.BecomeAdmin, content, org_id=org_id)
         _create_notif_for_all([user_id], notif, res.data)
 
@@ -656,8 +688,10 @@ class OrgManageViewSet(ModelViewSet):
         org_id = request.query_params.get('org')
         OrgManager.objects.filter(org=org_id, person=user_id).delete()
 
-        content = utils.get_notif_content(NOTIF.RemovalFromAdmin, org_name=_org_id2org_name(org_id))
-        notif = new_notification(NOTIF.RemovalFromAdmin, content, org_id=org_id)
+        content = utils.get_notif_content(
+            NOTIF.RemovalFromAdmin, org_name=_org_id2org_name(org_id))
+        notif = new_notification(
+            NOTIF.RemovalFromAdmin, content, org_id=org_id)
         data = {}
         _create_notif_for_all([user_id], notif, data)
         return Response(data, status=200)
@@ -672,16 +706,18 @@ class OrgManageViewSet(ModelViewSet):
         managers = OrgManager.objects.filter(org=pk)
         return self.paginate(managers)
 
-    #搜索用户管理的组织
-    def search_managed_org(self,request,pk):
+    # 搜索用户管理的组织
+    def search_managed_org(self, request, pk):
         org_name = request.data.get("name")
-        managed = OrgManager.objects.filter(person=pk, org__name__contains=org_name)
+        managed = OrgManager.objects.filter(
+            person=pk, org__name__contains=org_name)
         return self.paginate(managed)
 
 
 # 活动分类
 class CategoryViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    authentication_classes = [UserAuthentication,
+                              SuperAdminAuthentication, ErrorAuthentication]
     permission_classes = (CategoryAccessPolicy,)
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -689,7 +725,8 @@ class CategoryViewSet(ModelViewSet):
 
 # 活动地址
 class AddressViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    authentication_classes = [UserAuthentication,
+                              SuperAdminAuthentication, ErrorAuthentication]
     permission_classes = (AddressAccessPolicy,)
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
@@ -697,7 +734,8 @@ class AddressViewSet(ModelViewSet):
 
 # 用户反馈
 class UserFeedbackViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    authentication_classes = [UserAuthentication,
+                              SuperAdminAuthentication, ErrorAuthentication]
     permission_classes = (FeedbackAccessPolicy,)
     queryset = UserFeedback.objects.all()
     serializer_class = UserFeedbackSerializer
@@ -707,22 +745,24 @@ class UserFeedbackViewSet(ModelViewSet):
             return FeedbackDetailSerializer
         return UserFeedbackSerializer
 
-    def search_all_feedback(self,request):
+    def search_all_feedback(self, request):
         content = request.data.get("content")
         feedbacks = UserFeedback.objects.filter(content__contains=content)
-        serializer = self.get_serializer(feedbacks,many=True)
+        serializer = self.get_serializer(feedbacks, many=True)
         return Response(serializer.data)
 
-    def search_user_feedback(self,request,user_id):
+    def search_user_feedback(self, request, user_id):
         content = request.data.get("content")
-        feedbacks = UserFeedback.objects.filter(content__contains=content,user=user_id)
-        serializer = self.get_serializer(feedbacks,many=True)
+        feedbacks = UserFeedback.objects.filter(
+            content__contains=content, user=user_id)
+        serializer = self.get_serializer(feedbacks, many=True)
         return Response(serializer.data)
 
 
 # 活动
 class ActivityViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    authentication_classes = [UserAuthentication,
+                              SuperAdminAuthentication, ErrorAuthentication]
     permission_classes = (ActAccessPolicy,)
     queryset = Activity.objects.all()
 
@@ -745,17 +785,16 @@ class ActivityViewSet(ModelViewSet):
         serializer = self.get_serializer(objects, many=True)
         return Response(serializer.data)
 
-
     def create_wrapper(self, request):
         try:
             res = self.create(request)
-            
+
             act = Activity.objects.get(id=res.data['id'])
             act.keywords = get_keyword(act.name+' '+act.description)
             act.save()
             return res
         except:
-            return Response({"errMsg" : traceback.format_exc()}, 400)
+            return Response({"errMsg": traceback.format_exc()}, 400)
 
     # update_wrapper
     def update_wrapper(self, request, pk):
@@ -765,15 +804,17 @@ class ActivityViewSet(ModelViewSet):
         res = self.update(request)
 
         act = Activity.objects.get(id=pk)
-        old_keys = act.keywords 
+        old_keys = act.keywords
         new_typ = act.type.name.lower() if act.type else None
         act.keywords = get_keyword(act.name+' '+act.description)
         new_keys = act.keywords
         act.save()
-        
+
         # create notif
-        content = utils.get_notif_content(NOTIF.ActContent, act_name=_act_id2act_name(pk))
-        notif = new_notification(NOTIF.ActContent, content, act_id=pk, org_id=None)
+        content = utils.get_notif_content(
+            NOTIF.ActContent, act_name=_act_id2act_name(pk))
+        notif = new_notification(
+            NOTIF.ActContent, content, act_id=pk, org_id=None)
         # send notification
         persons = JoinedAct.objects.filter(act=pk)
         for p in persons:
@@ -785,21 +826,23 @@ class ActivityViewSet(ModelViewSet):
         try:
             pk = int(pk)
             #res = self.destroy(request)
-            content = utils.get_notif_content(NOTIF.ActCancel, act_name=_act_id2act_name(pk))
+            content = utils.get_notif_content(
+                NOTIF.ActCancel, act_name=_act_id2act_name(pk))
             # notif = new_notification(NOTIF.ActCancel, content, act_id=pk, org_id=None)
             # Here we MUST set act_id to null, because the act will be deleted later.
             # If we don't set act_id to null, the related notification will be deleted under CASCADE model.
-            notif = new_notification(NOTIF.ActCancel, content, act_id=None, org_id=None)
+            notif = new_notification(
+                NOTIF.ActCancel, content, act_id=None, org_id=None)
             persons = JoinedAct.objects.filter(act=pk)
             receivers = [p.person_id for p in persons]
             _create_notif_for_all(receivers, notif)
-    
+
             act = Activity.objects.get(id=pk)
             kwds = act.keywords
             typ = act.type.name.lower() if act.type else None
             for id_ in receivers:
                 delete_kwd_typ(id_, kwds, typ)
-                
+
             res = self.destroy(request)
             res.status_code = 200
             if res.data is None:
@@ -807,20 +850,20 @@ class ActivityViewSet(ModelViewSet):
             res.data['__receivers__'] = receivers
             return res
         except:
-            return Response({"errMsg" : traceback.format_exc()}, 400)
-
+            return Response({"errMsg": traceback.format_exc()}, 400)
 
     # 获取组织下的活动
+
     def get_org_act(self, request, org_id):
         acts = Activity.objects.filter(org=org_id)
         return self.paginate(acts)
-    
+
     def get_org_act_status(self, request, org_id):
         now = datetime.datetime.now()
         ret = {
-        'unstart': self.get_serializer(Activity.objects.filter(org=org_id,begin_time__gt=now), many=True).data,
-        'cur': self.get_serializer(Activity.objects.filter(org=org_id, end_time__gte=now, begin_time__lte=now), many=True).data,
-        'end': self.get_serializer(Activity.objects.filter(org=org_id, end_time__lt=now), many=True).data
+            'unstart': self.get_serializer(Activity.objects.filter(org=org_id, begin_time__gt=now), many=True).data,
+            'cur': self.get_serializer(Activity.objects.filter(org=org_id, end_time__gte=now, begin_time__lte=now), many=True).data,
+            'end': self.get_serializer(Activity.objects.filter(org=org_id, end_time__lt=now), many=True).data
         }
         return Response(ret, 200)
 
@@ -828,30 +871,31 @@ class ActivityViewSet(ModelViewSet):
     def get_user_act(self, request, user_id):
         acts = Activity.objects.filter(owner=user_id)
         return self.paginate(acts)
-    
+
     def get_user_act_status(self, request, user_id):
         now = datetime.datetime.now()
         ret = {
-        'unstart': self.get_serializer(Activity.objects.filter(owner=user_id,begin_time__gt=now), many=True).data,
-        'cur': self.get_serializer(Activity.objects.filter(owner=user_id, end_time__gte=now, begin_time__lte=now), many=True).data,
-        'end': self.get_serializer(Activity.objects.filter(owner=user_id, end_time__lt=now), many=True).data
+            'unstart': self.get_serializer(Activity.objects.filter(owner=user_id, begin_time__gt=now), many=True).data,
+            'cur': self.get_serializer(Activity.objects.filter(owner=user_id, end_time__gte=now, begin_time__lte=now), many=True).data,
+            'end': self.get_serializer(Activity.objects.filter(owner=user_id, end_time__lt=now), many=True).data
         }
         return Response(ret, 200)
 
     # 获取用户管理的未开始活动 开始时间>现在
     def get_user_unstart_act(self, request, user_id):
         now = datetime.datetime.now()
-        acts = Activity.objects.filter(owner=user_id,begin_time__gt=now)
+        acts = Activity.objects.filter(owner=user_id, begin_time__gt=now)
         return self.paginate(acts)
 
     # 获取用户管理的进行中活动 开始时间 < 现在 < 结束时间
     def get_user_ing_act(self, request, user_id):
         now = datetime.datetime.now()
-        acts = Activity.objects.filter(owner=user_id, end_time__gte=now, begin_time__lte=now)
+        acts = Activity.objects.filter(
+            owner=user_id, end_time__gte=now, begin_time__lte=now)
         return self.paginate(acts)
 
     # 获取用户管理的已结束活动,结束时间 < 现在
-    def get_user_finish_act(self,request,user_id):
+    def get_user_finish_act(self, request, user_id):
         now = datetime.datetime.now()
         acts = Activity.objects.filter(owner=user_id, end_time__lt=now)
         return self.paginate(acts)
@@ -860,20 +904,21 @@ class ActivityViewSet(ModelViewSet):
     def get_block_act(self, request, block_id):
         acts = Activity.objects.filter(block=block_id)
         return self.paginate(acts)
-    
+
     def get_block_act_status(self, request, block_id):
         now = datetime.datetime.now()
         ret = {
-        'unstart': self.get_serializer(Activity.objects.filter(block = block_id,begin_time__gt=now), many=True).data,
-        'cur': self.get_serializer(Activity.objects.filter(block = block_id, end_time__gte=now, begin_time__lte=now) , many=True).data,
-        'end': self.get_serializer(Activity.objects.filter(block = block_id, end_time__lt=now), many=True).data
+            'unstart': self.get_serializer(Activity.objects.filter(block=block_id, begin_time__gt=now), many=True).data,
+            'cur': self.get_serializer(Activity.objects.filter(block=block_id, end_time__gte=now, begin_time__lte=now), many=True).data,
+            'end': self.get_serializer(Activity.objects.filter(block=block_id, end_time__lt=now), many=True).data
         }
         return Response(ret, 200)
 
     # 获取用户关注的组织发布的活动
     def get_followed_org_act(self, request, user_id):
         orgs = FollowedOrg.objects.filter(person=user_id)
-        acts = Activity.objects.filter(org__in=[org.org_id for org in orgs]).order_by('pub_time').reverse()
+        acts = Activity.objects.filter(
+            org__in=[org.org_id for org in orgs]).order_by('pub_time').reverse()
         return self.paginate(acts)
 
     # 推荐活动
@@ -883,42 +928,45 @@ class ActivityViewSet(ModelViewSet):
         not_end_acts = list(Activity.objects.filter(end_time__gte=now))
         k = min(len(not_end_acts), 1000)
         random_acts = random.sample(not_end_acts, k)
-        recommend_acts, recommend_orgs, act_su = get_recommend(user, random_acts)
+        recommend_acts, recommend_orgs = get_recommend(user, random_acts)
         ret = {
-            'acts' : self.get_serializer(recommend_acts, many=True).data,
-            'orgs' : OrgDetailSerializer(recommend_orgs, many=True).data,
-            'act_suitability' : act_su
+            'acts': self.get_serializer(recommend_acts, many=True).data,
+            'orgs': OrgDetailSerializer(recommend_orgs, many=True).data,
         }
         return Response(ret, 200)
 
-    #搜索活动
-    def search_all(self,request):
+    # 搜索活动
+    def search_all(self, request):
         act_name = request.data.get("name")
         activities = Activity.objects.filter(name__contains=act_name)
         return self.paginate(activities)
 
-    #板块下搜索活动
-    def search_act_by_block(self,request,block_id):
+    # 板块下搜索活动
+    def search_act_by_block(self, request, block_id):
         act_name = request.data.get("name")
-        activities = Activity.objects.filter(name__contains=act_name,block=block_id)
+        activities = Activity.objects.filter(
+            name__contains=act_name, block=block_id)
         return self.paginate(activities)
 
-    #组织下搜索活动
-    def search_act_by_org(self,request,org_id):
+    # 组织下搜索活动
+    def search_act_by_org(self, request, org_id):
         act_name = request.data.get("name")
-        activities = Activity.objects.filter(name__contains=act_name,org=org_id)
+        activities = Activity.objects.filter(
+            name__contains=act_name, org=org_id)
         return self.paginate(activities)
 
-    #搜索指定用户发布的活动
-    def search_user_released_act(self, request,user_id):
+    # 搜索指定用户发布的活动
+    def search_user_released_act(self, request, user_id):
         act_name = request.data.get("name")
-        activities = Activity.objects.filter(name__contains=act_name,owner=user_id)
+        activities = Activity.objects.filter(
+            name__contains=act_name, owner=user_id)
         return self.paginate(activities)
 
 
 # 活动参与
 class JoinedActViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    authentication_classes = [UserAuthentication,
+                              SuperAdminAuthentication, ErrorAuthentication]
     permission_classes = (JoinedActAccessPolicy,)
     queryset = JoinedAct.objects.all()
 
@@ -963,8 +1011,8 @@ class JoinedActViewSet(ModelViewSet):
             else:
                 return Response({"detail": "活动人数已满。"}, 400)
         except:
-            return Response({"errMsg" : traceback.format_exc()}, 400)
-    
+            return Response({"errMsg": traceback.format_exc()}, 400)
+
     # 退出活动
     def destroy(self, request, *args, **kwargs):
         user_id = request.query_params.get('person')
@@ -975,20 +1023,22 @@ class JoinedActViewSet(ModelViewSet):
         typ = act.type.name.lower() if act.type else None
         delete_kwd_typ(user_id, kwds, typ)
 
-    def destroy_wrapper(self, request) :
+    def destroy_wrapper(self, request):
         user_id = request.query_params.get('person')
         act_id = request.query_params.get('act')
         operator_id = request.query_params.get('operator')
-        
+
         data = {}
-        #self.destroy(request)
+        # self.destroy(request)
         if operator_id != user_id:
-            content = utils.get_notif_content(NOTIF.RemovalFromAct, act_name=_act_id2act_name(act_id))
+            content = utils.get_notif_content(
+                NOTIF.RemovalFromAct, act_name=_act_id2act_name(act_id))
             # content = utils.get_notif_content(NOTIF.RemovalFromAct, act_name=None)
-            notif = new_notification(NOTIF.RemovalFromAct, content, act_id=act_id, org_id=None)
+            notif = new_notification(
+                NOTIF.RemovalFromAct, content, act_id=act_id, org_id=None)
             _create_notif_for_all([user_id], notif, data)
         self.destroy(request)
-            
+
         return Response(data, 200)
 
     # 获取活动的参与人数
@@ -1005,19 +1055,20 @@ class JoinedActViewSet(ModelViewSet):
     def get_user_joined_act(self, request, user_id):
         acts = JoinedAct.objects.filter(person=user_id)
         return self.paginate(acts)
-    
+
     def get_user_joined_act_status(self, request, user_id):
         now = datetime.datetime.now()
         ret = {
-        'unstart': self.get_serializer(JoinedAct.objects.filter(act__begin_time__gt=now, person=user_id), many=True).data,
-        'cur': self.get_serializer(JoinedAct.objects.filter(act__end_time__gte=now, act__begin_time__lte=now, person=user_id), many=True).data,
-        'end': self.get_serializer(JoinedAct.objects.filter(act__end_time__lt=now, person=user_id), many=True).data
+            'unstart': self.get_serializer(JoinedAct.objects.filter(act__begin_time__gt=now, person=user_id), many=True).data,
+            'cur': self.get_serializer(JoinedAct.objects.filter(act__end_time__gte=now, act__begin_time__lte=now, person=user_id), many=True).data,
+            'end': self.get_serializer(JoinedAct.objects.filter(act__end_time__lt=now, person=user_id), many=True).data
         }
         return Response(ret, 200)
 
     # 获取指定用户指定年月中参与的所有活动
     def get_user_joined_act_begin_order(self, request, user_id, month, year):
-        acts = JoinedAct.objects.filter(person=user_id, act__begin_time__month=month, act__begin_time__year=year)
+        acts = JoinedAct.objects.filter(
+            person=user_id, act__begin_time__month=month, act__begin_time__year=year)
         serializer = self.get_serializer(acts, many=True)
         data = serializer.data
         ret = {}
@@ -1029,18 +1080,18 @@ class JoinedActViewSet(ModelViewSet):
                 ret[act['begin_time'].split('T')[0]] = [act]
         return Response(ret, 200)
 
-   #搜索用户参与的活动
-    def search_user_joined_act(self,request,user_id):
+   # 搜索用户参与的活动
+    def search_user_joined_act(self, request, user_id):
         act_name = request.data.get("name")
-        acts = JoinedAct.objects.filter(person=user_id,act__name__contains=act_name)
+        acts = JoinedAct.objects.filter(
+            person=user_id, act__name__contains=act_name)
         return self.paginate(acts)
-    
-    
 
 
 # 活动评价
 class CommentViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    authentication_classes = [UserAuthentication,
+                              SuperAdminAuthentication, ErrorAuthentication]
     permission_classes = (CommentAccessPolicy,)
     queryset = Comment.objects.all()
 
@@ -1083,19 +1134,21 @@ class CommentViewSet(ModelViewSet):
             return Response(serializer.data)
         return Response({"id": -1}, 404)
 
-    def search_all_comment(self,request):
+    def search_all_comment(self, request):
         content = request.data.get("query")
         comments = Comment.objects.filter(content__contains=content)
         return self.paginate(comments)
 
-    def search_by_user(self,request,user_id):
+    def search_by_user(self, request, user_id):
         content = request.data.get("query")
-        comments = Comment.objects.filter(user=user_id,content__contains=content)
+        comments = Comment.objects.filter(
+            user=user_id, content__contains=content)
         return self.paginate(comments)
 
     def search_by_act(self, request, act_id):
         content = request.data.get("query")
-        comments = Comment.objects.filter(act=act_id,content__contains=content)
+        comments = Comment.objects.filter(
+            act=act_id, content__contains=content)
         return self.paginate(comments)
 
     def create_wrapper(self, request):
@@ -1125,7 +1178,8 @@ class CommentViewSet(ModelViewSet):
         comment = request.data['content']
         content = utils.get_notif_content(NOTIF.ActCommentModified, user_name=_user_id2user_name(user_id),
                                           act_name=_act_id2act_name(act_id), comment=comment)
-        notif = new_notification(NOTIF.ActCommentModified, content, act_id=act_id)
+        notif = new_notification(
+            NOTIF.ActCommentModified, content, act_id=act_id)
         act = BUAA.models.Activity.objects.get(id=act_id)
         if act.block_id == BLOCKID.PERSONAL:
             _create_notif_for_all([act.owner.pk], notif, res.data)
@@ -1141,9 +1195,6 @@ class CommentViewSet(ModelViewSet):
         return res
 
 
-
-
-
 # WebSocket实时通信
 class SentNotifViewSet(ModelViewSet):
     queryset = SentNotif.objects.all()
@@ -1153,12 +1204,13 @@ class SentNotifViewSet(ModelViewSet):
         notifications = request.data.get("notifications")
         for notification in notifications:
             if SentNotif.objects.filter(notif=notification, person=user_id).exists():
-                sent = SentNotif.objects.get(notif=notification, person=user_id)
-                serializer = self.get_serializer(instance=sent, data={"notif": notification, "person": user_id, "already_read": True})
+                sent = SentNotif.objects.get(
+                    notif=notification, person=user_id)
+                serializer = self.get_serializer(instance=sent, data={
+                                                 "notif": notification, "person": user_id, "already_read": True})
                 serializer.is_valid()
                 serializer.save()
         return Response(data=None, status=200)
-
 
 
 class NotificationViewSet(ModelViewSet):
@@ -1166,13 +1218,14 @@ class NotificationViewSet(ModelViewSet):
     serializer_class = NotificationSerializer
 
 
-
 class ImageUploadViewSet(ModelViewSet):
-    authentication_classes = [UserAuthentication, SuperAdminAuthentication, ErrorAuthentication]
+    authentication_classes = [UserAuthentication,
+                              SuperAdminAuthentication, ErrorAuthentication]
     permission_classes = (ImageAccessPolicy,)
     parser_classes = [JSONParser, FormParser, MultiPartParser, ]
     serializer_class = ImageUploadSerializer
-    def remove_act_avatar(self,request,act_id):
+
+    def remove_act_avatar(self, request, act_id):
         try:
             act = Activity.objects.get(id=act_id)
         except:
@@ -1180,13 +1233,13 @@ class ImageUploadViewSet(ModelViewSet):
                 "detail": '未找到活动'
             }
             status = 404
-            return Response(res,status)
-        
+            return Response(res, status)
+
         act.avatar = None
         act.save()
         return Response(status=204)
-    
-    def upload_act_avatar(self,request,act_id):
+
+    def upload_act_avatar(self, request, act_id):
         image = request.FILES['image']
         try:
             act = Activity.objects.get(id=act_id)
@@ -1195,19 +1248,18 @@ class ImageUploadViewSet(ModelViewSet):
                 "detail": '未找到活动'
             }
             status = 404
-            return Response(res,status)
+            return Response(res, status)
         path = "acts/" + str(act_id) + '_' + get_random_str() + '.jpg'
-        with open(base_dir + path,'wb') as f1:
+        with open(base_dir + path, 'wb') as f1:
             f1.write(image.read())
             f1.close()
             act.avatar = web_dir + path
             act.save()
         res = {
-            "img" : web_dir + path
+            "img": web_dir + path
         }
-        return Response(res,200)
-    
-    
+        return Response(res, 200)
+
     def upload_org_avatar(self, request, org_id):
         image = request.FILES['image']
         try:
@@ -1217,47 +1269,39 @@ class ImageUploadViewSet(ModelViewSet):
                 "detail": '未找到组织'
             }
             status = 404
-            return Response(res,status)
-        
+            return Response(res, status)
+
         path = "orgs/" + str(org_id) + '_' + get_random_str() + '.jpg'
-        with open(base_dir + path,'wb') as f:
+        with open(base_dir + path, 'wb') as f:
             f.write(image.read())
             f.close()
             org.avatar = web_dir + path
             org.save()
         res = {
-            "img" : web_dir + path
+            "img": web_dir + path
         }
-        return Response(res,200)
+        return Response(res, 200)
 
-
-import pandas as pd
-import numpy as np
-
-from django.http import HttpResponse
-from django.template import loader
-import plotly.graph_objects as go
-import plotly.offline as opy
-import matplotlib.pyplot as plt
 
 @api_view(['GET'])
 def lines(request):
     template = loader.get_template('index.html')
-    
+
     df = pd.read_csv('/root/rank.csv')
-    
+
     x = df.Time.values
     col_num = df.shape[1]
-    colors = plt.cm.Spectral(list(range(1, col_num))) # 👴 比较喜欢用的 colormap 之一，参见 matplotlib.pyplot.cm，matplotlib.colors，matplotlib.colormap
-    fig = go.Figure() # 参见 plotly 文档
+    # 👴 比较喜欢用的 colormap 之一，参见 matplotlib.pyplot.cm，matplotlib.colors，matplotlib.colormap
+    colors = plt.cm.Spectral(list(range(1, col_num)))
+    fig = go.Figure()  # 参见 plotly 文档
     fig.update_layout(
-        title="《实时战况》", 
-        xaxis={'title': '时间'}, 
+        title="《实时战况》",
+        xaxis={'title': '时间'},
         yaxis={'title': '通过人数', 'range': [0, 460]}
     )
     for i in range(1, col_num):
         y = df['{}'.format(i)].values
-        
+
         fig.add_trace(
             go.Scatter(
                 x=x,
@@ -1267,18 +1311,14 @@ def lines(request):
                 name='Problem {}'.format(i)
             )
         )
-        
+
     div = opy.plot(fig, auto_open=False, output_type='div')
-    
+
     context = {}
     context['graph'] = div
-    
+
     return HttpResponse(template.render(context, request))
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     print(utils.get_access_token())
-    
-    
-    
-    
