@@ -3,13 +3,20 @@ import os
 import json
 import jieba.analyse
 import math
+import sys
 
 MAX_ACCEPT = 100
 ACCEPT_THRESH = 0
 WEIGHT_TYPE = 1
 WEIGHT_KEYWORD = 10
 
-portrait_dir = '/root/portraits/'
+
+if sys.platform in ["win32", "win64", "darwin"]:
+    portrait_dir = './portraits/'
+elif sys.platform in ['linux']:
+    portrait_dir = '/root/portraits/'
+else:
+    portrait_dir = '/root/portraits/'
 
 if not os.path.exists(portrait_dir):
     os.mkdir(portrait_dir)

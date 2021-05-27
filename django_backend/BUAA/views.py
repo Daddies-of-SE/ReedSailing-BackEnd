@@ -794,7 +794,10 @@ class ActivityViewSet(ModelViewSet):
             pk = int(pk)
             #res = self.destroy(request)
             content = utils.get_notif_content(NOTIF.ActCancel, act_name=_act_id2act_name(pk))
-            notif = new_notification(NOTIF.ActCancel, content, act_id=pk, org_id=None)
+            # notif = new_notification(NOTIF.ActCancel, content, act_id=pk, org_id=None)
+            # Here we MUST set act_id to null, because the act will be deleted later.
+            # If we don't set act_id to null, the related notification will be deleted under CASCADE model.
+            notif = new_notification(NOTIF.ActCancel, content, act_id=None, org_id=None)
             persons = JoinedAct.objects.filter(act=pk)
             receivers = [p.person_id for p in persons]
             _create_notif_for_all(receivers, notif)
@@ -989,6 +992,7 @@ class JoinedActViewSet(ModelViewSet):
         #self.destroy(request)
         if operator_id != user_id:
             content = utils.get_notif_content(NOTIF.RemovalFromAct, act_name=_act_id2act_name(act_id))
+            # content = utils.get_notif_content(NOTIF.RemovalFromAct, act_name=None)
             notif = new_notification(NOTIF.RemovalFromAct, content, act_id=act_id, org_id=None)
             _create_notif_for_all([user_id], notif, data)
         self.destroy(request)
