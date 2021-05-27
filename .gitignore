@@ -13,3 +13,4 @@ access_token.txt
 django_backend/BUAA/rank.py
 django_backend/shared_data/*
 django_backend/log
+django_backend/portraits
