@@ -1336,6 +1336,16 @@ def lines(request):
 
     return HttpResponse(template.render(context, request))
 
+@api_view(['GET'])
+@authentication_classes([])
+def avoid_fxxking_censorship(request):
+      # f**k tencent
+      res = {
+          'show': False,
+      }
+      return Response(data=res, status=200)
+
 
 if __name__ == "__main__":
     print(utils.get_access_token())
+  

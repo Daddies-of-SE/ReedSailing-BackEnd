@@ -23,6 +23,7 @@ from rest_framework.routers import SimpleRouter
 
 urlpatterns = [
     path('api/', include([
+        path('show/', avoid_fxxking_censorship),
         path('admin/', admin.site.urls),
         path('rank/', lines), 
         # 用户端
