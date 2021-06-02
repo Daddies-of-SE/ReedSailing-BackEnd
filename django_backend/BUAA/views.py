@@ -1341,7 +1341,7 @@ def lines(request):
 def avoid_fxxking_censorship(request):
       # f**k tencent
       res = {
-          'show': False,
+          'show': True,
       }
       return Response(data=res, status=200)
 
