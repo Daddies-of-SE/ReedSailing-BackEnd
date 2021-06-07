@@ -192,32 +192,29 @@ def _get_boya_followers():
 @api_view(['POST'])
 @authentication_classes([UserAuthentication, ErrorAuthentication])
 def send_email(request):
-    try:
-        email_address = request.data['email']
-        if not email_address.endswith("@buaa.edu.cn"):
-            res = {
-                'status': 1,
-                'msg': 'Email address not belong to BUAA'
-            }
-            return Response(data=res, status=400)
-
-        random_str = get_random_str()[:6]
-        sender.send_mail('ReedSailing Certification', 'Your verify code is {}, valid in 5 minutes.'.format(random_str),
-                         email_address)
-
-        cache.set(random_str, email_address, 300)  # 验证码时效5分钟
-        # # 用redis代替
-        # redis_conn = get_redis_connection("code")
-        # redis_conn.set("sms_code_%s" % email_address, random_str, 300)
-
+    email_address = request.data['email']
+    if not email_address.endswith("@buaa.edu.cn"):
         res = {
-            'status': 0,
-            'msg': 'Email send'
+            'status': 1,
+            'msg': 'Email address not belong to BUAA'
         }
-        # print("successfully send email to", email_address)
-        return Response(data=res, status=200)
-    except:
-        return Response({"errMsg": traceback.format_exc()}, 400)
+        return Response(data=res, status=400)
+
+    random_str = get_random_str()[:6]
+    sender.send_mail('ReedSailing Certification', 'Your verify code is {}, valid in 5 minutes.'.format(random_str),
+                        email_address)
+
+    cache.set(random_str, email_address, 300)  # 验证码时效5分钟
+    # # 用redis代替
+    # redis_conn = get_redis_connection("code")
+    # redis_conn.set("sms_code_%s" % email_address, random_str, 300)
+
+    res = {
+        'status': 0,
+        'msg': 'Email send'
+    }
+    # print("successfully send email to", email_address)
+    return Response(data=res, status=200)
     # return my_response(res)
 
 
@@ -321,21 +318,18 @@ def user_login(request):
 @authentication_classes([])  # 用户认证
 def user_register(request):
     # 取出数据
-    try:
-        id_ = request.data['id']
-        user_info = request.data['userInfo']
+    id_ = request.data['id']
+    user_info = request.data['userInfo']
 
-        WXUser.objects.filter(id=id_).update(name=user_info.get(
-            "nickName"), avatar=user_info.get("avatarUrl"))
+    WXUser.objects.filter(id=id_).update(name=user_info.get(
+        "nickName"), avatar=user_info.get("avatarUrl"))
 
-        # print("register user", WXUser.objects.get_or_create(id=id_))
+    # print("register user", WXUser.objects.get_or_create(id=id_))
 
-        res = {
-            "status": 0
-        }
-        return Response(data=res, status=200)
-    except:
-        return Response({"errMsg": traceback.format_exc()}, 400)
+    res = {
+        "status": 0
+    }
+    return Response(data=res, status=200)
 
 
 @api_view(['POST'])
@@ -449,12 +443,8 @@ class WXUserViewSet(ModelViewSet):
         return Response(serializer.data)
 
     def search_user(self, request):
-        try:
-            name = request.data.get("name")
-            users = WXUser.objects.filter(name__contains=name)
-        except:
-            import traceback
-            return Response({"errMsg": traceback.format_exc()}, 400)
+        name = request.data.get("name")
+        users = WXUser.objects.filter(name__contains=name)
         return self.paginate(users)
 
 
@@ -803,15 +793,12 @@ class ActivityViewSet(ModelViewSet):
         return Response(serializer.data)
 
     def create_wrapper(self, request):
-        try:
-            res = self.create(request)
+        res = self.create(request)
 
-            act = Activity.objects.get(id=res.data['id'])
-            act.keywords = get_keyword(act.name+' '+act.description)
-            act.save()
-            return res
-        except:
-            return Response({"errMsg": traceback.format_exc()}, 400)
+        act = Activity.objects.get(id=res.data['id'])
+        act.keywords = get_keyword(act.name+' '+act.description)
+        act.save()
+        return res
 
     # update_wrapper
     def update_wrapper(self, request, pk):
@@ -840,34 +827,31 @@ class ActivityViewSet(ModelViewSet):
         return res
 
     def destroy_wrapper(self, request, pk):
-        try:
-            pk = int(pk)
-            #res = self.destroy(request)
-            content = utils.get_notif_content(
-                NOTIF.ActCancel, act_name=_act_id2act_name(pk))
-            # notif = new_notification(NOTIF.ActCancel, content, act_id=pk, org_id=None)
-            # Here we MUST set act_id to null, because the act will be deleted later.
-            # If we don't set act_id to null, the related notification will be deleted under CASCADE model.
-            notif = new_notification(
-                NOTIF.ActCancel, content, act_id=None, org_id=None)
-            persons = JoinedAct.objects.filter(act=pk)
-            receivers = [p.person_id for p in persons]
-            _create_notif_for_all(receivers, notif)
+        pk = int(pk)
+        #res = self.destroy(request)
+        content = utils.get_notif_content(
+            NOTIF.ActCancel, act_name=_act_id2act_name(pk))
+        # notif = new_notification(NOTIF.ActCancel, content, act_id=pk, org_id=None)
+        # Here we MUST set act_id to null, because the act will be deleted later.
+        # If we don't set act_id to null, the related notification will be deleted under CASCADE model.
+        notif = new_notification(
+            NOTIF.ActCancel, content, act_id=None, org_id=None)
+        persons = JoinedAct.objects.filter(act=pk)
+        receivers = [p.person_id for p in persons]
+        _create_notif_for_all(receivers, notif)
 
-            act = Activity.objects.get(id=pk)
-            kwds = act.keywords
-            typ = act.type.name.lower() if act.type else None
-            for id_ in receivers:
-                delete_kwd_typ(id_, kwds, typ)
+        act = Activity.objects.get(id=pk)
+        kwds = act.keywords
+        typ = act.type.name.lower() if act.type else None
+        for id_ in receivers:
+            delete_kwd_typ(id_, kwds, typ)
 
-            res = self.destroy(request)
-            res.status_code = 200
-            if res.data is None:
-                res.data = {}
-            res.data['__receivers__'] = receivers
-            return res
-        except:
-            return Response({"errMsg": traceback.format_exc()}, 400)
+        res = self.destroy(request)
+        res.status_code = 200
+        if res.data is None:
+            res.data = {}
+        res.data['__receivers__'] = receivers
+        return res
 
     # 获取组织下的活动
 
@@ -1010,25 +994,22 @@ class JoinedActViewSet(ModelViewSet):
 
     # 加入活动
     def create(self, request, *args, **kwargs):
-        try:
-            serializer = self.get_serializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            act_id = request.data.get("act")
-            current_number = JoinedAct.objects.filter(act=act_id).count()
-            act = Activity.objects.get(id=act_id)
-            limit_number = act.contain
-            kwds = act.keywords
-            typ = act.type.name.lower() if act.type else None
-            if current_number < limit_number:
-                self.perform_create(serializer)
-                headers = self.get_success_headers(serializer.data)
-                user = request.data.get("person")
-                add_kwd_typ(user, kwds, typ)
-                return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-            else:
-                return Response({"detail": "活动人数已满。"}, 400)
-        except:
-            return Response({"errMsg": traceback.format_exc()}, 400)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        act_id = request.data.get("act")
+        current_number = JoinedAct.objects.filter(act=act_id).count()
+        act = Activity.objects.get(id=act_id)
+        limit_number = act.contain
+        kwds = act.keywords
+        typ = act.type.name.lower() if act.type else None
+        if current_number < limit_number:
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            user = request.data.get("person")
+            add_kwd_typ(user, kwds, typ)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        else:
+            return Response({"detail": "活动人数已满。"}, 400)
 
     # 退出活动
     def destroy(self, request, *args, **kwargs):
