@@ -30,6 +30,7 @@ from BUAA.accessPolicy import *
 import random
 import traceback
 from BUAA.recommend import update_kwd_typ, add_kwd_typ, delete_kwd_typ, get_keyword, get_recommend
+from django.views.decorators.csrf import csrf_exempt
 
 base_dir = '/root/ReedSailing-Web/server_files/'
 #base_dir = '/Users/wzk/Desktop/'
@@ -152,6 +153,7 @@ def new_send_notification(notif_id, user_id):
 
 
 @api_view(['POST'])
+@csrf_exempt
 def web_token_identify(request):
     token = request.data['token']
     username = cache.get(token)
