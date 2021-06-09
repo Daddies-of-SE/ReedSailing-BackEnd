@@ -31,6 +31,7 @@ import random
 import traceback
 from BUAA.recommend import update_kwd_typ, add_kwd_typ, delete_kwd_typ, get_keyword, get_recommend
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt 
 
 base_dir = '/root/ReedSailing-Web/server_files/'
 #base_dir = '/Users/wzk/Desktop/'
@@ -234,14 +235,14 @@ def verify_email(request):
     if config_email == email:
         res = {
             'status': 0,
-            'msg': 'Valid Code'
+            'detail': 'Valid Code'
         }
         WXUser.objects.filter(id=id).update(email=config_email)
         status = 200
     else:
         res = {
             'status': 1,
-            'msg': 'Invalid Code',
+            'detail': '验证码错误',
         }
         status = 400
 
