@@ -217,6 +217,7 @@ def create_new_course(cid, cinfo, BASE_PATH):
 if __name__ == '__main__':
     INTERVAL = 300
     ERR_MAX = 10
+    PAUSE_MINUTE = 30
     HISTORY_PATH = os.path.join(LOG_DIR, 'history.json')
     NEW_PATH = os.path.expanduser('~/boya/')
     if not os.path.exists(NEW_PATH):
@@ -260,8 +261,10 @@ if __name__ == '__main__':
             error_cnt += 1
             to_log(traceback.format_exc())
             if error_cnt >= ERR_MAX:
-                to_log('Errors occured have exceeded limit, program will exit')
-                break
+                to_log(
+                    f'Errors occured have exceeded limit, program pause for {PAUSE_MINUTE} minutes')
+                time.sleep(PAUSE_MINUTE*60)
+                error_cnt = 0
         time.sleep(INTERVAL)
 
     finalize()
