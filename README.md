@@ -50,10 +50,7 @@
 
 ### 服务器基本信息
 
-* IP：`114.116.94.235`
-* 服务器账号root，密码见qq群（安全起见不写在此处）
 * mysql账号root，密码12345678
-* 后端文件目录：`/root/ReedSailing-BackEnd`
 * alias的便捷指令
   * `pi`：封装了`pip install -i 清华源`，直接`pi numpy`即可安装
   * `upload`：封装了`git add, commit, push`，直接`upload "hello world"`即可上传
