@@ -32,10 +32,14 @@ urlpatterns = [
         path('userLogin/', user_login),
         path('userRegister/', user_register),
         path('adminLogIn/', sudo_login),
-        #path('register/', sudo_register),
+        path('register/', sudo_register),
         path('userOrgRelation/', user_org_relation),
         path('userActRelation/', user_act_relation),
         path('qrcode/', get_page_qrcode),
+        path('charts/', include([
+            url(r'popular_orgs/', popular_org_chart),
+            url(r'popular_acts/', popular_act_chart),
+        ])),
 #        path('boyaFollowers/', get_boya_followers),
 
         # 管理端

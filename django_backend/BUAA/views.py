@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 from django.template import loader
 from django.http import HttpResponse
 import numpy as np
-import pandas as pd
+#import pandas as pd
 import BUAA.models
 import BUAA.utils as utils
 import json
@@ -33,7 +33,50 @@ from BUAA.recommend import update_kwd_typ, add_kwd_typ, delete_kwd_typ, get_keyw
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.csrf import csrf_exempt 
 
-base_dir = '/root/ReedSailing-Web/server_files/'
+from jinja2 import Environment, FileSystemLoader
+from pyecharts.globals import CurrentConfig
+from django.http import HttpResponse
+
+CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("/home/ubuntu/ReedSailing-BackEnd/django_backend/templates2"))
+
+from pyecharts import options as opts
+from pyecharts.charts import Bar
+
+
+def popular_act_chart(request):
+    acts = Activity.objects.filter()
+    dic = {}
+    for act in acts:
+        num_joined = JoinedAct.objects.filter(act=act.id).count()
+        dic[act.name] = num_joined
+    sorted_dic = sorted(dic.items(), key=lambda x:x[1], reverse=True)
+    c = (
+        Bar()
+        .add_xaxis([x[0] for x in sorted_dic])
+        .add_yaxis("报名人数", [x[1] for x in sorted_dic])
+        .set_global_opts(title_opts=opts.TitleOpts(title="活动热度排行"))
+    )
+    return HttpResponse(c.render_embed())
+
+
+def popular_org_chart(request):
+    acts = Organization.objects.filter()
+    dic = {}
+    for act in acts:
+        num_followed = FollowedOrg.objects.filter(org=org.id).count()
+        dic[act.name] = num_followed
+    sorted_dic = sorted(dic.items(), key=lambda x:x[1], reverse=True)
+    c = (
+        Bar()
+        .add_xaxis([x[0] for x in sorted_dic])
+        .add_yaxis("关注人数", [x[1] for x in sorted_dic])
+        .set_global_opts(title_opts=opts.TitleOpts(title="组织热度排行"))
+    )
+    return HttpResponse(c.render_embed())
+
+
+
+base_dir = '/home/ubuntu/ReedSailing-Web/server_files/'
 #base_dir = '/Users/wzk/Desktop/'
 web_dir = 'https://www.reedsailing.xyz/server_files/'
 

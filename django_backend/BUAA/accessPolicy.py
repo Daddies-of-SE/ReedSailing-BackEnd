@@ -34,18 +34,28 @@ class WXUserAccessPolicy(AccessPolicy):
 
 
 class BlockAccessPolicy(AccessPolicy):
+    # statements = [
+    #     {
+    #         "action": ["list", "retrieve"],
+    #         "principal": "*",
+    #         "effect": "allow",
+    #     },
+    #     {
+    #         "action": ["update", "destroy", "create"],
+    #         "principal": "*",
+    #         "effect": "allow",
+    #         "condition": "is_super_user",
+    #     }
+    # ]
+
+    #TODO
+
     statements = [
         {
-            "action": ["list", "retrieve"],
+            "action": ["list", "retrieve", "update", "destroy", "create"],
             "principal": "*",
             "effect": "allow",
         },
-        {
-            "action": ["update", "destroy", "create"],
-            "principal": "*",
-            "effect": "allow",
-            "condition": "is_super_user",
-        }
     ]
 
     def is_super_user(self, request, view, action) -> bool:

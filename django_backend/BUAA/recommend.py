@@ -17,7 +17,7 @@ WEIGHT_KEYWORD = 10
 if sys.platform in ["win32", "win64", "darwin"]:
     portrait_dir = './portraits/'
 elif sys.platform in ['linux']:
-    portrait_dir = '/root/portraits/'
+    portrait_dir = '/home/ubuntu/portraits/'
 else:
     portrait_dir = '/root/portraits/'
 
