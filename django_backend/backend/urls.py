@@ -39,6 +39,7 @@ urlpatterns = [
         path('charts/', include([
             url(r'popular_orgs/', popular_org_chart),
             url(r'popular_acts/', popular_act_chart),
+            url(r'act_categories/', category_pie_chart),
         ])),
 #        path('boyaFollowers/', get_boya_followers),
 

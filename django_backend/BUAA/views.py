@@ -40,15 +40,16 @@ from django.http import HttpResponse
 CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("/home/ubuntu/ReedSailing-BackEnd/django_backend/templates2"))
 
 from pyecharts import options as opts
-from pyecharts.charts import Bar
+from pyecharts.charts import Bar, Pie
 
 
 def popular_act_chart(request):
     acts = Activity.objects.filter()
     dic = {}
     for act in acts:
-        num_joined = JoinedAct.objects.filter(act=act.id).count()
-        dic[act.name] = num_joined
+        dic[act.name] = JoinedAct.objects.filter(act=act.id).count()
+    if not dic:
+        dic={'刷题': 5, 'debug' : 10}
     sorted_dic = sorted(dic.items(), key=lambda x:x[1], reverse=True)
     c = (
         Bar()
@@ -63,8 +64,9 @@ def popular_org_chart(request):
     acts = Organization.objects.filter()
     dic = {}
     for act in acts:
-        num_followed = FollowedOrg.objects.filter(org=org.id).count()
-        dic[act.name] = num_followed
+        dic[act.name] = FollowedOrg.objects.filter(org=org.id).count()
+    if not dic:
+        dic={'yy粉丝团': 100, 'ks粉丝团' : 1}
     sorted_dic = sorted(dic.items(), key=lambda x:x[1], reverse=True)
     c = (
         Bar()
@@ -74,6 +76,22 @@ def popular_org_chart(request):
     )
     return HttpResponse(c.render_embed())
 
+
+def category_pie_chart(request):
+    cates = Category.objects.filter()
+    dic = {}
+    for cate in cates:
+        dic[cate.name] = Activity.objects.filter(type=cate.id).count()
+    if not dic:
+        dic = {'搞比利' : 500, '学习' : 5, '生活' : 1}
+    sorted_dic = sorted(dic.items(), key=lambda x:x[1], reverse=True)
+    c = (
+        Pie()
+        .add("", sorted_dic)
+        .set_global_opts(title_opts=opts.TitleOpts(title="活动类别统计"))
+        .set_series_opts(label_opts=opts.LabelOpts(formatter="{b}: {c}"))
+    )
+    return HttpResponse(c.render_embed())
 
 
 base_dir = '/home/ubuntu/ReedSailing-Web/server_files/'
